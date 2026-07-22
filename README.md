@@ -30,7 +30,7 @@ A lightweight browser game and team portfolio for learning about global supply-c
     
 ## Build check
 
-```bash
+```bash  
 npm run typecheck
 npm run build
 npm run preview
