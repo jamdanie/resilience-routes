@@ -20,7 +20,7 @@ A lightweight browser game and team portfolio for learning about global supply-c
 3. Open **Terminal > New Terminal**. 
 4. Run: 
 
-   ```bash  
+   ```bash   
    npm install
    npm run dev
    ```    
