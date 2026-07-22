@@ -18,7 +18,7 @@ A lightweight browser game and team portfolio for learning about global supply-c
 1. Install Node.js 22 and Git.
 2. Open this folder in VS Code.
 3. Open **Terminal > New Terminal**.
-4. Run:
+4. Run: 
 
    ```bash
    npm install
