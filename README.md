@@ -24,7 +24,7 @@ A lightweight browser game and team portfolio for learning about global supply-c
    npm install
    npm run dev
    ```    
-
+ 
 5. Open the local address printed in the terminal.
 6. Stop the server with `Ctrl+C`. 
     
