@@ -10,7 +10,7 @@ A lightweight browser game and team portfolio for learning about global supply-c
 - Easy, medium, and hard modes
 - A quick-reference pull-out menu 
 - A resilience score and after-action report
-- Project, contributor, and learning-model sections
+- Project, contributor, and learning-model sections  
 - Static GitHub Pages hosting with no database or server credentials
 
 ## Local setup in VS Code  
