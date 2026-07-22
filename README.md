@@ -26,7 +26,7 @@ A lightweight browser game and team portfolio for learning about global supply-c
    ```    
  
 5. Open the local address printed in the terminal.
-6. Stop the server with `Ctrl+C`. 
+6. Stop the server with `Ctrl+C`.  
     
 ## Build check
 
