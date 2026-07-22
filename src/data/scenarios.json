@@ -1,0 +1,112 @@
+[
+  {
+    "id": "port-closure",
+    "title": "Port Horizon",
+    "nodeType": "Port",
+    "x": 155,
+    "y": 160,
+    "color": "#3aaed8",
+    "event": "A labor disruption closes the main container terminal for several days.",
+    "why": "Ports connect overseas suppliers to domestic transportation networks. A closure can delay goods before they reach rail, trucks, warehouses, or stores.",
+    "how": "The disruption creates vessel backlogs, equipment shortages, missed delivery windows, and higher rerouting costs.",
+    "when": "The risk grows during peak shipping seasons, labor disputes, major storms, cyber incidents, or equipment failures.",
+    "where": "The first effects appear at the port, but delays can spread to inland rail terminals, distribution centers, factories, and retailers.",
+    "question": "Which response best reduces the immediate cascading risk?",
+    "options": [
+      "Wait for the port to reopen and keep all shipments unchanged",
+      "Use a secondary port and reserve rail or truck capacity before rerouting",
+      "Cancel every inbound order regardless of priority"
+    ],
+    "correctIndex": 1,
+    "takeaway": "Redundancy works only when alternate routes and transportation capacity are arranged before the main node fails.",
+    "basePenalty": 10
+  },
+  {
+    "id": "flood-corridor",
+    "title": "Riverbend Rail Junction",
+    "nodeType": "Rail",
+    "x": 445,
+    "y": 130,
+    "color": "#d6a84b",
+    "event": "Floodwater closes a rail corridor that carries food, fuel, and industrial materials.",
+    "why": "Rail corridors move high volumes efficiently, so one damaged segment can affect multiple industries at the same time.",
+    "how": "A washed-out section blocks trains, fills nearby yards, and pushes freight toward roads that may not have enough capacity.",
+    "when": "The risk rises during prolonged rain, rapid snowmelt, tropical systems, or when drainage and bridge systems are already stressed.",
+    "where": "Effects begin along the flooded corridor and spread to ports, factories, farms, warehouses, fuel terminals, and communities that depend on the route.",
+    "question": "What is the strongest first planning decision?",
+    "options": [
+      "Prioritize critical cargo and activate pre-identified road or alternate rail routes",
+      "Move all cargo to trucks without checking road capacity",
+      "Keep dispatching trains toward the closed segment"
+    ],
+    "correctIndex": 0,
+    "takeaway": "Prioritization matters because alternate routes usually have less capacity than the primary corridor.",
+    "basePenalty": 11
+  },
+  {
+    "id": "wildfire-smoke",
+    "title": "Skybridge Airport",
+    "nodeType": "Airport",
+    "x": 755,
+    "y": 180,
+    "color": "#bd6b4a",
+    "event": "Wildfire smoke reduces visibility and creates unsafe working conditions near a cargo airport.",
+    "why": "Air cargo is often used for urgent, high-value, medical, or time-sensitive goods.",
+    "how": "Smoke can delay flights, reduce ramp activity, affect worker health, close roads, and slow ground transportation.",
+    "when": "The risk is highest during active wildfire periods, shifting winds, temperature inversions, and regional evacuations.",
+    "where": "The disruption affects the airport and nearby roads first, then spreads to hospitals, manufacturers, repair operations, and customers waiting for urgent items.",
+    "question": "Which option protects continuity without ignoring worker safety?",
+    "options": [
+      "Keep full operations running regardless of air quality",
+      "Pause all regional deliveries for the rest of the month",
+      "Shift urgent cargo to a safer airport and use air-quality thresholds for local work"
+    ],
+    "correctIndex": 2,
+    "takeaway": "Continuity plans must protect workers while identifying alternate nodes for truly urgent cargo.",
+    "basePenalty": 9
+  },
+  {
+    "id": "cyber-logistics",
+    "title": "Northstar Logistics Hub",
+    "nodeType": "Digital logistics",
+    "x": 695,
+    "y": 445,
+    "color": "#8b7bd8",
+    "event": "A cyberattack disrupts shipment scheduling, gate appointments, and inventory visibility.",
+    "why": "Physical cargo movement depends on digital systems for scheduling, documentation, routing, and tracking.",
+    "how": "When data is unavailable or untrusted, trucks may queue, containers may be misplaced, and partners may stop accepting automated instructions.",
+    "when": "The risk can appear after phishing, weak access controls, vulnerable software, compromised vendors, or poor network separation.",
+    "where": "The initial system outage may be local, but connected carriers, ports, warehouses, suppliers, and customers can all lose visibility.",
+    "question": "Which response best limits operational and cyber risk?",
+    "options": [
+      "Use a tested manual fallback, isolate affected systems, and verify data before restoration",
+      "Reconnect every system immediately without checking the cause",
+      "Post administrator credentials in the team chat so work can continue"
+    ],
+    "correctIndex": 0,
+    "takeaway": "Resilience includes tested manual procedures, network isolation, verified restoration, and controlled access.",
+    "basePenalty": 13
+  },
+  {
+    "id": "fuel-shortage",
+    "title": "Cedar Distribution Center",
+    "nodeType": "Warehouse",
+    "x": 270,
+    "y": 430,
+    "color": "#63a86d",
+    "event": "A regional fuel shortage reduces available trucking capacity.",
+    "why": "Warehouses depend on reliable inbound and outbound transportation. Inventory cannot help communities if it cannot move.",
+    "how": "Fuel shortages increase costs, reduce trip frequency, and force carriers to prioritize routes and customers.",
+    "when": "The risk rises after refinery outages, pipeline problems, severe weather, conflict, cyber incidents, or sudden demand spikes.",
+    "where": "The shortage affects carriers and fuel terminals first, then spreads to warehouses, stores, hospitals, farms, and emergency response operations.",
+    "question": "Which action best protects essential deliveries?",
+    "options": [
+      "Prioritize critical loads, combine trips, and coordinate fuel access with partners",
+      "Send every truck on its normal route even when loads are nearly empty",
+      "Stop sharing status information with partners"
+    ],
+    "correctIndex": 0,
+    "takeaway": "Resource sharing and priority rules help limited transportation capacity support the most important needs first.",
+    "basePenalty": 10
+  }
+]
