@@ -38,7 +38,7 @@ npm run preview
 
 ## Create the GitHub repository
 
-Use the repository name `resilience-routes` unless the team chooses another name.
+Use the repository name `resilience-routes` unless the team chooses another name. 
 
 ```bash
 git init
