@@ -13,7 +13,7 @@ A lightweight browser game and team portfolio for learning about global supply-c
 - Project, contributor, and learning-model sections
 - Static GitHub Pages hosting with no database or server credentials
 
-## Local setup in VS Code
+## Local setup in VS Code  
 
 1. Install Node.js 22 and Git.
 2. Open this folder in VS Code.
