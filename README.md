@@ -40,7 +40,7 @@ npm run preview
 
 Use the repository name `resilience-routes` unless the team chooses another name. 
 
-```bash
+```bash 
 git init
 git add .
 git commit -m "Create first playable supply chain prototype"
