@@ -110,7 +110,7 @@ Suggested branches:
 
 - Confirm the basic turn or interaction loop.
 - Confirm win, loss, scoring, and difficulty rules.
-- Provide three resource categories.
+- Provide three resource categories.  
 - Provide one example trade dependency and one ally or trade agreement mechanic.
 - Review whether the digital version still reflects the tabletop idea.
 
