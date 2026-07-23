@@ -9,7 +9,7 @@ A lightweight browser game and team portfolio for learning about global supply-c
 - Hazard injects with why, how, when, and where explanations
 - Easy, medium, and hard modes
 - A quick-reference pull-out menu 
-- A resilience score and after-action report
+- A resilience score and after-action report 
 - Project, contributor, and learning-model sections  
 - Static GitHub Pages hosting with no database or server credentials
 
