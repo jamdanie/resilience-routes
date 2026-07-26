@@ -33,7 +33,7 @@ A lightweight browser game and team portfolio for learning about global supply-c
 ```bash  
 npm run typecheck
 npm run build 
-npm run preview
+npm run preview 
 ```  
 
 ## Create the GitHub repository
