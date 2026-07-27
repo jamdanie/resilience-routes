@@ -1,594 +1,1188 @@
 import "./style.css";
 
-type NodeId = "port" | "rail" | "warehouse" | "digital" | "airport";
-type ResourceId = "funds" | "teams" | "intel";
+type Mode = "planning" | "operations" | "review";
+type AssetType = "ship" | "plane" | "train" | "truck";
+type CargoType = "medical" | "food" | "fuel" | "electronics" | "relief";
+type ThreatType = "cyber" | "weather" | "infrastructure" | "crowd" | "ai";
+type Severity = "low" | "guarded" | "elevated" | "high" | "critical";
 
-type NodeState = {
-  id: NodeId;
-  name: string;
-  label: string;
-  icon: string;
-  role: string;
-  health: number;
+interface Point {
   x: number;
   y: number;
-  dependencies: NodeId[];
-};
+}
 
-type Choice = {
-  title: string;
-  description: string;
-  cost: Partial<Record<ResourceId, number>>;
-  resilience: number;
-  readiness: number;
-  effects: Partial<Record<NodeId, number>>;
-  lesson: string;
-};
+interface Route {
+  id: string;
+  name: string;
+  type: AssetType;
+  points: Point[];
+  cargo: CargoType;
+  priority: number;
+  origin: string;
+  destination: string;
+  etaMinutes: number;
+  risk: number;
+}
 
-type Inject = {
+interface MovingAsset {
+  id: string;
+  callsign: string;
+  routeId: string;
+  progress: number;
+  speed: number;
+  status: "moving" | "holding" | "rerouted" | "delayed";
+  delay: number;
+}
+
+interface Infrastructure {
+  id: string;
+  name: string;
+  short: string;
   category: string;
+  x: number;
+  y: number;
+  health: number;
+  capacity: number;
+  dependencies: string[];
+  icon: string;
+}
+
+interface POI {
+  id: string;
+  name: string;
+  type: "hospital" | "stadium" | "eoc" | "water" | "power" | "data" | "school";
+  x: number;
+  y: number;
+  people: number;
+  criticality: number;
+  icon: string;
+}
+
+interface Threat {
+  id: string;
+  type: ThreatType;
   title: string;
   summary: string;
-  signal: string;
-  why: string;
-  target: NodeId;
-  damage: number;
-  choices: Choice[];
-};
+  target: string;
+  severity: Severity;
+  active: boolean;
+  discovered: boolean;
+  timer: number;
+  spread: number;
+}
+
+interface FeedItem {
+  time: string;
+  level: "info" | "warning" | "critical" | "success";
+  text: string;
+}
+
+interface Allocation {
+  cyber: number;
+  logistics: number;
+  medical: number;
+  publicSafety: number;
+  intelligence: number;
+  reserveFuel: number;
+}
+
+interface SimState {
+  mode: Mode;
+  missionMinute: number;
+  running: boolean;
+  speed: 1 | 2 | 4;
+  resilience: number;
+  publicConfidence: number;
+  supplyHealth: number;
+  cyberPosture: number;
+  infrastructureHealth: number;
+  score: number;
+  budget: number;
+  allocation: Allocation;
+  assets: MovingAsset[];
+  infrastructure: Infrastructure[];
+  threats: Threat[];
+  feed: FeedItem[];
+  selectedInfrastructure: string | null;
+  selectedAsset: string | null;
+  selectedThreat: string | null;
+  completedObjectives: Set<string>;
+}
+
+const routes: Route[] = [
+  {
+    id: "pacific-sea",
+    name: "Pacific Maritime Corridor",
+    type: "ship",
+    points: [{x:5,y:48},{x:18,y:43},{x:31,y:41},{x:43,y:37},{x:55,y:35},{x:68,y:34},{x:83,y:39},{x:94,y:46}],
+    cargo: "electronics",
+    priority: 2,
+    origin: "Busan",
+    destination: "Tacoma",
+    etaMinutes: 310,
+    risk: 24
+  },
+  {
+    id: "atlantic-sea",
+    name: "Atlantic Relief Corridor",
+    type: "ship",
+    points: [{x:5,y:58},{x:20,y:55},{x:36,y:52},{x:51,y:48},{x:66,y:46},{x:82,y:48},{x:94,y:52}],
+    cargo: "relief",
+    priority: 4,
+    origin: "Rotterdam",
+    destination: "New York",
+    etaMinutes: 260,
+    risk: 18
+  },
+  {
+    id: "polar-air",
+    name: "Polar Air Cargo Route",
+    type: "plane",
+    points: [{x:8,y:31},{x:24,y:22},{x:42,y:18},{x:61,y:20},{x:79,y:27},{x:94,y:34}],
+    cargo: "medical",
+    priority: 5,
+    origin: "Frankfurt",
+    destination: "Seattle",
+    etaMinutes: 140,
+    risk: 16
+  },
+  {
+    id: "continental-rail",
+    name: "Continental Rail Spine",
+    type: "train",
+    points: [{x:9,y:70},{x:25,y:68},{x:40,y:64},{x:55,y:63},{x:70,y:66},{x:91,y:69}],
+    cargo: "fuel",
+    priority: 4,
+    origin: "Los Angeles",
+    destination: "Chicago",
+    etaMinutes: 190,
+    risk: 20
+  },
+  {
+    id: "regional-truck",
+    name: "Regional Distribution Loop",
+    type: "truck",
+    points: [{x:59,y:55},{x:68,y:60},{x:76,y:56},{x:83,y:62},{x:74,y:71},{x:64,y:68},{x:59,y:55}],
+    cargo: "food",
+    priority: 3,
+    origin: "Distribution Campus",
+    destination: "Regional Market",
+    etaMinutes: 75,
+    risk: 14
+  }
+];
+
+const infrastructureTemplate: Infrastructure[] = [
+  { id:"port", name:"Harbor Gateway", short:"PORT", category:"Transportation", x:88, y:45, health:92, capacity:88, dependencies:["rail","data","warehouse"], icon:"⚓" },
+  { id:"airport", name:"Regional Air Cargo Hub", short:"AIR", category:"Transportation", x:82, y:31, health:94, capacity:86, dependencies:["data","power","warehouse"], icon:"✈" },
+  { id:"rail", name:"Inland Rail Junction", short:"RAIL", category:"Transportation", x:69, y:66, health:90, capacity:82, dependencies:["port","power","data"], icon:"▤" },
+  { id:"warehouse", name:"Distribution Campus", short:"DC", category:"Supply Chain", x:60, y:56, health:91, capacity:79, dependencies:["port","rail","airport","data"], icon:"▣" },
+  { id:"data", name:"Logistics Data Exchange", short:"DATA", category:"Cyber", x:73, y:50, health:89, capacity:92, dependencies:["power"], icon:"⌁" },
+  { id:"power", name:"Regional Power Grid", short:"GRID", category:"Utilities", x:52, y:68, health:93, capacity:84, dependencies:["fuel","data"], icon:"⚡" },
+  { id:"fuel", name:"Fuel Distribution Terminal", short:"FUEL", category:"Energy", x:45, y:61, health:88, capacity:75, dependencies:["port","rail","power"], icon:"◆" },
+  { id:"water", name:"Water Treatment Plant", short:"WATER", category:"Utilities", x:79, y:74, health:95, capacity:89, dependencies:["power","data"], icon:"◉" }
+];
+
+const poiTemplate: POI[] = [
+  { id:"hospital", name:"Regional Medical Center", type:"hospital", x:87, y:64, people:1850, criticality:5, icon:"✚" },
+  { id:"stadium", name:"Metro Stadium", type:"stadium", x:73, y:78, people:42000, criticality:4, icon:"◫" },
+  { id:"eoc", name:"Emergency Operations Center", type:"eoc", x:64, y:42, people:160, criticality:5, icon:"◎" },
+  { id:"school", name:"Civic School District", type:"school", x:92, y:76, people:7200, criticality:3, icon:"⌂" },
+  { id:"datacenter", name:"Cloud Availability Zone", type:"data", x:56, y:45, people:80, criticality:5, icon:"▦" }
+];
+
+const threatTemplates: Threat[] = [
+  {
+    id:"ai-phish",
+    type:"ai",
+    title:"AI-enabled spearphishing campaign",
+    summary:"Synthetic voice and highly tailored messages are targeting logistics supervisors and emergency-management partners.",
+    target:"data",
+    severity:"elevated",
+    active:false,
+    discovered:false,
+    timer:7,
+    spread:1.5
+  },
+  {
+    id:"port-ransomware",
+    type:"cyber",
+    title:"Ransomware affecting port scheduling",
+    summary:"Gate appointments and container-location services are degrading while terminal operations remain partially available.",
+    target:"port",
+    severity:"high",
+    active:false,
+    discovered:false,
+    timer:14,
+    spread:2.2
+  },
+  {
+    id:"rail-flood",
+    type:"weather",
+    title:"Flooding threatens rail corridor",
+    summary:"Rapid river rise is undermining a bridge approach and reducing freight capacity inland.",
+    target:"rail",
+    severity:"high",
+    active:false,
+    discovered:true,
+    timer:22,
+    spread:1.7
+  },
+  {
+    id:"stadium-gathering",
+    type:"crowd",
+    title:"Large public gathering increases demand",
+    summary:"A sold-out championship event will strain transportation, emergency medical, communications, and public-safety resources.",
+    target:"stadium",
+    severity:"guarded",
+    active:false,
+    discovered:true,
+    timer:34,
+    spread:1.1
+  },
+  {
+    id:"grid-anomaly",
+    type:"infrastructure",
+    title:"Power-grid control anomaly",
+    summary:"Automated protection systems are reporting irregular commands at two substations that support logistics and water operations.",
+    target:"power",
+    severity:"critical",
+    active:false,
+    discovered:false,
+    timer:45,
+    spread:2.8
+  }
+];
+
+const assetTemplate: MovingAsset[] = [
+  { id:"ship-1", callsign:"PACIFIC TRADER", routeId:"pacific-sea", progress:.08, speed:.0017, status:"moving", delay:0 },
+  { id:"ship-2", callsign:"BLUE HORIZON", routeId:"atlantic-sea", progress:.38, speed:.0014, status:"moving", delay:0 },
+  { id:"plane-1", callsign:"MEDAIR 217", routeId:"polar-air", progress:.22, speed:.0038, status:"moving", delay:0 },
+  { id:"plane-2", callsign:"CARGO 804", routeId:"polar-air", progress:.66, speed:.0032, status:"moving", delay:0 },
+  { id:"train-1", callsign:"BNSF 81", routeId:"continental-rail", progress:.17, speed:.0021, status:"moving", delay:0 },
+  { id:"train-2", callsign:"FUEL 44", routeId:"continental-rail", progress:.72, speed:.0018, status:"moving", delay:0 },
+  { id:"truck-1", callsign:"MEDICAL 12", routeId:"regional-truck", progress:.08, speed:.0044, status:"moving", delay:0 },
+  { id:"truck-2", callsign:"FOOD 33", routeId:"regional-truck", progress:.44, speed:.0040, status:"moving", delay:0 },
+  { id:"truck-3", callsign:"RELIEF 07", routeId:"regional-truck", progress:.79, speed:.0037, status:"moving", delay:0 }
+];
 
 const app = document.querySelector<HTMLDivElement>("#app");
-if (!app) throw new Error("Missing #app");
+if (!app) throw new Error("Application root not found.");
 
-const originalNodes: NodeState[] = [
-  { id: "port", name: "Harbor Gateway", label: "PORT", icon: "⚓", role: "Maritime cargo transfer and customs processing", health: 88, x: 16, y: 29, dependencies: ["rail", "warehouse", "digital"] },
-  { id: "rail", name: "Inland Rail Hub", label: "RAIL", icon: "▤", role: "High-volume inland movement and intermodal transfer", health: 86, x: 47, y: 19, dependencies: ["port", "warehouse", "digital"] },
-  { id: "airport", name: "Regional Airfield", label: "AIR", icon: "✈", role: "Time-sensitive and emergency cargo movement", health: 91, x: 81, y: 29, dependencies: ["warehouse", "digital"] },
-  { id: "digital", name: "Logistics Control", label: "DATA", icon: "⌁", role: "Scheduling, inventory visibility, and coordination", health: 89, x: 33, y: 73, dependencies: ["port", "rail", "airport", "warehouse"] },
-  { id: "warehouse", name: "Distribution Campus", label: "DC", icon: "▣", role: "Inventory buffering, cold storage, and fulfillment", health: 84, x: 68, y: 72, dependencies: ["port", "rail", "airport", "digital"] }
-];
-
-const injects: Inject[] = [
-  {
-    category: "Cyber disruption",
-    title: "Port scheduling systems are unavailable",
-    summary: "A ransomware event has disabled gate appointments and container-location systems. The terminal is physically open, but truck queues and cargo uncertainty are growing.",
-    signal: "Average gate processing time increased 240% in 45 minutes.",
-    why: "Modern ports depend on digital coordination as much as cranes and roads. Information failure can stop cargo even when physical infrastructure remains intact.",
-    target: "port", damage: 18,
-    choices: [
-      { title: "Activate offline continuity procedures", description: "Use paper manifests and pre-cleared carrier lists for priority cargo.", cost: { teams: 1, intel: 1 }, resilience: 9, readiness: 6, effects: { port: 15, warehouse: 3 }, lesson: "Rehearsed offline procedures preserve minimum throughput and reduce dependence on a single digital process." },
-      { title: "Restore systems and publish controlled updates", description: "Deploy cyber teams while communicating verified operating status.", cost: { funds: 1, teams: 1 }, resilience: 7, readiness: 7, effects: { port: 11, digital: 7 }, lesson: "Technical recovery works better when operators and partners receive timely, trusted information." },
-      { title: "Close all gates until recovery", description: "Stop processing to avoid data errors and wait for normal systems.", cost: {}, resilience: -8, readiness: -3, effects: { port: -8, rail: -5, warehouse: -6 }, lesson: "A full stop may reduce data errors but transfers disruption into queues, storage limits, and downstream shortages." }
-    ]
-  },
-  {
-    category: "Extreme weather",
-    title: "Flooding closes the primary rail corridor",
-    summary: "A river has overtopped a vulnerable track section. Intermodal containers cannot move inland through the normal corridor for at least 36 hours.",
-    signal: "Rail operator estimates 36–60 hours before inspection clearance.",
-    why: "Rail corridors concentrate large volumes into few routes. One closure can create port congestion and force expensive modal shifts.",
-    target: "rail", damage: 22,
-    choices: [
-      { title: "Use the alternate southern corridor", description: "Reroute priority trains and accept additional transit time.", cost: { funds: 1, intel: 1 }, resilience: 10, readiness: 5, effects: { rail: 16, port: 4 }, lesson: "Redundancy has a normal-day cost but prevents catastrophic dependence on one route." },
-      { title: "Shift critical loads to trucks", description: "Reserve road capacity for medical and high-impact industrial cargo.", cost: { funds: 2, teams: 1 }, resilience: 7, readiness: 4, effects: { rail: 9, warehouse: 7 }, lesson: "Modal substitution is strongest when scarce capacity is reserved for high-value or time-sensitive cargo." },
-      { title: "Hold cargo at the port", description: "Wait for the rail line to reopen and avoid rerouting expense.", cost: {}, resilience: -7, readiness: -2, effects: { port: -10, warehouse: -5 }, lesson: "Waiting may reduce immediate expense, but storage limits turn delay into a cascading network problem." }
-    ]
-  },
-  {
-    category: "Inventory pressure",
-    title: "Warehouse capacity is nearly exhausted",
-    summary: "Inbound cargo is accumulating while outbound transportation remains uneven. Cold storage and labor availability are both constrained.",
-    signal: "Cold-storage utilization is 96%; general storage is 91%.",
-    why: "Warehouses are buffers, not unlimited storage. When capacity is exhausted, delays spread backward to transportation and forward to customers.",
-    target: "warehouse", damage: 20,
-    choices: [
-      { title: "Create a priority allocation cell", description: "Rank cargo by life safety, perishability, and production impact.", cost: { teams: 1, intel: 1 }, resilience: 10, readiness: 8, effects: { warehouse: 17, airport: 3 }, lesson: "Transparent prioritization criteria help limited capacity support the greatest public and economic value." },
-      { title: "Lease temporary overflow capacity", description: "Use commercial space and mobile cold-storage units.", cost: { funds: 2 }, resilience: 7, readiness: 4, effects: { warehouse: 14, port: 3 }, lesson: "Pre-negotiated private-sector agreements make temporary capacity faster and safer to activate." },
-      { title: "Continue first-in, first-out", description: "Process cargo by arrival time without criticality screening.", cost: {}, resilience: -6, readiness: -2, effects: { warehouse: -8, airport: -4 }, lesson: "A neutral queue can produce poor outcomes when low-impact cargo consumes capacity needed by critical supplies." }
-    ]
-  },
-  {
-    category: "Information integrity",
-    title: "Partners report conflicting inventory data",
-    summary: "Three systems disagree on fuel, medical supplies, and replacement components. Leaders cannot confidently determine which shortages are real.",
-    signal: "Critical inventory values differ by more than 18% across systems.",
-    why: "Resilience depends on trustworthy shared information. Incorrect data can waste scarce transportation and response resources.",
-    target: "digital", damage: 21,
-    choices: [
-      { title: "Build a verified common operating picture", description: "Reconcile priority items using named owners, timestamps, and confidence levels.", cost: { teams: 1, intel: 2 }, resilience: 11, readiness: 9, effects: { digital: 18, warehouse: 5, airport: 3 }, lesson: "A common operating picture should show source, timestamp, owner, and confidence—not only a single number." },
-      { title: "Use the largest reported value", description: "Assume the most optimistic inventory dataset is correct.", cost: {}, resilience: -9, readiness: -5, effects: { digital: -9, warehouse: -5 }, lesson: "Optimistic assumptions hide shortages and delay corrective action. Provenance and confidence matter." },
-      { title: "Pause until every number matches", description: "Require full agreement before allocating resources.", cost: { intel: 1 }, resilience: -2, readiness: 2, effects: { digital: 6, port: -4, airport: -3 }, lesson: "Perfect information is rarely available during disruption. Decision thresholds must account for uncertainty." }
-    ]
-  },
-  {
-    category: "Humanitarian priority",
-    title: "Airport capacity is needed for urgent medicine",
-    summary: "Road delays threaten delivery of time-sensitive medicine. The airport can support an air bridge, but ramp space, crews, and funding are limited.",
-    signal: "Two hospitals reach minimum medical inventory in 14 hours.",
-    why: "Air transport is expensive but valuable when delay has a high human cost. Resilience means matching transport mode to consequence.",
-    target: "airport", damage: 19,
-    choices: [
-      { title: "Open a limited medical air bridge", description: "Reserve flights for medicines and critical repair components.", cost: { funds: 2, teams: 1 }, resilience: 12, readiness: 7, effects: { airport: 18, warehouse: 4 }, lesson: "Air bridges work best when tightly prioritized and integrated with ground distribution at both ends." },
-      { title: "Use air capacity for all delayed cargo", description: "Attempt broad substitution for disrupted surface transport.", cost: { funds: 3, teams: 2 }, resilience: 2, readiness: 1, effects: { airport: 9 }, lesson: "Air capacity cannot economically replace high-volume surface networks. Broad use quickly consumes scarce resources." },
-      { title: "Wait for roads to normalize", description: "Avoid air-transport costs and continue normal routing.", cost: {}, resilience: -10, readiness: -4, effects: { airport: -6, warehouse: -6 }, lesson: "Cost avoidance is not efficient when delay creates severe health, safety, or production consequences." }
-    ]
-  }
-];
-
-let nodes = structuredClone(originalNodes);
-let resources = { funds: 6, teams: 5, intel: 5 };
-let round = 0;
-let resilience = 82;
-let readiness = 52;
-let score = 0;
-let started = false;
-let selected: number | null = null;
-let history: Array<{ inject: Inject; choice: Choice; cascade: string }> = [];
-let timerSeconds = 60;
-let timerId: number | null = null;
-let advisorUsed = false;
-let fogRevealed = false;
-let soundEnabled = true;
-const SAVE_KEY = "resilience-routes-v3-save";
-const achievements = new Set<string>();
+const state: SimState = {
+  mode:"planning",
+  missionMinute:0,
+  running:false,
+  speed:1,
+  resilience:84,
+  publicConfidence:68,
+  supplyHealth:88,
+  cyberPosture:62,
+  infrastructureHealth:91,
+  score:0,
+  budget:12,
+  allocation:{ cyber:2, logistics:2, medical:2, publicSafety:2, intelligence:2, reserveFuel:2 },
+  assets:structuredClone(assetTemplate),
+  infrastructure:structuredClone(infrastructureTemplate),
+  threats:structuredClone(threatTemplates),
+  feed:[],
+  selectedInfrastructure:null,
+  selectedAsset:null,
+  selectedThreat:null,
+  completedObjectives:new Set()
+};
 
 app.innerHTML = `
-<div class="shell">
-  <header class="topbar">
-    <div class="brand"><span>RR</span><div><b>Resilience Routes</b><small>Supply Chain Command Exercise</small></div></div>
-    <div class="status"><i></i><div><b id="top-status">Briefing ready</b><small id="top-substatus">Regional continuity exercise</small></div></div>
-    <div class="header-actions">
-      <button id="resume" class="secondary hidden" type="button">Resume saved mission</button>
-      <button id="settings" class="secondary" type="button">Settings</button>
-      <button id="reset" class="primary" type="button">New mission</button>
-    </div>
-  </header>
-  <aside class="rail">
-    <button class="nav active" data-view="mission" type="button"><span>◈</span><b>Mission</b></button>
-    <button class="nav" data-view="network" type="button"><span>⌘</span><b>Network</b></button>
-    <button class="nav" data-view="guide" type="button"><span>≡</span><b>Guide</b></button>
-    <button class="nav" data-view="resources" type="button"><span>↗</span><b>Learn</b></button>
-    <button class="nav" data-view="team" type="button"><span>◎</span><b>Team</b></button>
-    <button class="nav" data-view="aar" type="button"><span>✓</span><b>Review</b></button>
-  </aside>
-  <main>
-    <section class="view active" data-panel="mission">
-      <div class="hud">
-        <article><span>Network resilience</span><strong id="resilience">82</strong><div class="bar"><i id="resilience-bar"></i></div></article>
-        <article><span>Preparedness</span><strong id="readiness">52</strong><div class="bar"><i id="readiness-bar"></i></div></article>
-        <article><span>Decision cycle</span><strong id="round">0 / 5</strong><small id="round-note">Awaiting launch</small></article>
-        <article><span>Resources</span><div class="resources"><b id="funds">6</b><small>Funds</small><b id="teams">5</b><small>Teams</small><b id="intel">5</b><small>Intel</small></div></article>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">RR</span>
+        <div>
+          <strong>Resilience Routes</strong>
+          <span>Global Operations & Critical Infrastructure Simulator</span>
+        </div>
       </div>
-      <div class="mission-grid">
-        <section class="map-card">
-          <div class="section-head"><div><span class="eyebrow">Live operating picture</span><h1>Regional supply network</h1></div><div class="legend"><span><i class="ok"></i>Stable</span><span><i class="warn"></i>Strained</span><span><i class="bad"></i>Critical</span></div></div>
-          <div id="map" class="map"></div>
-          <div class="map-foot"><span id="map-message">Start the mission to receive the first disruption inject.</span><button id="analyze" type="button">Analyze dependencies →</button></div>
-        </section>
-        <aside class="decision-card">
-          <div id="welcome" class="center-state">
-            <span class="mission-icon">◈</span><span class="eyebrow">Command briefing</span><h2>Can you keep essential goods moving?</h2>
-            <p>Respond to five connected disruptions. Every choice changes node health, consumes resources, and can cause cascading effects.</p>
-            <div class="brief"><div><b>5</b><span>Injects</span></div><div><b>3</b><span>Resources</span></div><div><b>1</b><span>Network</span></div></div>
-            <button id="start" class="primary wide" type="button">Begin command exercise</button>
-          </div>
-          <div id="inject" class="inject hidden">
-            <div class="inject-top"><span id="category" class="eyebrow"></span><div class="inject-meta"><span id="timer" class="timer-pill">01:00</span><span id="inject-count" class="pill"></span></div></div>
-            <h2 id="title"></h2><p id="summary" class="summary"></p>
-            <div id="fog-panel" class="fog-panel">
-              <div><span>INFORMATION STATUS</span><b>Operational picture incomplete</b></div>
-              <button id="reveal-intel" class="secondary compact" type="button">Spend 1 intel to verify</button>
-            </div>
-            <div id="signal-panel" class="signal hidden"><span>VERIFIED SIGNAL</span><b id="signal"></b></div>
-            <div class="advisor-panel">
-              <div><span class="eyebrow">Advisor perspectives</span><small>One advisor consultation per inject. Costs 1 intel.</small></div>
-              <div class="advisor-buttons">
-                <button type="button" data-advisor="logistics">Logistics</button>
-                <button type="button" data-advisor="cyber">Cyber</button>
-                <button type="button" data-advisor="public">Public safety</button>
+
+      <div class="mission-status">
+        <span class="status-light"></span>
+        <div>
+          <b id="mission-title">Mission planning</b>
+          <small id="mission-subtitle">Pacific Northwest continuity exercise</small>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button id="help-button" class="secondary-button" type="button">Mission guide</button>
+        <button id="new-mission" class="primary-button" type="button">New mission</button>
+      </div>
+    </header>
+
+    <aside class="side-nav" aria-label="Simulator sections">
+      <button class="nav-button active" data-view="operations" type="button"><span>◈</span><b>Ops</b></button>
+      <button class="nav-button" data-view="threats" type="button"><span>⌁</span><b>Threats</b></button>
+      <button class="nav-button" data-view="infrastructure" type="button"><span>▦</span><b>Assets</b></button>
+      <button class="nav-button" data-view="learning" type="button"><span>◎</span><b>Learn</b></button>
+      <button class="nav-button" data-view="team" type="button"><span>◫</span><b>Team</b></button>
+      <button class="nav-button" data-view="review" type="button"><span>✓</span><b>Review</b></button>
+    </aside>
+
+    <main class="workspace">
+      <section id="operations-view" class="view active">
+        <div class="metrics-row">
+          <article class="metric-card"><span>Network resilience</span><strong id="resilience-metric">84</strong><div class="meter"><i id="resilience-bar"></i></div></article>
+          <article class="metric-card"><span>Supply health</span><strong id="supply-metric">88</strong><div class="meter"><i id="supply-bar"></i></div></article>
+          <article class="metric-card"><span>Cyber posture</span><strong id="cyber-metric">62</strong><div class="meter"><i id="cyber-bar"></i></div></article>
+          <article class="metric-card"><span>Public confidence</span><strong id="confidence-metric">68</strong><div class="meter"><i id="confidence-bar"></i></div></article>
+          <article class="metric-card time-card"><span>Mission clock</span><strong id="mission-clock">T+00:00</strong><small id="simulation-state">Paused for planning</small></article>
+        </div>
+
+        <div class="operations-grid">
+          <section class="map-card">
+            <div class="panel-heading">
+              <div><span class="eyebrow">Common operating picture</span><h1>Living logistics and infrastructure network</h1></div>
+              <div class="map-controls">
+                <button id="toggle-routes" class="chip-button active" type="button">Routes</button>
+                <button id="toggle-poi" class="chip-button active" type="button">POIs</button>
+                <button id="toggle-threats" class="chip-button active" type="button">Threats</button>
               </div>
-              <p id="advisor-output">Consult an advisor for a perspective—not a guaranteed answer.</p>
             </div>
-            <button id="why-button" class="why-button" type="button" aria-expanded="false">Why this matters <span>＋</span></button><p id="why" class="why hidden"></p>
-            <div id="choices" class="choices"></div>
-            <div class="decision-foot"><p id="help">Select a response to review its cost and effect.</p><button id="commit" class="primary wide" type="button" disabled>Commit decision</button></div>
-          </div>
-          <div id="result" class="result hidden"><span id="result-tag" class="pill"></span><h2 id="result-title"></h2><p id="lesson"></p><div id="effects" class="effects"></div><div class="cascade"><span>CASCADING EFFECT</span><p id="cascade"></p></div><button id="continue" class="primary wide" type="button">Continue</button></div>
-        </aside>
-      </div>
-      <section class="timeline-card"><div class="section-head compact"><div><span class="eyebrow">Exercise progression</span><h2>Decision timeline</h2></div><span id="score" class="pill">Score 0</span></div><div id="timeline" class="timeline"></div></section>
-    </section>
-    <section class="view" data-panel="network"><div class="page-head"><div><span class="eyebrow">Dependency analysis</span><h1>How disruption moves through the network</h1></div><p>Select a node to inspect its condition and dependencies.</p></div><div class="analysis"><div id="analysis-map" class="map analysis-map"></div><aside id="inspector" class="inspector"></aside></div></section>
-    <section class="view" data-panel="guide">
-      <div class="page-head"><div><span class="eyebrow">Exercise guide</span><h1>Mission and learning intent</h1></div><p>Built for students, emergency managers, cybersecurity professionals, and supply-chain teams.</p></div>
-      <article class="hero"><span class="eyebrow">Mission objective</span><h2>Maintain movement of essential goods while the network absorbs multiple shocks.</h2><p>Strong decisions balance continuity, life safety, cost, trusted information, redundancy, public-private coordination, and future readiness.</p></article>
-      <div class="guide-grid"><article><b>01</b><h3>Read the signal</h3><p>Separate verified operational facts from assumptions and rumors.</p></article><article><b>02</b><h3>Check dependencies</h3><p>Trace which infrastructure nodes, communities, and industries will be affected next.</p></article><article><b>03</b><h3>Spend deliberately</h3><p>Funds, response teams, and intelligence are limited. Every allocation creates an opportunity cost.</p></article><article><b>04</b><h3>Build readiness</h3><p>Choose actions that improve procedures, partnerships, redundancy, and the next response.</p></article></div>
-      <article class="learning-panel"><span class="eyebrow">Facilitated team play</span><h2>Assign roles before committing a decision</h2><div class="role-pills"><span>Incident commander</span><span>Logistics lead</span><span>Cyber lead</span><span>Public-safety lead</span><span>Finance lead</span><span>Intelligence lead</span></div><p>Each role should recommend an action and explain its tradeoff. The group must agree—or the incident commander must decide—before the response is committed.</p></article>
-    </section>
+            <div id="live-map" class="live-map" aria-label="Animated simulated logistics network"></div>
+            <div class="map-footer">
+              <div id="ticker" class="ticker">Allocate preparedness resources, then launch the exercise.</div>
+              <div class="simulation-controls">
+                <button id="pause-play" class="primary-button compact" type="button">Launch exercise</button>
+                <button class="speed-button active" data-speed="1" type="button">1×</button>
+                <button class="speed-button" data-speed="2" type="button">2×</button>
+                <button class="speed-button" data-speed="4" type="button">4×</button>
+              </div>
+            </div>
+          </section>
 
-    <section class="view" data-panel="resources">
-      <div class="page-head"><div><span class="eyebrow">Learning library</span><h1>Official resources and further study</h1></div><p>Use these public resources to connect the simulation to real planning, data, cybersecurity, transportation, and continuity practices.</p></div>
-      <div class="resource-library">
-        <article><span class="resource-agency">FEMA</span><h2>National Risk Index</h2><p>Explore community-level natural-hazard risk, expected annual loss, social vulnerability, and resilience.</p><a href="https://hazards.fema.gov/nri/" target="_blank" rel="noreferrer">Open FEMA National Risk Index ↗</a></article>
-        <article><span class="resource-agency">FEMA</span><h2>Resilience Analysis and Planning Tool</h2><p>Use a public GIS tool to visualize population, infrastructure, and resilience considerations for planning.</p><a href="https://rapt-fema.hub.arcgis.com/" target="_blank" rel="noreferrer">Open FEMA RAPT ↗</a></article>
-        <article><span class="resource-agency">Ready.gov</span><h2>Business emergency planning</h2><p>Review continuity, crisis communications, emergency response, and IT disaster-recovery guidance.</p><a href="https://www.ready.gov/business/emergency-plans" target="_blank" rel="noreferrer">Open Ready.gov planning guidance ↗</a></article>
-        <article><span class="resource-agency">U.S. DOT</span><h2>National Freight Strategic Plan</h2><p>Learn how national freight policy addresses safety, efficiency, resilience, security, innovation, and workforce needs.</p><a href="https://www.transportation.gov/freight/NFSP" target="_blank" rel="noreferrer">Open the National Freight Strategic Plan ↗</a></article>
-        <article><span class="resource-agency">U.S. DOT</span><h2>Freight and logistics supply-chain assessment</h2><p>Review transportation vulnerabilities, stakeholder findings, and policy responses intended to strengthen freight resilience.</p><a href="https://www.transportation.gov/supplychains" target="_blank" rel="noreferrer">Open the supply-chain assessment ↗</a></article>
-        <article><span class="resource-agency">U.S. DOT</span><h2>National Transportation Recovery Strategy</h2><p>Study roles and recommendations for restoring transportation networks following a major disaster.</p><a href="https://www.transportation.gov/disaster-recovery" target="_blank" rel="noreferrer">Open transportation recovery resources ↗</a></article>
-        <article><span class="resource-agency">CISA</span><h2>Cybersecurity and infrastructure security</h2><p>Explore guidance for critical infrastructure, cyber resilience, incident response, and supply-chain risk management.</p><a href="https://www.cisa.gov/topics/critical-infrastructure-security-and-resilience" target="_blank" rel="noreferrer">Open CISA infrastructure resources ↗</a></article>
-        <article><span class="resource-agency">NIST</span><h2>Cybersecurity Framework</h2><p>Connect cyber decisions to governance, identification, protection, detection, response, and recovery outcomes.</p><a href="https://www.nist.gov/cyberframework" target="_blank" rel="noreferrer">Open the NIST Cybersecurity Framework ↗</a></article>
-      </div>
-      <div class="resource-note"><strong>Educational-use notice:</strong> Resilience Routes is a learning simulation, not an operational decision-support system. External resources remain under their issuing agencies and should be checked for current guidance before professional use.</div>
-    </section>
+          <aside class="command-panel">
+            <div id="planning-panel">
+              <span class="eyebrow">Preparedness phase</span>
+              <h2>Allocate limited capability before disruption begins.</h2>
+              <p>Your starting investments influence how quickly the network detects, absorbs, and recovers from cyber and physical incidents.</p>
+              <div id="allocation-list" class="allocation-list"></div>
+              <div class="budget-line"><span>Remaining budget</span><strong id="budget-value">12</strong></div>
+              <button id="start-exercise" class="primary-button wide" type="button">Confirm plan and launch</button>
+            </div>
 
-    <section class="view" data-panel="team">
-      <div class="page-head"><div><span class="eyebrow">Project contributors</span><h1>One shared product, distinct areas of expertise</h1></div><p>Contributor descriptions document the project structure and should be updated as work is submitted, reviewed, and merged.</p></div>
-      <div class="team-grid">
-        <article><span>Prototype, integration, and hazards</span><h2>James Daniels</h2><p>Repository setup, browser prototype, deployment, game integration, hazard mechanics, documentation structure, and release coordination.</p><em>Current status: implemented foundation and game-ready releases.</em></article>
-        <article><span>Game design and global trade</span><h2>Kristina-Marie Horton</h2><p>Core game loop, rules, win and loss conditions, resource categories, trade relationships, and alignment with the tabletop concept.</p><em>Credit specific accepted work in pull requests and the changelog.</em></article>
-        <article><span>Visual design</span><h2>A'zariah Turner</h2><p>Original visual direction, map style, icons, layout, accessible presentation, and consistent visual identity.</p><em>Replace placeholder symbols with approved original or licensed assets.</em></article>
-        <article><span>Infrastructure research</span><h2>Lauren Hession</h2><p>Ports, rail, aviation, roads, warehousing, chokepoints, dependencies, alternate routes, and infrastructure consequences.</p><em>Document reviewed node research in scenario issues.</em></article>
-        <article><span>Content and writing</span><h2>Rachel Farlinger</h2><p>Opening instructions, scenario language, why/how/when/where explanations, card wording, rules, and after-action questions.</p><em>Review all player-facing text for clarity and consistent terminology.</em></article>
-        <article><span>U.S. scale and domestic injects</span><h2>Justin Ngo</h2><p>State and regional scenarios, domestic inject cards, exercise audiences, learning objectives, and evaluation measures.</p><em>Initial role interest documented; scope should be confirmed by the team.</em></article>
-        <article><span>Program concept and direction</span><h2>Sunny Wescott</h2><p>Originating concept, intended audience, project framing, tabletop and digital relationship, and emergency-management toolkit direction.</p><em>Final product decisions remain subject to team and program approval.</em></article>
-        <article><span>Mentorship and operational context</span><h2>John P. Farrell</h2><p>Mentor perspective, operational resilience context, emergency-management relevance, and professional feedback.</p><em>Credit guidance without implying agency endorsement.</em></article>
-      </div>
-      <article class="credit-policy"><span class="eyebrow">Contribution policy</span><h2>Credit work that is actually delivered</h2><p>Role assignments are not the same as authorship. Every merged contribution should identify the contributor, files or content supplied, reviewer, date, and related issue or pull request. Government agencies linked in this project do not sponsor or endorse the simulation.</p><a href="https://github.com/jamdanie/resilience-routes" target="_blank" rel="noreferrer">View repository and contribution history ↗</a></article>
-    </section>
-    <section class="view" data-panel="aar">
-      <div class="page-head">
-        <div><span class="eyebrow">After-action review</span><h1>Performance and decision record</h1></div>
-        <div class="aar-actions"><button id="print-aar" class="secondary" type="button">Print / Save PDF</button><button id="export-aar" class="secondary" type="button">Export JSON</button></div>
-      </div>
-      <div id="aar"></div>
-    </section>
-  </main>
-  <div id="toast" class="toast"></div>
-  <div id="settings-modal" class="modal-backdrop hidden">
-    <section class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
-      <div class="modal-head"><div><span class="eyebrow">Simulation settings</span><h2 id="settings-title">Mission configuration</h2></div><button id="close-settings" class="icon-button" type="button" aria-label="Close settings">×</button></div>
-      <label>Decision time
-        <select id="timer-setting">
-          <option value="45">45 seconds</option>
-          <option value="60" selected>60 seconds</option>
-          <option value="90">90 seconds</option>
-          <option value="0">Untimed</option>
-        </select>
-      </label>
-      <label class="check-row"><input id="sound-setting" type="checkbox" checked> Enable interface sound cues</label>
-      <label class="check-row"><input id="motion-setting" type="checkbox" checked> Enable animation and motion</label>
-      <p>Settings apply to the next inject. This version stores mission progress only in this browser.</p>
-      <button id="save-settings" class="primary wide" type="button">Save settings</button>
-    </section>
+            <div id="active-panel" class="hidden">
+              <div class="panel-heading tight">
+                <div><span class="eyebrow">Command decisions</span><h2 id="active-title">Monitor the operating picture</h2></div>
+                <span id="threat-level" class="threat-level guarded">Guarded</span>
+              </div>
+              <div id="active-detail" class="active-detail">
+                <p>Select a threat, infrastructure node, or moving shipment to inspect it.</p>
+              </div>
+              <div class="advisor-tabs">
+                <button class="advisor-tab active" data-advisor="logistics" type="button">Logistics</button>
+                <button class="advisor-tab" data-advisor="cyber" type="button">Cyber</button>
+                <button class="advisor-tab" data-advisor="public" type="button">Public safety</button>
+              </div>
+              <div id="advisor-message" class="advisor-message">Logistics advisor: protect medical, food, fuel, and restoration cargo before optimizing general throughput.</div>
+              <div id="decision-actions" class="decision-actions"></div>
+            </div>
+          </aside>
+        </div>
+
+        <div class="lower-grid">
+          <section class="feed-card">
+            <div class="panel-heading tight"><div><span class="eyebrow">Live operational feed</span><h2>Events and intelligence</h2></div><button id="clear-feed" class="text-button" type="button">Clear</button></div>
+            <div id="event-feed" class="event-feed"></div>
+          </section>
+
+          <section class="objectives-card">
+            <div class="panel-heading tight"><div><span class="eyebrow">Mission objectives</span><h2>Protect essential services</h2></div><span id="score-badge" class="score-badge">Score 0</span></div>
+            <div id="objectives-list" class="objectives-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="threats-view" class="view">
+        <div class="page-heading"><div><span class="eyebrow">Threat intelligence</span><h1>Cyber, AI-enabled, physical, and crowd risks</h1></div><p>Threats are simulated for education. They do not represent live incidents or operational intelligence.</p></div>
+        <div id="threat-catalog" class="catalog-grid"></div>
+      </section>
+
+      <section id="infrastructure-view" class="view">
+        <div class="page-heading"><div><span class="eyebrow">Critical infrastructure</span><h1>Dependencies and points of interest</h1></div><p>Examine the systems that move essential goods and support public safety.</p></div>
+        <div class="asset-layout">
+          <div id="infrastructure-catalog" class="catalog-grid infrastructure-grid"></div>
+          <aside id="dependency-inspector" class="dependency-inspector"></aside>
+        </div>
+      </section>
+
+      <section id="learning-view" class="view">
+        <div class="page-heading"><div><span class="eyebrow">Learning library</span><h1>Official resilience, infrastructure, and cybersecurity resources</h1></div><p>Use these government resources to connect the simulation to real planning concepts.</p></div>
+        <div class="resource-grid">
+          <a href="https://www.cisa.gov/topics/critical-infrastructure-security-and-resilience" target="_blank" rel="noreferrer"><span>CISA</span><h2>Critical Infrastructure Security and Resilience</h2><p>Sector risk management, resilience, and infrastructure-security guidance.</p></a>
+          <a href="https://www.cisa.gov/topics/cyber-threats-and-advisories" target="_blank" rel="noreferrer"><span>CISA</span><h2>Cyber Threats and Advisories</h2><p>Current public advisories, alerts, and cybersecurity information.</p></a>
+          <a href="https://www.nist.gov/cyberframework" target="_blank" rel="noreferrer"><span>NIST</span><h2>Cybersecurity Framework</h2><p>Organize cybersecurity risk through Govern, Identify, Protect, Detect, Respond, and Recover.</p></a>
+          <a href="https://www.fema.gov/emergency-managers/risk-management" target="_blank" rel="noreferrer"><span>FEMA</span><h2>Risk Management</h2><p>Hazard risk, mitigation, continuity, and resilience resources.</p></a>
+          <a href="https://www.ready.gov/business" target="_blank" rel="noreferrer"><span>Ready.gov</span><h2>Business Preparedness</h2><p>Continuity planning, emergency response, crisis communication, and recovery.</p></a>
+          <a href="https://www.transportation.gov/freight" target="_blank" rel="noreferrer"><span>USDOT</span><h2>Freight Policy and Planning</h2><p>National freight strategy, logistics, safety, efficiency, and resilience.</p></a>
+          <a href="https://www.faa.gov/air_traffic" target="_blank" rel="noreferrer"><span>FAA</span><h2>Air Traffic</h2><p>Public information about the national airspace and air-traffic operations.</p></a>
+          <a href="https://www.maritime.dot.gov/" target="_blank" rel="noreferrer"><span>MARAD</span><h2>Maritime Administration</h2><p>Maritime transportation, ports, sealift, and supply-chain resources.</p></a>
+        </div>
+        <div class="disclaimer-callout"><strong>Educational simulation</strong><p>The moving ships, aircraft, trains, trucks, attacks, crowds, and infrastructure conditions in this project are fictional. This application is not a live tracker, emergency warning system, routing tool, or government decision-support platform.</p></div>
+      </section>
+
+      <section id="team-view" class="view">
+        <div class="page-heading"><div><span class="eyebrow">Project contributors</span><h1>Roles, direction, and attribution</h1></div><p>Credit reflects the project’s current role structure and should be updated as reviewed contributions are merged.</p></div>
+        <div class="team-grid">
+          <article><span>Originating concept and program direction</span><h2>Sunny Wescott</h2><p>Defined the educational vision connecting global supply chains, hazards, infrastructure, resource sharing, and resilience.</p></article>
+          <article><span>Prototype, integration, hazards, and deployment</span><h2>James Daniels</h2><p>Application architecture, simulation implementation, GitHub deployment, scenario integration, and release coordination.</p></article>
+          <article><span>Game design and global trade</span><h2>Kristina-Marie Horton</h2><p>Game mechanics, global trade relationships, resource logic, win conditions, and tabletop alignment.</p></article>
+          <article><span>Visual design</span><h2>A'zariah Turner</h2><p>Visual direction, map concepts, original assets, icons, and interface consistency.</p></article>
+          <article><span>Infrastructure research</span><h2>Lauren Hession</h2><p>Ports, airports, rail, highways, chokepoints, dependencies, and alternate routes.</p></article>
+          <article><span>Content and writing</span><h2>Rachel Farlinger</h2><p>Rules, learning text, scenario wording, facilitator material, and after-action prompts.</p></article>
+          <article><span>U.S. scale and domestic injects</span><h2>Justin Ngo</h2><p>State and regional scenarios, domestic inject cards, and U.S.-scale exercise content.</p></article>
+          <article><span>Mentorship and operational context</span><h2>John P. Farrell</h2><p>Mentor guidance informed by emergency management, homeland security, and wildfire-tracking experience.</p></article>
+        </div>
+      </section>
+
+      <section id="review-view" class="view">
+        <div class="page-heading"><div><span class="eyebrow">After-action review</span><h1>Mission performance and lessons learned</h1></div><div><button id="print-review" class="secondary-button" type="button">Print / Save PDF</button></div></div>
+        <div id="review-content"></div>
+      </section>
+    </main>
+
+    <div id="guide-modal" class="modal-backdrop hidden">
+      <section class="guide-modal" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+        <div class="modal-heading"><div><span class="eyebrow">Mission guide</span><h2 id="guide-title">Living operations exercise</h2></div><button id="close-guide" class="icon-button" type="button">×</button></div>
+        <ol>
+          <li><b>Plan.</b> Allocate limited resources before the exercise begins.</li>
+          <li><b>Observe.</b> Watch simulated logistics move through the network.</li>
+          <li><b>Detect.</b> Threats emerge over time and may initially be hidden.</li>
+          <li><b>Decide.</b> Select incidents or infrastructure and commit response actions.</li>
+          <li><b>Learn.</b> Review cascading consequences and complete an after-action report.</li>
+        </ol>
+        <p>All assets and incidents are simulated. No live aircraft, maritime, or security data is used.</p>
+      </section>
+    </div>
+
+    <div id="toast" class="toast" aria-live="polite"></div>
   </div>
-</div>`;
+`;
 
-const $ = <T extends HTMLElement>(selector: string): T => {
-  const node = document.querySelector<T>(selector);
-  if (!node) throw new Error(`Missing ${selector}`);
-  return node;
-};
-const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
-const level = (health: number) => health < 45 ? "critical" : health < 70 ? "warning" : "stable";
-const node = (id: NodeId) => nodes.find(n => n.id === id)!;
-const affordable = (c: Choice["cost"]) => (c.funds ?? 0) <= resources.funds && (c.teams ?? 0) <= resources.teams && (c.intel ?? 0) <= resources.intel;
-const costText = (c: Choice["cost"]) => {
-  const parts = [c.funds && `${c.funds} funds`, c.teams && `${c.teams} teams`, c.intel && `${c.intel} intel`].filter(Boolean);
-  return parts.length ? parts.join(" · ") : "No immediate resource cost";
+const $ = <T extends HTMLElement = HTMLElement>(selector: string): T => {
+  const item = document.querySelector<T>(selector);
+  if (!item) throw new Error(`Missing ${selector}`);
+  return item;
 };
 
+const objectives = [
+  { id:"hospital", text:"Keep the regional hospital supplied", check:() => routeCargoHealth("medical") >= 55 && poiTemplate.find(p=>p.id==="hospital")!.criticality > 0 },
+  { id:"water", text:"Keep water treatment above 55% health", check:() => infra("water").health >= 55 },
+  { id:"cyber", text:"Prevent cyber posture from falling below 35", check:() => state.cyberPosture >= 35 },
+  { id:"confidence", text:"Maintain public confidence above 45", check:() => state.publicConfidence >= 45 },
+  { id:"supply", text:"Complete the mission with supply health above 60", check:() => state.supplyHealth >= 60 && state.missionMinute >= 60 }
+];
 
-type SavedState = {
-  nodes: NodeState[];
-  resources: typeof resources;
-  round: number;
-  resilience: number;
-  readiness: number;
-  score: number;
-  started: boolean;
-  history: Array<{ injectIndex: number; choiceIndex: number; cascade: string }>;
-  timerSeconds: number;
-  achievements: string[];
-};
-
-function playTone(frequency = 520, duration = 0.06) {
-  if (!soundEnabled) return;
-  try {
-    const Context = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-    if (!Context) return;
-    const context = new Context();
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.frequency.value = frequency;
-    gain.gain.value = 0.025;
-    oscillator.connect(gain);
-    gain.connect(context.destination);
-    oscillator.start();
-    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
-    oscillator.stop(context.currentTime + duration);
-  } catch {
-    // Audio is optional.
-  }
+function infra(id: string): Infrastructure {
+  const result = state.infrastructure.find(item => item.id === id);
+  if (!result) throw new Error(`Unknown infrastructure ${id}`);
+  return result;
 }
 
-function saveGame() {
-  const saved: SavedState = {
-    nodes,
-    resources,
-    round,
-    resilience,
-    readiness,
-    score,
-    started,
-    history: history.map(record => ({
-      injectIndex: injects.indexOf(record.inject),
-      choiceIndex: record.inject.choices.indexOf(record.choice),
-      cascade: record.cascade
-    })),
-    timerSeconds,
-    achievements: [...achievements]
+function routeForAsset(asset: MovingAsset): Route {
+  const route = routes.find(item => item.id === asset.routeId);
+  if (!route) throw new Error(`Unknown route ${asset.routeId}`);
+  return route;
+}
+
+function routeCargoHealth(cargo: CargoType): number {
+  const matching = state.assets.filter(asset => routeForAsset(asset).cargo === cargo);
+  if (!matching.length) return 100;
+  const avgDelay = matching.reduce((sum, asset) => sum + asset.delay, 0) / matching.length;
+  return Math.max(0, Math.round(100 - avgDelay * 2.2));
+}
+
+function clamp(value: number): number {
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function missionTime(): string {
+  const total = state.missionMinute;
+  return `T+${String(Math.floor(total / 60)).padStart(2,"0")}:${String(total % 60).padStart(2,"0")}`;
+}
+
+function interpolate(points: Point[], progress: number): Point {
+  if (points.length < 2) return points[0] ?? {x:0,y:0};
+  const segments = points.length - 1;
+  const scaled = Math.max(0, Math.min(.999999, progress)) * segments;
+  const index = Math.floor(scaled);
+  const local = scaled - index;
+  const a = points[index];
+  const b = points[index + 1];
+  return { x:a.x + (b.x-a.x)*local, y:a.y + (b.y-a.y)*local };
+}
+
+function assetIcon(type: AssetType): string {
+  return type === "ship" ? "▰" : type === "plane" ? "✈" : type === "train" ? "▤" : "▱";
+}
+
+function cargoLabel(cargo: CargoType): string {
+  return cargo.charAt(0).toUpperCase() + cargo.slice(1);
+}
+
+function severityRank(level: Severity): number {
+  return {low:1,guarded:2,elevated:3,high:4,critical:5}[level];
+}
+
+function currentThreatLevel(): Severity {
+  const active = state.threats.filter(item => item.active);
+  if (!active.length) return "guarded";
+  return active.sort((a,b)=>severityRank(b.severity)-severityRank(a.severity))[0].severity;
+}
+
+function addFeed(text: string, level: FeedItem["level"]="info"): void {
+  state.feed.unshift({time:missionTime(), level, text});
+  state.feed = state.feed.slice(0, 30);
+  renderFeed();
+}
+
+function renderAllocations(): void {
+  const container = $("#allocation-list");
+  const labels: Record<keyof Allocation, string> = {
+    cyber:"Cyber teams",
+    logistics:"Logistics coordination",
+    medical:"Medical surge",
+    publicSafety:"Public safety",
+    intelligence:"Intelligence",
+    reserveFuel:"Reserve fuel"
   };
-  localStorage.setItem(SAVE_KEY, JSON.stringify(saved));
-  const resume = document.querySelector<HTMLButtonElement>("#resume");
-  if (resume) resume.classList.toggle("hidden", !started && history.length === 0);
+  container.innerHTML = (Object.keys(state.allocation) as Array<keyof Allocation>).map(key => `
+    <div class="allocation-row">
+      <div><b>${labels[key]}</b><small>${allocationDescription(key)}</small></div>
+      <div class="stepper">
+        <button type="button" data-allocation="${key}" data-direction="-1">−</button>
+        <strong>${state.allocation[key]}</strong>
+        <button type="button" data-allocation="${key}" data-direction="1">+</button>
+      </div>
+    </div>
+  `).join("");
+  container.querySelectorAll<HTMLButtonElement>("[data-allocation]").forEach(button => {
+    button.addEventListener("click", () => {
+      if (state.running) return;
+      const key = button.dataset.allocation as keyof Allocation;
+      const direction = Number(button.dataset.direction);
+      if (direction > 0 && state.budget <= 0) return showToast("No planning budget remains");
+      if (direction < 0 && state.allocation[key] <= 0) return;
+      state.allocation[key] += direction;
+      state.budget -= direction;
+      renderAllocations();
+      updateMetrics();
+    });
+  });
 }
 
-function loadGame() {
-  const raw = localStorage.getItem(SAVE_KEY);
-  if (!raw) return false;
-  try {
-    const saved = JSON.parse(raw) as SavedState;
-    nodes = saved.nodes;
-    resources = saved.resources;
-    round = saved.round;
-    resilience = saved.resilience;
-    readiness = saved.readiness;
-    score = saved.score;
-    started = saved.started;
-    timerSeconds = saved.timerSeconds ?? 60;
-    achievements.clear();
-    (saved.achievements ?? []).forEach(item => achievements.add(item));
-    history = saved.history.map(record => ({
-      inject: injects[record.injectIndex],
-      choice: injects[record.injectIndex].choices[record.choiceIndex],
-      cascade: record.cascade
-    }));
-    update();
-    if (started && round < injects.length) showInject(false);
-    else if (history.length) finish();
-    toast("Saved mission restored");
-    return true;
-  } catch {
-    localStorage.removeItem(SAVE_KEY);
-    return false;
+function allocationDescription(key: keyof Allocation): string {
+  const descriptions: Record<keyof Allocation,string> = {
+    cyber:"Detection, segmentation, recovery, and identity protection",
+    logistics:"Rerouting, carrier coordination, and throughput restoration",
+    medical:"Hospital support, medical cargo, and surge capacity",
+    publicSafety:"Crowd safety, traffic, emergency response, and communication",
+    intelligence:"Earlier threat discovery and clearer operating information",
+    reserveFuel:"Power, transport, generators, and continuity operations"
+  };
+  return descriptions[key];
+}
+
+function renderMap(): void {
+  const map = $("#live-map");
+  const routeSvg = routes.map(route => {
+    const path = route.points.map((point,index)=>`${index===0?"M":"L"} ${point.x} ${point.y}`).join(" ");
+    return `<path class="route-line ${route.type}" data-route="${route.id}" d="${path}" />`;
+  }).join("");
+
+  const infrastructureHtml = state.infrastructure.map(node => `
+    <button class="infra-marker ${node.health < 40 ? "critical" : node.health < 65 ? "warning" : ""}" style="left:${node.x}%;top:${node.y}%;" data-infra="${node.id}" type="button">
+      <span>${node.icon}</span><div><small>${node.short}</small><b>${node.name}</b></div><strong>${node.health}</strong>
+    </button>
+  `).join("");
+
+  const poiHtml = poiTemplate.map(poi => `
+    <button class="poi-marker" style="left:${poi.x}%;top:${poi.y}%;" data-poi="${poi.id}" type="button" title="${poi.name}">
+      <span>${poi.icon}</span><small>${poi.name}</small>
+    </button>
+  `).join("");
+
+  const threatsHtml = state.threats.filter(item => item.active && item.discovered).map(threat => {
+    const targetInfra = state.infrastructure.find(item=>item.id===threat.target);
+    const targetPoi = poiTemplate.find(item=>item.id===threat.target);
+    const x = targetInfra?.x ?? targetPoi?.x ?? 50;
+    const y = targetInfra?.y ?? targetPoi?.y ?? 50;
+    return `<button class="threat-marker ${threat.severity}" style="left:${x}%;top:${y}%;" data-threat="${threat.id}" type="button"><span>!</span></button>`;
+  }).join("");
+
+  map.innerHTML = `
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="oceanFade" x1="0" x2="1"><stop offset="0" stop-color="#0b1b2d"/><stop offset="1" stop-color="#0c2235"/></linearGradient>
+      </defs>
+      <rect width="100" height="100" fill="url(#oceanFade)"/>
+      <path class="land-mass" d="M4 17 C16 9 31 12 39 23 C44 30 37 37 30 41 C24 45 24 59 18 70 C13 79 5 76 3 63 Z"/>
+      <path class="land-mass" d="M52 11 C62 7 74 10 79 18 C83 24 89 28 97 29 L98 76 C88 82 79 78 74 72 C69 67 63 66 59 60 C54 53 58 42 53 35 C49 28 46 18 52 11 Z"/>
+      <path class="land-detail" d="M7 25 C18 22 29 25 36 31 M12 52 C20 48 25 48 31 55 M60 21 C71 19 82 23 92 31 M63 51 C72 48 84 50 94 58"/>
+      ${routeSvg}
+    </svg>
+    <span class="region-label north-america">NORTH AMERICA</span>
+    <span class="region-label europe">EUROPE</span>
+    <span class="region-label asia">ASIA-PACIFIC</span>
+    <span class="region-label regional">REGIONAL OPERATIONS AREA</span>
+    <div id="assets-layer"></div>
+    <div id="infrastructure-layer">${infrastructureHtml}</div>
+    <div id="poi-layer">${poiHtml}</div>
+    <div id="threat-layer">${threatsHtml}</div>
+  `;
+
+  map.querySelectorAll<HTMLButtonElement>("[data-infra]").forEach(button => button.addEventListener("click",()=>selectInfrastructure(button.dataset.infra!)));
+  map.querySelectorAll<HTMLButtonElement>("[data-poi]").forEach(button => button.addEventListener("click",()=>selectPoi(button.dataset.poi!)));
+  map.querySelectorAll<HTMLButtonElement>("[data-threat]").forEach(button => button.addEventListener("click",()=>selectThreat(button.dataset.threat!)));
+  renderAssets();
+}
+
+function renderAssets(): void {
+  const layer = document.querySelector<HTMLDivElement>("#assets-layer");
+  if (!layer) return;
+  layer.innerHTML = state.assets.map(asset => {
+    const route = routeForAsset(asset);
+    const position = interpolate(route.points, asset.progress);
+    return `
+      <button class="moving-asset ${route.type} ${asset.status}" style="left:${position.x}%;top:${position.y}%;" data-asset="${asset.id}" type="button" title="${asset.callsign}">
+        <span>${assetIcon(route.type)}</span>
+        <small>${asset.callsign}</small>
+      </button>
+    `;
+  }).join("");
+  layer.querySelectorAll<HTMLButtonElement>("[data-asset]").forEach(button=>button.addEventListener("click",()=>selectAsset(button.dataset.asset!)));
+}
+
+function renderFeed(): void {
+  const container = $("#event-feed");
+  if (!state.feed.length) {
+    container.innerHTML = `<div class="empty-feed"><span>◎</span><p>Operational events will appear when the exercise begins.</p></div>`;
+    return;
   }
+  container.innerHTML = state.feed.map(item=>`
+    <article class="feed-item ${item.level}"><time>${item.time}</time><span></span><p>${item.text}</p></article>
+  `).join("");
 }
 
-function formatTimer(seconds: number) {
-  const safe = Math.max(0, seconds);
-  return `${String(Math.floor(safe / 60)).padStart(2, "0")}:${String(safe % 60).padStart(2, "0")}`;
+function renderObjectives(): void {
+  objectives.forEach(objective => {
+    if (objective.check()) state.completedObjectives.add(objective.id);
+    else state.completedObjectives.delete(objective.id);
+  });
+  $("#objectives-list").innerHTML = objectives.map(objective=>`
+    <div class="objective ${state.completedObjectives.has(objective.id) ? "complete" : ""}">
+      <span>${state.completedObjectives.has(objective.id) ? "✓" : "○"}</span><p>${objective.text}</p>
+    </div>
+  `).join("");
 }
 
-function stopTimer() {
-  if (timerId !== null) {
-    window.clearInterval(timerId);
-    timerId = null;
+function updateMetrics(): void {
+  $("#resilience-metric").textContent = String(state.resilience);
+  $("#supply-metric").textContent = String(state.supplyHealth);
+  $("#cyber-metric").textContent = String(state.cyberPosture);
+  $("#confidence-metric").textContent = String(state.publicConfidence);
+  $("#mission-clock").textContent = missionTime();
+  $("#budget-value").textContent = String(state.budget);
+  $("#score-badge").textContent = `Score ${state.score}`;
+  ($("#resilience-bar") as HTMLElement).style.width = `${state.resilience}%`;
+  ($("#supply-bar") as HTMLElement).style.width = `${state.supplyHealth}%`;
+  ($("#cyber-bar") as HTMLElement).style.width = `${state.cyberPosture}%`;
+  ($("#confidence-bar") as HTMLElement).style.width = `${state.publicConfidence}%`;
+  $("#simulation-state").textContent = state.running ? `Running at ${state.speed}×` : state.mode === "review" ? "Exercise complete" : "Paused";
+  const level = currentThreatLevel();
+  const badge = $("#threat-level");
+  badge.textContent = level.charAt(0).toUpperCase() + level.slice(1);
+  badge.className = `threat-level ${level}`;
+  renderObjectives();
+}
+
+function selectInfrastructure(id: string): void {
+  state.selectedInfrastructure = id;
+  state.selectedAsset = null;
+  state.selectedThreat = null;
+  const item = infra(id);
+  $("#active-title").textContent = item.name;
+  $("#active-detail").innerHTML = `
+    <div class="detail-metrics"><div><span>Health</span><b>${item.health}%</b></div><div><span>Capacity</span><b>${item.capacity}%</b></div></div>
+    <p>${item.category} infrastructure supporting ${item.dependencies.map(dep=>infra(dep).short).join(", ") || "regional operations"}.</p>
+    <div class="dependency-list"><span>Dependencies</span>${item.dependencies.map(dep=>`<button type="button" data-jump="${dep}">${infra(dep).name}</button>`).join("")}</div>
+  `;
+  document.querySelectorAll<HTMLButtonElement>("[data-jump]").forEach(button=>button.addEventListener("click",()=>selectInfrastructure(button.dataset.jump!)));
+  renderDecisionActions();
+}
+
+function selectAsset(id: string): void {
+  state.selectedAsset = id;
+  state.selectedInfrastructure = null;
+  state.selectedThreat = null;
+  const asset = state.assets.find(item=>item.id===id)!;
+  const route = routeForAsset(asset);
+  $("#active-title").textContent = asset.callsign;
+  $("#active-detail").innerHTML = `
+    <div class="detail-metrics"><div><span>Status</span><b>${asset.status}</b></div><div><span>Delay</span><b>${asset.delay} min</b></div></div>
+    <p>${cargoLabel(route.cargo)} cargo moving from ${route.origin} to ${route.destination} on the ${route.name}.</p>
+    <div class="asset-facts"><span>Priority ${route.priority}/5</span><span>Route risk ${route.risk}%</span><span>ETA ${Math.max(1, route.etaMinutes + asset.delay)} min</span></div>
+  `;
+  renderDecisionActions();
+}
+
+function selectPoi(id: string): void {
+  const poi = poiTemplate.find(item=>item.id===id)!;
+  state.selectedAsset = null;
+  state.selectedInfrastructure = null;
+  state.selectedThreat = null;
+  $("#active-title").textContent = poi.name;
+  $("#active-detail").innerHTML = `
+    <div class="detail-metrics"><div><span>Population</span><b>${poi.people.toLocaleString()}</b></div><div><span>Criticality</span><b>${poi.criticality}/5</b></div></div>
+    <p>Protected point of interest requiring continuity, emergency access, communication, and resource prioritization.</p>
+  `;
+  renderDecisionActions();
+}
+
+function selectThreat(id: string): void {
+  state.selectedThreat = id;
+  state.selectedAsset = null;
+  state.selectedInfrastructure = null;
+  const threat = state.threats.find(item=>item.id===id)!;
+  $("#active-title").textContent = threat.title;
+  $("#active-detail").innerHTML = `
+    <span class="threat-category">${threat.type.toUpperCase()} THREAT</span>
+    <p>${threat.summary}</p>
+    <div class="detail-metrics"><div><span>Severity</span><b>${threat.severity}</b></div><div><span>Spread</span><b>${threat.spread.toFixed(1)}×</b></div></div>
+  `;
+  renderDecisionActions();
+}
+
+function renderDecisionActions(): void {
+  const container = $("#decision-actions");
+  if (state.selectedThreat) {
+    container.innerHTML = `
+      <button type="button" data-action="contain">Contain and segment</button>
+      <button type="button" data-action="reroute">Protect alternate routes</button>
+      <button type="button" data-action="communicate">Issue coordinated update</button>
+      <button type="button" data-action="investigate">Spend intelligence to investigate</button>
+    `;
+  } else if (state.selectedInfrastructure) {
+    container.innerHTML = `
+      <button type="button" data-action="reinforce">Deploy response team</button>
+      <button type="button" data-action="backup">Activate backup capability</button>
+      <button type="button" data-action="inspect">Conduct rapid assessment</button>
+    `;
+  } else if (state.selectedAsset) {
+    container.innerHTML = `
+      <button type="button" data-action="priority">Set priority movement</button>
+      <button type="button" data-action="hold">Place in safe holding</button>
+      <button type="button" data-action="divert">Divert to alternate route</button>
+    `;
+  } else {
+    container.innerHTML = `<p class="action-placeholder">Select an active object to make a command decision.</p>`;
   }
+  container.querySelectorAll<HTMLButtonElement>("[data-action]").forEach(button=>button.addEventListener("click",()=>performAction(button.dataset.action!)));
 }
 
-function startTimer() {
-  stopTimer();
-  const configured = Number((document.querySelector<HTMLSelectElement>("#timer-setting")?.value ?? "60"));
-  timerSeconds = configured;
-  const timer = document.querySelector<HTMLElement>("#timer");
-  if (!timer) return;
-  timer.textContent = configured === 0 ? "UNTIMED" : formatTimer(timerSeconds);
-  timer.classList.remove("urgent");
-  if (configured === 0) return;
-  timerId = window.setInterval(() => {
-    timerSeconds -= 1;
-    timer.textContent = formatTimer(timerSeconds);
-    timer.classList.toggle("urgent", timerSeconds <= 15);
-    if (timerSeconds <= 0) {
-      stopTimer();
-      resilience = clamp(resilience - 5);
-      readiness = clamp(readiness - 3);
-      achievements.add("Under Pressure");
-      toast("Decision time expired: resilience reduced");
-      if (selected === null) choose(0);
-      commit();
+function performAction(action: string): void {
+  if (!state.running) return showToast("Launch the exercise before issuing operational commands");
+  let cost = 1;
+  if (action === "contain" || action === "backup" || action === "divert") cost = 2;
+  if (state.budget < cost) return showToast("Insufficient response budget");
+  state.budget -= cost;
+
+  if (state.selectedThreat) {
+    const threat = state.threats.find(item=>item.id===state.selectedThreat)!;
+    if (action === "contain") {
+      threat.spread = Math.max(.3, threat.spread - .9 - state.allocation.cyber*.08);
+      state.cyberPosture = clamp(state.cyberPosture + 5);
+      state.score += 120;
+      addFeed(`Containment actions reduced spread of ${threat.title}.`, "success");
+    } else if (action === "reroute") {
+      state.assets.forEach(asset => {
+        if (routeForAsset(asset).priority >= 4) {
+          asset.status = "rerouted";
+          asset.delay = Math.max(0, asset.delay - 6);
+        }
+      });
+      state.supplyHealth = clamp(state.supplyHealth + 4);
+      state.score += 90;
+      addFeed("Priority cargo moved to alternate corridors.", "success");
+    } else if (action === "communicate") {
+      state.publicConfidence = clamp(state.publicConfidence + 7);
+      state.score += 65;
+      addFeed("Coordinated public and partner update issued.", "info");
+    } else if (action === "investigate") {
+      threat.discovered = true;
+      threat.spread = Math.max(.4, threat.spread - .4 - state.allocation.intelligence*.05);
+      state.score += 75;
+      addFeed(`Intelligence cell clarified indicators associated with ${threat.title}.`, "info");
     }
-  }, 1000);
-}
-
-function revealIntel() {
-  if (fogRevealed) return;
-  if (resources.intel < 1) {
-    toast("No intelligence points available");
-    return;
+  } else if (state.selectedInfrastructure) {
+    const item = infra(state.selectedInfrastructure);
+    if (action === "reinforce") {
+      item.health = clamp(item.health + 8 + state.allocation.logistics);
+      state.score += 70;
+      addFeed(`Response team deployed to ${item.name}.`, "success");
+    } else if (action === "backup") {
+      item.capacity = clamp(item.capacity + 10);
+      item.health = clamp(item.health + 4);
+      state.resilience = clamp(state.resilience + 3);
+      state.score += 100;
+      addFeed(`Backup capability activated at ${item.name}.`, "success");
+    } else {
+      item.health = clamp(item.health + 3);
+      state.score += 45;
+      addFeed(`Rapid assessment completed at ${item.name}.`, "info");
+    }
+  } else if (state.selectedAsset) {
+    const asset = state.assets.find(item=>item.id===state.selectedAsset)!;
+    if (action === "priority") {
+      asset.delay = Math.max(0, asset.delay - 8);
+      asset.speed *= 1.12;
+      state.score += 60;
+      addFeed(`${asset.callsign} received priority movement authority.`, "success");
+    } else if (action === "hold") {
+      asset.status = "holding";
+      asset.delay += 4;
+      addFeed(`${asset.callsign} entered safe holding.`, "warning");
+    } else {
+      asset.status = "rerouted";
+      asset.delay += 5;
+      asset.progress = Math.max(0, asset.progress - .03);
+      state.score += 40;
+      addFeed(`${asset.callsign} diverted to an alternate route.`, "info");
+    }
   }
-  resources.intel -= 1;
-  fogRevealed = true;
-  $("#fog-panel").classList.add("hidden");
-  $("#signal-panel").classList.remove("hidden");
-  $("#why").classList.remove("hidden");
-  achievements.add("Verified Picture");
-  playTone(680);
-  update();
-  saveGame();
+  updateMetrics();
+  renderMap();
+  renderDecisionActions();
 }
 
-function advisorText(kind: string, inject: Inject) {
-  const best = inject.choices.slice().sort((a, b) => b.resilience - a.resilience)[0];
-  if (kind === "logistics") return `Logistics advisor: protect throughput and prioritize scarce capacity. “${best.title}” appears strongest for continuity, but check its resource cost.`;
-  if (kind === "cyber") return inject.category.includes("Cyber") || inject.category.includes("Information")
-    ? `Cyber advisor: establish trusted data, contain the incident, and preserve a minimum manual operating capability.`
-    : `Cyber advisor: verify whether digital dependencies or communications could amplify this physical disruption.`;
-  return `Public-safety advisor: prioritize life safety, medicine, food, fuel, and consequences of delay before optimizing cost.`;
+function activateThreats(): void {
+  state.threats.forEach(threat => {
+    if (!threat.active && state.missionMinute >= threat.timer) {
+      threat.active = true;
+      const detectionBonus = state.allocation.intelligence * 6 + state.cyberPosture * .15;
+      if (threat.discovered || Math.random()*100 < detectionBonus) threat.discovered = true;
+      addFeed(threat.discovered ? `${threat.title} detected.` : "Unverified anomaly reported in the operating area.", threat.severity === "critical" ? "critical" : "warning");
+    }
+  });
 }
 
-function consultAdvisor(kind: string) {
-  if (advisorUsed) {
-    toast("Only one advisor consultation is available for this inject");
-    return;
+function applyThreatEffects(): void {
+  state.threats.filter(item=>item.active).forEach(threat => {
+    const mitigation = threat.type === "cyber" || threat.type === "ai"
+      ? state.allocation.cyber*.13 + state.cyberPosture*.007
+      : threat.type === "crowd"
+        ? state.allocation.publicSafety*.14
+        : state.allocation.logistics*.1 + state.allocation.reserveFuel*.06;
+    const impact = Math.max(.05, threat.spread*.18 - mitigation);
+
+    if (threat.target === "stadium") {
+      state.publicConfidence = clamp(state.publicConfidence - impact);
+      infra("rail").capacity = clamp(infra("rail").capacity - impact*.4);
+      infra("airport").capacity = clamp(infra("airport").capacity - impact*.25);
+    } else {
+      const target = state.infrastructure.find(item=>item.id===threat.target);
+      if (target) {
+        target.health = clamp(target.health - impact);
+        target.capacity = clamp(target.capacity - impact*.55);
+        target.dependencies.forEach(dep => {
+          const child = state.infrastructure.find(item=>item.id===dep);
+          if (child) child.health = clamp(child.health - impact*.12);
+        });
+      }
+    }
+
+    if (threat.type === "cyber" || threat.type === "ai") state.cyberPosture = clamp(state.cyberPosture - impact*.32);
+    state.resilience = clamp(state.resilience - impact*.12);
+  });
+}
+
+function updateAssets(): void {
+  state.assets.forEach(asset => {
+    if (asset.status === "holding") {
+      asset.delay += .2 * state.speed;
+      return;
+    }
+    const route = routeForAsset(asset);
+    let healthFactor = 1;
+    if (route.type === "ship") healthFactor = infra("port").health / 100;
+    if (route.type === "plane") healthFactor = infra("airport").health / 100;
+    if (route.type === "train") healthFactor = infra("rail").health / 100;
+    if (route.type === "truck") healthFactor = infra("warehouse").health / 100;
+
+    const threatPenalty = state.threats.filter(item=>item.active).reduce((sum,item)=>sum + item.spread*.008,0);
+    const effectiveSpeed = Math.max(.0003, asset.speed * healthFactor - threatPenalty);
+    asset.progress += effectiveSpeed * state.speed;
+    if (asset.progress >= 1) {
+      asset.progress = 0;
+      asset.delay = Math.max(0, asset.delay - 4);
+      asset.status = "moving";
+      state.score += route.priority * 12;
+      addFeed(`${asset.callsign} completed delivery of ${route.cargo} cargo.`, "success");
+    }
+    if (healthFactor < .65) {
+      asset.delay += .08 * state.speed;
+      if (asset.status === "moving") asset.status = "delayed";
+    }
+  });
+}
+
+function recomputeSystemMetrics(): void {
+  state.infrastructureHealth = clamp(state.infrastructure.reduce((sum,item)=>sum+item.health,0)/state.infrastructure.length);
+  state.supplyHealth = clamp(
+    state.infrastructureHealth*.45 +
+    routeCargoHealth("medical")*.18 +
+    routeCargoHealth("food")*.14 +
+    routeCargoHealth("fuel")*.13 +
+    routeCargoHealth("relief")*.10
+  );
+  state.resilience = clamp(state.infrastructureHealth*.45 + state.supplyHealth*.35 + state.cyberPosture*.2);
+  const criticalCount = state.infrastructure.filter(item=>item.health<40).length;
+  if (criticalCount) state.publicConfidence = clamp(state.publicConfidence - criticalCount*.06*state.speed);
+}
+
+function simulationTick(): void {
+  if (!state.running) return;
+  state.missionMinute += state.speed;
+  activateThreats();
+  applyThreatEffects();
+  updateAssets();
+  recomputeSystemMetrics();
+  updateMetrics();
+  renderAssets();
+  renderMapThreatsOnly();
+
+  if (state.missionMinute >= 60 || state.resilience <= 0) finishMission();
+}
+
+function renderMapThreatsOnly(): void {
+  const threatLayer = document.querySelector<HTMLDivElement>("#threat-layer");
+  if (!threatLayer) return;
+  threatLayer.innerHTML = state.threats.filter(item=>item.active && item.discovered).map(threat => {
+    const targetInfra = state.infrastructure.find(item=>item.id===threat.target);
+    const targetPoi = poiTemplate.find(item=>item.id===threat.target);
+    const x = targetInfra?.x ?? targetPoi?.x ?? 50;
+    const y = targetInfra?.y ?? targetPoi?.y ?? 50;
+    return `<button class="threat-marker ${threat.severity}" style="left:${x}%;top:${y}%;" data-threat="${threat.id}" type="button"><span>!</span></button>`;
+  }).join("");
+  threatLayer.querySelectorAll<HTMLButtonElement>("[data-threat]").forEach(button=>button.addEventListener("click",()=>selectThreat(button.dataset.threat!)));
+  state.infrastructure.forEach(item => {
+    const marker = document.querySelector<HTMLButtonElement>(`[data-infra="${item.id}"]`);
+    if (!marker) return;
+    marker.classList.toggle("warning", item.health < 65 && item.health >= 40);
+    marker.classList.toggle("critical", item.health < 40);
+    const health = marker.querySelector("strong");
+    if (health) health.textContent = String(item.health);
+  });
+}
+
+function startExercise(): void {
+  state.mode = "operations";
+  state.running = true;
+  state.cyberPosture = clamp(state.cyberPosture + state.allocation.cyber*3 + state.allocation.intelligence);
+  state.supplyHealth = clamp(state.supplyHealth + state.allocation.logistics*2 + state.allocation.reserveFuel);
+  state.publicConfidence = clamp(state.publicConfidence + state.allocation.publicSafety*2);
+  infra("water").health = clamp(infra("water").health + state.allocation.reserveFuel);
+  $("#planning-panel").classList.add("hidden");
+  $("#active-panel").classList.remove("hidden");
+  $("#pause-play").textContent = "Pause";
+  $("#mission-title").textContent = "Living operations exercise";
+  $("#mission-subtitle").textContent = "Monitor movement, threats, and cascading consequences";
+  addFeed("Exercise launched. Simulated logistics network is active.", "info");
+  addFeed("Priority medical, food, fuel, and relief shipments are in motion.", "info");
+  updateMetrics();
+}
+
+function finishMission(): void {
+  state.running = false;
+  state.mode = "review";
+  $("#pause-play").textContent = "Complete";
+  $("#mission-title").textContent = "Exercise complete";
+  $("#mission-subtitle").textContent = "After-action review is ready";
+  addFeed("Exercise complete. Review performance and lessons learned.", "success");
+  renderReview();
+  switchView("review");
+}
+
+function renderReview(): void {
+  const strongObjectives = state.completedObjectives.size;
+  const avgHealth = Math.round(state.infrastructure.reduce((sum,item)=>sum+item.health,0)/state.infrastructure.length);
+  const delayed = state.assets.filter(item=>item.delay>10).length;
+  const detected = state.threats.filter(item=>item.discovered).length;
+  const grade = state.resilience >= 80 && strongObjectives >= 4 ? "A" : state.resilience >= 68 ? "B" : state.resilience >= 55 ? "C" : "Recovery required";
+  $("#review-content").innerHTML = `
+    <div class="review-metrics">
+      <article><span>Mission grade</span><strong>${grade}</strong><small>Based on continuity and objectives</small></article>
+      <article><span>Final resilience</span><strong>${state.resilience}%</strong><small>Whole-network performance</small></article>
+      <article><span>Average infrastructure</span><strong>${avgHealth}%</strong><small>Eight systems assessed</small></article>
+      <article><span>Objectives achieved</span><strong>${strongObjectives} / ${objectives.length}</strong><small>Essential services protected</small></article>
+      <article><span>Threats detected</span><strong>${detected} / ${state.threats.length}</strong><small>Information and cyber posture</small></article>
+      <article><span>Major delays</span><strong>${delayed}</strong><small>Shipments delayed over 10 minutes</small></article>
+    </div>
+    <div class="review-grid">
+      <section class="review-section">
+        <span class="eyebrow">System condition</span><h2>Critical infrastructure</h2>
+        ${state.infrastructure.map(item=>`<div class="review-line"><span>${item.name}</span><div><i style="width:${item.health}%"></i></div><b>${item.health}%</b></div>`).join("")}
+      </section>
+      <aside class="review-section">
+        <span class="eyebrow">Lessons learned</span><h2>Command assessment</h2>
+        <p>${state.resilience >= 70 ? "The network remained functional despite multiple connected disruptions." : "Cascading impacts exceeded available preparedness and response capacity."}</p>
+        <div class="lesson"><b>Keep</b><span>Prioritize life-safety cargo and protect trusted operational information.</span></div>
+        <div class="lesson"><b>Improve</b><span>Invest earlier in alternate routes, cyber recovery, and infrastructure redundancy.</span></div>
+        <div class="lesson"><b>Discuss</b><span>How should leaders balance cost, public confidence, and continuity during uncertain threats?</span></div>
+        <button id="review-again" class="primary-button wide" type="button">Run another mission</button>
+      </aside>
+    </div>
+  `;
+  $("#review-again").addEventListener("click",resetMission);
+}
+
+function renderThreatCatalog(): void {
+  $("#threat-catalog").innerHTML = state.threats.map(threat=>`
+    <article class="catalog-card">
+      <div class="catalog-heading"><span class="threat-type">${threat.type}</span><span class="threat-level ${threat.severity}">${threat.severity}</span></div>
+      <h2>${threat.title}</h2><p>${threat.summary}</p>
+      <div class="catalog-meta"><span>Target: ${threat.target}</span><span>Status: ${threat.active ? threat.discovered ? "Detected" : "Unverified" : "Dormant"}</span></div>
+    </article>
+  `).join("");
+}
+
+function renderInfrastructureCatalog(): void {
+  $("#infrastructure-catalog").innerHTML = state.infrastructure.map(item=>`
+    <button class="catalog-card infrastructure-card" data-catalog-infra="${item.id}" type="button">
+      <div class="catalog-heading"><span class="infra-icon">${item.icon}</span><span>${item.category}</span></div>
+      <h2>${item.name}</h2>
+      <div class="catalog-meta"><span>Health ${item.health}%</span><span>Capacity ${item.capacity}%</span></div>
+    </button>
+  `).join("") + poiTemplate.map(item=>`
+    <button class="catalog-card infrastructure-card poi-card" data-catalog-poi="${item.id}" type="button">
+      <div class="catalog-heading"><span class="infra-icon">${item.icon}</span><span>Point of interest</span></div>
+      <h2>${item.name}</h2>
+      <div class="catalog-meta"><span>Population ${item.people.toLocaleString()}</span><span>Criticality ${item.criticality}/5</span></div>
+    </button>
+  `).join("");
+  document.querySelectorAll<HTMLButtonElement>("[data-catalog-infra]").forEach(button=>button.addEventListener("click",()=>renderDependencyInspector(button.dataset.catalogInfra!)));
+  document.querySelectorAll<HTMLButtonElement>("[data-catalog-poi]").forEach(button=>button.addEventListener("click",()=>renderPoiInspector(button.dataset.catalogPoi!)));
+  renderDependencyInspector("port");
+}
+
+function renderDependencyInspector(id: string): void {
+  const item = infra(id);
+  const dependents = state.infrastructure.filter(node=>node.dependencies.includes(id));
+  $("#dependency-inspector").innerHTML = `
+    <div class="inspector-header"><span>${item.icon}</span><div><small>${item.category}</small><h2>${item.name}</h2></div></div>
+    <div class="inspector-stat"><span>Health</span><strong>${item.health}%</strong></div>
+    <div class="inspector-stat"><span>Capacity</span><strong>${item.capacity}%</strong></div>
+    <section><span>Depends on</span>${item.dependencies.map(dep=>`<button data-inspect="${dep}" type="button">${infra(dep).name}</button>`).join("") || "<p>No modeled dependencies.</p>"}</section>
+    <section><span>Supports</span>${dependents.map(dep=>`<button data-inspect="${dep.id}" type="button">${dep.name}</button>`).join("") || "<p>No direct dependent modeled.</p>"}</section>
+  `;
+  document.querySelectorAll<HTMLButtonElement>("[data-inspect]").forEach(button=>button.addEventListener("click",()=>renderDependencyInspector(button.dataset.inspect!)));
+}
+
+function renderPoiInspector(id: string): void {
+  const item = poiTemplate.find(poi=>poi.id===id)!;
+  $("#dependency-inspector").innerHTML = `
+    <div class="inspector-header"><span>${item.icon}</span><div><small>Point of interest</small><h2>${item.name}</h2></div></div>
+    <div class="inspector-stat"><span>Modeled population</span><strong>${item.people.toLocaleString()}</strong></div>
+    <div class="inspector-stat"><span>Criticality</span><strong>${item.criticality}/5</strong></div>
+    <section><span>Planning considerations</span><p>Emergency access, communications, transportation, medical support, power, water, and public-information coordination.</p></section>
+  `;
+}
+
+function advisorMessage(type: string): string {
+  const active = state.threats.filter(item=>item.active);
+  const worst = active.sort((a,b)=>severityRank(b.severity)-severityRank(a.severity))[0];
+  if (type === "cyber") {
+    return worst && (worst.type==="cyber" || worst.type==="ai")
+      ? `Cyber advisor: ${worst.title} requires identity protection, segmentation, trusted backups, and coordinated recovery.`
+      : "Cyber advisor: protect identity, data integrity, communications, and operational technology before an incident expands.";
   }
-  if (resources.intel < 1) {
-    toast("No intelligence points available");
-    return;
+  if (type === "public") {
+    return "Public-safety advisor: large gatherings and critical facilities require clear communication, medical access, transportation control, and life-safety prioritization.";
   }
-  resources.intel -= 1;
-  advisorUsed = true;
-  $("#advisor-output").textContent = advisorText(kind, injects[round]);
-  document.querySelectorAll<HTMLButtonElement>("[data-advisor]").forEach(button => button.disabled = true);
-  achievements.add("Collaborative Command");
-  playTone(600);
-  update();
-  saveGame();
+  return "Logistics advisor: protect medical, food, fuel, and restoration cargo before optimizing general throughput.";
 }
 
-function calculateAchievements() {
-  if (history.length === injects.length) achievements.add("Mission Complete");
-  if (history.every(item => item.choice.resilience >= 0) && history.length === injects.length) achievements.add("No Preventable Cascades");
-  if (resources.funds >= 2 && history.length === injects.length) achievements.add("Budget Discipline");
-  if (readiness >= 70) achievements.add("Future Ready");
-  if (resilience >= 80 && history.length === injects.length) achievements.add("Network Guardian");
-  if (nodes.every(item => item.health >= 60) && history.length === injects.length) achievements.add("Balanced Recovery");
+function switchView(view: string): void {
+  document.querySelectorAll<HTMLElement>(".view").forEach(panel=>panel.classList.toggle("active", panel.id === `${view}-view`));
+  document.querySelectorAll<HTMLButtonElement>(".nav-button").forEach(button=>button.classList.toggle("active", button.dataset.view===view));
+  if (view === "threats") renderThreatCatalog();
+  if (view === "infrastructure") renderInfrastructureCatalog();
+  if (view === "review") renderReview();
 }
 
-function exportAar() {
-  calculateAchievements();
-  const report = {
-    generatedAt: new Date().toISOString(),
-    score,
-    resilience,
-    readiness,
-    resources,
-    nodeHealth: nodes.map(({ id, name, health }) => ({ id, name, health })),
-    achievements: [...achievements],
-    decisions: history.map((item, index) => ({
-      round: index + 1,
-      category: item.inject.category,
-      incident: item.inject.title,
-      response: item.choice.title,
-      lesson: item.choice.lesson,
-      cascade: item.cascade
-    }))
-  };
-  const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = "resilience-routes-after-action-report.json";
-  anchor.click();
-  URL.revokeObjectURL(url);
+function showToast(message: string): void {
+  const toast = $("#toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  window.setTimeout(()=>toast.classList.remove("show"),2200);
 }
 
-function renderMap(selector = "#map", inspect = false) {
-  const target = $<HTMLDivElement>(selector);
-  const pairs: [NodeId, NodeId][] = [["port","rail"],["port","digital"],["port","warehouse"],["rail","warehouse"],["rail","digital"],["airport","warehouse"],["airport","digital"],["warehouse","digital"]];
-  target.innerHTML = `<svg viewBox="0 0 100 100" preserveAspectRatio="none">${pairs.map(([a,b]) => `<line x1="${node(a).x}" y1="${node(a).y}" x2="${node(b).x}" y2="${node(b).y}" class="${level(Math.min(node(a).health,node(b).health))}"/>`).join("")}</svg>${nodes.map(n => `<button class="map-node ${level(n.health)}" style="left:${n.x}%;top:${n.y}%" data-node="${n.id}" type="button"><span>${n.icon}</span><div><small>${n.label}</small><b>${n.name}</b></div><strong>${n.health}</strong></button>`).join("")}`;
-  target.querySelectorAll<HTMLButtonElement>(".map-node").forEach(button => button.addEventListener("click", () => inspect ? renderInspector(button.dataset.node as NodeId) : toast(`${node(button.dataset.node as NodeId).name}: ${node(button.dataset.node as NodeId).health}% health`)));
+function resetMission(): void {
+  window.location.reload();
 }
 
-function renderInspector(id: NodeId = "port") {
-  const n = node(id);
-  const affected = nodes.filter(x => x.dependencies.includes(id));
-  $("#inspector").innerHTML = `<div class="inspect-head"><span>${n.icon}</span><div><small>${n.label} NODE</small><h2>${n.name}</h2></div></div><div class="inspect-health"><span>Operational health</span><b>${n.health}%</b><div class="bar"><i style="width:${n.health}%"></i></div></div><section><small>Primary role</small><p>${n.role}</p></section><section><small>Direct dependencies</small><div class="pills">${n.dependencies.map(x => `<button data-inspect="${x}" type="button">${node(x).label}</button>`).join("")}</div></section><section><small>Failure affects</small><div class="pills">${affected.map(x => `<button data-inspect="${x.id}" type="button">${x.label}</button>`).join("") || "None listed"}</div></section><div class="risk ${level(n.health)}"><b>${n.health < 45 ? "Immediate intervention required" : n.health < 70 ? "Capacity is constrained" : "Operating within acceptable range"}</b><p>Dependencies show how a local disruption can become a network-wide problem.</p></div>`;
-  document.querySelectorAll<HTMLButtonElement>("[data-inspect]").forEach(b => b.addEventListener("click", () => renderInspector(b.dataset.inspect as NodeId)));
-  document.querySelectorAll("#analysis-map .map-node").forEach(b => b.classList.toggle("selected", (b as HTMLElement).dataset.node === id));
+function setLayerVisibility(selector: string, visible: boolean): void {
+  const layer = document.querySelector<HTMLElement>(selector);
+  if (layer) layer.classList.toggle("layer-hidden", !visible);
 }
 
-function renderTimeline() {
-  $("#timeline").innerHTML = injects.map((x,i) => `<div class="step ${history[i] ? "done" : started && i === round ? "active" : ""}"><span>${history[i] ? "✓" : i+1}</span><div><small>${x.category}</small><b>${history[i] ? history[i].choice.title : x.title}</b></div></div>`).join("");
-}
+renderAllocations();
+renderMap();
+renderFeed();
+renderObjectives();
+renderDecisionActions();
+updateMetrics();
 
-function update() {
-  $("#resilience").textContent = String(resilience); $("#readiness").textContent = String(readiness);
-  $<HTMLElement>("#resilience-bar").style.width = `${resilience}%`; $<HTMLElement>("#readiness-bar").style.width = `${readiness}%`;
-  $("#round").textContent = `${started ? Math.min(round+1,5) : history.length} / 5`; $("#round-note").textContent = started ? `Inject ${round+1} active` : history.length === 5 ? "Exercise complete" : "Awaiting launch";
-  $("#funds").textContent = String(resources.funds); $("#teams").textContent = String(resources.teams); $("#intel").textContent = String(resources.intel); $("#score").textContent = `Score ${score}`;
-  renderMap(); renderTimeline(); renderAar();
-}
-
-function showInject(applyDamage = true) {
-  const x = injects[round]; selected = null; advisorUsed = false; fogRevealed = false;
-  if (applyDamage) {
-    node(x.target).health = clamp(node(x.target).health - x.damage);
-    node(x.target).dependencies.slice(0,2).forEach(id => node(id).health = clamp(node(id).health - 3));
-    resilience = clamp(resilience - 4);
-  }
-  $("#welcome").classList.add("hidden"); $("#result").classList.add("hidden"); $("#inject").classList.remove("hidden");
-  $("#category").textContent = x.category; $("#inject-count").textContent = `Inject ${round+1} of 5`; $("#title").textContent = x.title; $("#summary").textContent = x.summary; $("#signal").textContent = x.signal; $("#why").textContent = x.why; $("#why").classList.add("hidden");
-  $("#fog-panel").classList.remove("hidden"); $("#signal-panel").classList.add("hidden"); $("#advisor-output").textContent = "Consult an advisor for a perspective—not a guaranteed answer.";
-  document.querySelectorAll<HTMLButtonElement>("[data-advisor]").forEach(button => button.disabled = false);
-  $("#choices").innerHTML = x.choices.map((c,i) => `<button class="choice ${affordable(c.cost) ? "" : "disabled"}" data-choice="${i}" type="button" ${affordable(c.cost) ? "" : "disabled"}><i></i><div><b>${c.title}</b><small>${c.description}</small><em>${costText(c.cost)}</em></div><span>›</span></button>`).join("");
-  document.querySelectorAll<HTMLButtonElement>(".choice").forEach(b => b.addEventListener("click", () => choose(Number(b.dataset.choice))));
-  $<HTMLButtonElement>("#commit").disabled = true; $("#help").textContent = "Select a response to review its cost and effect."; $("#map-message").textContent = `${node(x.target).name} is under pressure. Review the inject and choose a response.`; $("#top-status").textContent = `Inject ${round+1}: ${x.category}`; $("#top-substatus").textContent = x.title; update(); startTimer(); saveGame();
-}
-
-function choose(index: number) {
-  selected = index; document.querySelectorAll(".choice").forEach((b,i) => b.classList.toggle("selected", i === index));
-  const c = injects[round].choices[index]; $<HTMLButtonElement>("#commit").disabled = false; $("#help").innerHTML = `<b>Expected effect ${c.resilience >= 0 ? "+" : ""}${c.resilience}</b> · ${costText(c.cost)}`;
-}
-
-function commit() {
-  if (selected === null) return; stopTimer(); const x = injects[round]; const c = x.choices[selected]; if (!affordable(c.cost)) return;
-  resources.funds -= c.cost.funds ?? 0; resources.teams -= c.cost.teams ?? 0; resources.intel -= c.cost.intel ?? 0;
-  Object.entries(c.effects).forEach(([id,value]) => node(id as NodeId).health = clamp(node(id as NodeId).health + Number(value)));
-  resilience = clamp(resilience + c.resilience); readiness = clamp(readiness + c.readiness); score += Math.max(0, c.resilience*8 + c.readiness*5);
-  const weakest = node(x.target).dependencies.map(node).sort((a,b) => a.health-b.health)[0];
-  const cascade = c.resilience >= 7 ? `${node(x.target).name} stabilizes before severe effects reach ${weakest.name}.` : c.resilience >= 0 ? `${node(x.target).name} partially recovers, but ${weakest.name} remains exposed.` : `Pressure spreads from ${node(x.target).name} to ${weakest.name}.`;
-  if (c.resilience < 0) { weakest.health = clamp(weakest.health - 7); resilience = clamp(resilience - 3); }
-  history.push({ inject:x, choice:c, cascade }); calculateAchievements(); $("#inject").classList.add("hidden"); $("#result").classList.remove("hidden"); $("#result-tag").textContent = c.resilience >= 7 ? "Strong decision" : c.resilience >= 0 ? "Partial stabilization" : "Cascade increased"; $("#result-title").textContent = c.title; $("#lesson").textContent = c.lesson; $("#effects").innerHTML = `<div><span>Resilience</span><b class="${c.resilience>=0?"positive":"negative"}">${c.resilience>=0?"+":""}${c.resilience}</b></div><div><span>Preparedness</span><b class="${c.readiness>=0?"positive":"negative"}">${c.readiness>=0?"+":""}${c.readiness}</b></div><div><span>Target health</span><b>${node(x.target).health}%</b></div>`; $("#cascade").textContent = cascade; $("#map-message").textContent = cascade; update(); saveGame(); playTone(c.resilience >= 0 ? 720 : 260);
-}
-
-function next() { round++; if (round >= injects.length || resilience <= 0) finish(); else showInject(); }
-function finish() {
-  stopTimer(); calculateAchievements(); started = false; $("#result").classList.add("hidden"); $("#inject").classList.add("hidden"); $("#welcome").classList.remove("hidden"); const avg = Math.round(nodes.reduce((a,n)=>a+n.health,0)/nodes.length); $("#welcome").innerHTML = `<span class="mission-icon complete">✓</span><span class="eyebrow">Exercise complete</span><h2>${resilience>=80&&readiness>=65?"Command ready":resilience>=60?"Network sustained":"Recovery required"}</h2><p>You finished with ${resilience}% resilience, ${readiness}% preparedness, and ${avg}% average node health.</p><div class="brief"><div><b>${score}</b><span>Score</span></div><div><b>${history.length}</b><span>Decisions</span></div><div><b>${avg}%</b><span>Node health</span></div></div><button id="view-review" class="primary wide" type="button">Open after-action review</button>`; $("#view-review").addEventListener("click", () => switchView("aar")); $("#top-status").textContent = "Exercise complete"; $("#top-substatus").textContent = "After-action review ready"; update(); saveGame();
-}
-
-function renderAar() {
-  if (!history.length) { $("#aar").innerHTML = `<div class="empty-review"><span>✓</span><h2>No decisions recorded yet</h2><p>Begin the exercise and your choices will appear here.</p></div>`; return; }
-  const avg = Math.round(nodes.reduce((a,n)=>a+n.health,0)/nodes.length); const strong = history.filter(h=>h.choice.resilience>=7).length;
-  $("#aar").innerHTML = `<div class="aar-metrics"><article><span>Final resilience</span><b>${resilience}%</b></article><article><span>Preparedness</span><b>${readiness}%</b></article><article><span>Average node health</span><b>${avg}%</b></article><article><span>Strong decisions</span><b>${strong} / ${history.length}</b></article></div><div class="aar-grid"><section class="records"><span class="eyebrow">Decision record</span><h2>What happened</h2>${history.map((h,i)=>`<article><span>${i+1}</span><div><small>${h.inject.category}</small><h3>${h.choice.title}</h3><p>${h.choice.lesson}</p><em>${h.cascade}</em></div><b class="${h.choice.resilience>=0?"positive":"negative"}">${h.choice.resilience>=0?"+":""}${h.choice.resilience}</b></article>`).join("")}</section><aside class="assessment"><span class="eyebrow">Command assessment</span><h2>${strong>=3?"Effective continuity leadership":"Continuity gaps remain"}</h2><p>${strong>=3?"You used prioritization, redundancy, and trusted information to contain cascading risk.":"Several choices protected immediate resources but allowed disruption to move into dependent nodes."}</p><div><b>Keep</b><span>Explicit prioritization and alternate routing</span></div><div><b>Improve</b><span>Earlier investment in shared information and readiness</span></div><div><b>Discuss</b><span>Which costs are acceptable when life safety is at risk?</span></div><section class="achievement-box"><span class="eyebrow">Achievements</span><div class="achievement-list">${[...achievements].map(item => `<span>◆ ${item}</span>`).join("") || "<span>Complete the exercise to unlock achievements.</span>"}</div></section></aside></div>`;
-}
-
-function switchView(view: string) {
-  document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", (v as HTMLElement).dataset.panel === view)); document.querySelectorAll(".nav").forEach(v => v.classList.toggle("active", (v as HTMLElement).dataset.view === view)); if (view === "network") { renderMap("#analysis-map", true); renderInspector(); } if (view === "aar") renderAar();
-}
-function toast(text: string) { const t = $("#toast"); t.textContent = text; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1800); }
-function reset() {
-  stopTimer();
-  localStorage.removeItem(SAVE_KEY);
-  location.reload();
-}
-
-document.querySelectorAll<HTMLButtonElement>(".nav").forEach(b=>b.addEventListener("click",()=>switchView(b.dataset.view!)));
-$("#start").addEventListener("click",()=>{ started=true; showInject(); });
-$("#commit").addEventListener("click",commit);
-$("#continue").addEventListener("click",next);
-$("#reset").addEventListener("click",reset);
-$("#resume").addEventListener("click",loadGame);
-$("#analyze").addEventListener("click",()=>switchView("network"));
-$("#reveal-intel").addEventListener("click", revealIntel);
-document.querySelectorAll<HTMLButtonElement>("[data-advisor]").forEach(button => button.addEventListener("click", () => consultAdvisor(button.dataset.advisor!)));
-$("#why-button").addEventListener("click",()=>{ const w=$("#why"); w.classList.toggle("hidden"); const b=$<HTMLButtonElement>("#why-button"); const open=!w.classList.contains("hidden"); b.setAttribute("aria-expanded",String(open)); b.querySelector("span")!.textContent=open?"−":"＋"; });
-$("#settings").addEventListener("click",()=>$("#settings-modal").classList.remove("hidden"));
-$("#close-settings").addEventListener("click",()=>$("#settings-modal").classList.add("hidden"));
-$("#save-settings").addEventListener("click",()=>{
-  soundEnabled = $<HTMLInputElement>("#sound-setting").checked;
-  document.documentElement.classList.toggle("reduce-motion", !$<HTMLInputElement>("#motion-setting").checked);
-  $("#settings-modal").classList.add("hidden");
-  toast("Settings saved");
+document.querySelectorAll<HTMLButtonElement>(".nav-button").forEach(button=>button.addEventListener("click",()=>switchView(button.dataset.view!)));
+document.querySelectorAll<HTMLButtonElement>(".speed-button").forEach(button=>button.addEventListener("click",()=>{
+  state.speed = Number(button.dataset.speed) as 1|2|4;
+  document.querySelectorAll(".speed-button").forEach(item=>item.classList.remove("active"));
+  button.classList.add("active");
+  updateMetrics();
+}));
+document.querySelectorAll<HTMLButtonElement>(".advisor-tab").forEach(button=>button.addEventListener("click",()=>{
+  document.querySelectorAll(".advisor-tab").forEach(item=>item.classList.remove("active"));
+  button.classList.add("active");
+  $("#advisor-message").textContent = advisorMessage(button.dataset.advisor!);
+}));
+$("#start-exercise").addEventListener("click",startExercise);
+$("#pause-play").addEventListener("click",()=>{
+  if (state.mode === "planning") return startExercise();
+  if (state.mode === "review") return;
+  state.running = !state.running;
+  $("#pause-play").textContent = state.running ? "Pause" : "Resume";
+  updateMetrics();
 });
-$("#print-aar").addEventListener("click",()=>window.print());
-$("#export-aar").addEventListener("click",exportAar);
-window.addEventListener("keydown",(event)=>{
-  if (event.key === "Escape") $("#settings-modal").classList.add("hidden");
-  if (event.key.toLowerCase() === "n") reset();
-  if (event.key.toLowerCase() === "r" && !fogRevealed && started) revealIntel();
-  if (event.key === "Enter" && selected !== null && started) commit();
+$("#new-mission").addEventListener("click",resetMission);
+$("#clear-feed").addEventListener("click",()=>{state.feed=[];renderFeed();});
+$("#help-button").addEventListener("click",()=>$("#guide-modal").classList.remove("hidden"));
+$("#close-guide").addEventListener("click",()=>$("#guide-modal").classList.add("hidden"));
+$("#print-review").addEventListener("click",()=>window.print());
+
+let routesVisible = true;
+let poiVisible = true;
+let threatsVisible = true;
+$("#toggle-routes").addEventListener("click",()=>{
+  routesVisible = !routesVisible;
+  $("#toggle-routes").classList.toggle("active", routesVisible);
+  document.querySelectorAll(".route-line").forEach(item=>item.classList.toggle("layer-hidden",!routesVisible));
 });
-window.addEventListener("beforeunload", saveGame);
-update();
-if (localStorage.getItem(SAVE_KEY)) $("#resume").classList.remove("hidden");
+$("#toggle-poi").addEventListener("click",()=>{
+  poiVisible = !poiVisible;
+  $("#toggle-poi").classList.toggle("active",poiVisible);
+  setLayerVisibility("#poi-layer",poiVisible);
+});
+$("#toggle-threats").addEventListener("click",()=>{
+  threatsVisible = !threatsVisible;
+  $("#toggle-threats").classList.toggle("active",threatsVisible);
+  setLayerVisibility("#threat-layer",threatsVisible);
+});
+
+window.setInterval(simulationTick, 240);
