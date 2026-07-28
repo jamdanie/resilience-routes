@@ -1,89 +1,50 @@
-# Resilience Routes
+# Resilience Routes V5
 
-**Resilience Routes** is a browser-based global supply-chain resilience exercise developed around Sunny Wescott's concept: teach how trade, infrastructure, hazards, resource sharing, and human decisions interact across a connected network.
+**Global Operations & Critical Infrastructure Simulator**
 
-[Play the live exercise](https://jamdanie.github.io/resilience-routes/)
+Resilience Routes is a static, browser-based educational simulation inspired by Sunny Wescott's concept for teaching global supply-chain interdependence, infrastructure resilience, hazard response, and resource sharing.
 
-## What players do
+**Live site:** https://jamdanie.github.io/resilience-routes/
 
-Players act as a regional continuity lead responsible for ports, rail, aviation, warehousing, and digital logistics. They receive disruption injects, work with incomplete information, consult advisors, allocate limited resources, and manage cascading consequences.
+## V5 highlights
 
-## Game-ready features
-
-- Connected infrastructure network with dynamic node health
-- Sequential cyber, weather, inventory, information, and humanitarian injects
-- Funds, response-team, and intelligence resources
-- Timed decisions with an untimed accessibility option
-- Fog of war and intelligence verification
+- Animated simulated ships, cargo aircraft, freight trains, and trucks
+- Global and regional logistics routes
+- Ports, airports, rail, warehouses, power, fuel, water, and logistics data
+- Hospitals, schools, emergency operations centers, cloud infrastructure, and large gatherings
+- Cyber threats, AI-enabled social engineering, infrastructure anomalies, weather, and crowd risk
+- Planning phase with limited preparedness investments
+- Live operational event feed
+- Selectable shipments, infrastructure, threats, and points of interest
+- Command decisions that affect health, capacity, delay, resilience, confidence, and score
 - Logistics, cyber, and public-safety advisor perspectives
-- Cascading operational effects
-- Preparedness and resilience scoring
-- Autosave and resume in the local browser
-- Achievements and replayable decision tradeoffs
-- Interactive dependency-analysis view
-- After-action review with JSON export and Print/Save PDF
-- Responsive layout and keyboard shortcuts
-- Static GitHub Pages deployment with no database or credentials
+- After-action review and print-to-PDF support
+- Contributor attribution and government learning resources
+- GitHub Pages compatible: no database, account, API key, or paid tracker required
 
-## Quick start
+## Important limitation
+
+All positions, routes, movements, threats, incidents, crowd sizes, and system conditions are fictional and generated locally for educational gameplay. The application does not use FlightRadar24, AIS, live aircraft, live vessel, emergency-warning, law-enforcement, or intelligence feeds.
+
+## Local development
 
 ```powershell
 npm ci
+npm run build
 npm run dev
 ```
 
-Production check:
+## Apply to the existing repository
+
+Copy this package's contents into the root of the existing local `resilience-routes` project.
+
+Recommended branch workflow:
 
 ```powershell
-npm run build
+git checkout -b feature/v5-simulator
+git add .
+git commit -m "Build Version 5 living operations simulator"
+git push -u origin feature/v5-simulator
 ```
 
-## Keyboard controls
-
-- `Enter`: commit a selected decision
-- `R`: spend intelligence to reveal verified information
-- `N`: start a new mission
-- `Esc`: close settings
-
-## Documentation
-
-- [Architecture](docs/ARCHITECTURE.md)
-- [Facilitator Guide](docs/FACILITATOR_GUIDE.md)
-- [Scenario Authoring](docs/SCENARIO_AUTHORING.md)
-- [Roadmap](docs/ROADMAP.md)
-- [Contributors and attribution](docs/CONTRIBUTORS.md)
-- [Government and public resources](docs/GOVERNMENT_RESOURCES.md)
-- [Research and source policy](docs/RESEARCH_AND_SOURCE_POLICY.md)
-- [Accessibility](docs/ACCESSIBILITY.md)
-- [Educational disclaimer](docs/CONTENT_DISCLAIMER.md)
-- [Project plan](PROJECT_PLAN.md)
-- [Contributing](CONTRIBUTING.md)
-- [Security](SECURITY.md)
-
-## Project intent
-
-This project can operate as:
-
-1. A self-guided educational game
-2. A digital companion to a tabletop exercise
-3. A portfolio showing team research, design, software, and emergency-management thinking
-4. A future facilitator toolkit for classroom or professional exercises
-
-## Technology
-
-Vite, TypeScript, HTML, CSS, browser local storage, and GitHub Pages.
-
-The current release intentionally remains static. Real-time multiplayer, shared facilitator sessions, authenticated classrooms, and live external feeds require a separately designed backend and privacy model.
-
-
-## Contributors
-
-The project documents contributor roles and requires accepted work to be credited through issues, commits, pull requests, reviews, and the changelog. See [Contributors and Attribution](docs/CONTRIBUTORS.md).
-
-## Government and learning resources
-
-The in-game learning library and [Government Resources](docs/GOVERNMENT_RESOURCES.md) connect scenarios to FEMA, Ready.gov, U.S. DOT, CISA, NIST, transportation data, trade data, and public-health preparedness material. Linking does not imply sponsorship or endorsement.
-
-## Disclaimer
-
-This project is an educational simulation, not an operational emergency-management, transportation, cybersecurity, medical, or government decision-support system.
+After reviewing the branch, merge it into `main`. GitHub Pages will deploy to the same live URL.
