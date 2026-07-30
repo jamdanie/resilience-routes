@@ -1,0 +1,57 @@
+export type Difficulty = "easy" | "medium" | "hard";
+
+export interface GlossaryTerm {
+  term: string;
+  definition: string;
+  example: string;
+  whyItMatters: string;
+}
+
+export interface Scenario {
+  id: string;
+  title: string;
+  nodeType: string;
+  x: number;
+  y: number;
+  color: string;
+  event: string;
+  why: string;
+  how: string;
+  when: string;
+  where: string;
+  keyTerms: GlossaryTerm[];
+  question: string;
+  options: string[];
+  optionRationales: string[];
+  correctIndex: number;
+  takeaway: string;
+  responsePrinciple: string;
+  basePenalty: number;
+}
+
+export interface DecisionRecord {
+  scenarioId: string;
+  title: string;
+  selectedOption: string;
+  correct: boolean;
+  resilienceChange: number;
+  rationale: string;
+  takeaway: string;
+}
+
+export interface GameReport {
+  difficulty: Difficulty;
+  completed: number;
+  resilience: number;
+  outcome: "completed" | "network-failed" | "time-expired";
+  elapsedSeconds: number;
+  decisions: DecisionRecord[];
+}
+
+export interface HudUpdate {
+  difficulty: Difficulty;
+  resilience: number;
+  completed: number;
+  target: number;
+  remainingSeconds: number | null;
+}
