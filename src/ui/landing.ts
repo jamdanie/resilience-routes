@@ -22,11 +22,10 @@ export function renderLandingScreen(): string {
           <h1>See how one disruption can move through an entire network.</h1>
           <p class="landing-summary">
             Investigate ports, rail corridors, airports, warehouses, and digital
-            logistics systems. Every scenario defines its terminology, explains
-            the cause-and-effect chain, and shows why one response is stronger than another.
+            logistics systems. The guided briefing defines the language and explains the scoring model first. During the mission, every scenario shows the cause-and-effect chain and why one response is stronger than another.
           </p>
           <div class="landing-actions">
-            <button id="start-exercise" class="primary-button large" type="button">Enter Mission Control</button>
+            <button id="start-exercise" class="primary-button large" type="button">Begin Mission Briefing</button>
             <button id="open-glossary-home" class="secondary-button large" type="button">Review Key Terms</button>
           </div>
           <div class="landing-proof" aria-label="Platform features">
@@ -47,7 +46,7 @@ export function renderLandingScreen(): string {
           </div>
           <dl>
             <div><dt>Objective</dt><dd>Stabilize 3 network nodes</dd></div>
-            <div><dt>Learning model</dt><dd>Define → Explain → Decide → Review</dd></div>
+            <div><dt>Learning model</dt><dd>Brief → Define → Explain → Decide → Review</dd></div>
             <div><dt>Data source</dt><dd>Fictional educational scenarios</dd></div>
             <div><dt>Controls</dt><dd>Mouse, keyboard, or touch</dd></div>
           </dl>

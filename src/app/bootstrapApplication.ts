@@ -11,6 +11,7 @@ import { createGlossaryPanelController } from "../ui/glossaryPanel";
 import { createGuidePanelController } from "../ui/guidePanel";
 import { updateHud } from "../ui/hud";
 import { renderLandingScreen } from "../ui/landing";
+import { createMissionBriefingController } from "../ui/missionBriefing";
 import { createReportModalController } from "../ui/reportModal";
 
 interface DecisionResult {
@@ -49,6 +50,8 @@ export function bootstrapApplication(): void {
   const guide = createGuidePanelController();
   const glossary = createGlossaryPanelController();
   const challengeModal = createChallengeModalController();
+
+  let briefing: ReturnType<typeof createMissionBriefingController>;
 
   let game: Phaser.Game | null = null;
   let logCounter = 0;
@@ -94,6 +97,11 @@ export function bootstrapApplication(): void {
     });
   };
 
+  briefing = createMissionBriefingController((difficulty) => {
+    difficultySelect.value = difficulty;
+    enterPlatform();
+  });
+
   const appendLog = (entry: MissionLogEntry): void => {
     logCounter += 1;
     if (missionLog.querySelector("time")?.textContent === "READY") missionLog.replaceChildren();
@@ -107,11 +115,12 @@ export function bootstrapApplication(): void {
     missionLog.prepend(article);
   };
 
-  startExerciseButton.addEventListener("click", () => enterPlatform());
+  startExerciseButton.addEventListener("click", () => briefing.open(difficultySelect.value as Difficulty));
   homeGlossaryButton.addEventListener("click", glossary.open);
   requiredElement<HTMLButtonElement>("#glossary-button").addEventListener("click", glossary.open);
   requiredElement<HTMLButtonElement>("#glossary-button-secondary").addEventListener("click", glossary.open);
   requiredElement<HTMLButtonElement>("#guide-button").addEventListener("click", guide.open);
+  requiredElement<HTMLButtonElement>("#mission-briefing-button").addEventListener("click", () => briefing.open(difficultySelect.value as Difficulty));
   requiredElement<HTMLButtonElement>("#clear-log").addEventListener("click", () => missionLog.replaceChildren());
 
   returnHomeButton.addEventListener("click", () => {
@@ -120,6 +129,7 @@ export function bootstrapApplication(): void {
     reportModal.hide();
     guide.close();
     glossary.close();
+    briefing.close();
     platformShell.classList.add("hidden");
     landingScreen.classList.remove("hidden");
     window.scrollTo({ top: 0, behavior: "smooth" });

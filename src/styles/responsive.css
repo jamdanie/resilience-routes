@@ -147,3 +147,83 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 900px) {
+  .briefing-situation-grid,
+  .difficulty-card-grid,
+  .score-reasoning {
+    grid-template-columns: 1fr;
+  }
+
+  .briefing-term-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .score-formula {
+    grid-template-columns: 1fr;
+  }
+
+  .score-formula b {
+    transform: rotate(90deg);
+    justify-self: center;
+  }
+
+  .worked-example-grid,
+  .learning-formula-card {
+    grid-template-columns: 1fr;
+  }
+
+  .difficulty-card {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .briefing-header,
+  .briefing-page,
+  .briefing-progress,
+  .briefing-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .briefing-progress {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .briefing-progress > i,
+  .briefing-progress-step b {
+    display: none;
+  }
+
+  .briefing-progress-step {
+    justify-content: center;
+  }
+
+  .briefing-term-grid,
+  .mission-action-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .briefing-section-heading,
+  .briefing-readiness-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .briefing-readiness-card {
+    display: flex;
+  }
+
+  .briefing-readiness-card .primary-button {
+    width: 100%;
+  }
+
+  .briefing-footer {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .briefing-footer > span {
+    display: none;
+  }
+}

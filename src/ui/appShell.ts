@@ -1,6 +1,7 @@
 import scenariosJson from "../data/scenarios.json";
 import type { Scenario } from "../game/types";
 import { glossaryTerms } from "./glossary";
+import { renderMissionBriefing } from "./missionBriefing";
 
 const scenarios = scenariosJson as Scenario[];
 
@@ -75,7 +76,10 @@ export function renderApplicationShell(): string {
                   <option value="hard">Hard — stronger cascades, 3-minute timer</option>
                 </select>
               </div>
-              <button id="start-game" class="primary-button" type="button">Launch Regional Scenario</button>
+              <div class="mission-action-buttons">
+                <button id="start-game" class="primary-button" type="button">Launch Regional Scenario</button>
+                <button id="mission-briefing-button" class="secondary-button" type="button">Review Mission Briefing</button>
+              </div>
               <small>Use the mouse or touch to select nodes. Keyboard players can use WASD or arrow keys and press E.</small>
             </div>
           </div>
@@ -162,6 +166,10 @@ export function renderApplicationShell(): string {
             <article><span>03</span><h3>Decide</h3><p>You compare realistic options and receive a plain-language reason for each option.</p></article>
             <article><span>04</span><h3>Review</h3><p>The after-action report records the decision, resilience impact, rationale, and lesson learned.</p></article>
           </div>
+          <div class="learning-formula-card">
+            <div><p class="eyebrow">Scoring explained</p><h3>Current resilience = starting resilience + recovery − penalties</h3></div>
+            <p>In plain language: begin with the network condition, add what a strong response restores, and subtract the harm that remains. Once the full reasoning is comfortable, you can read it as <b>start + gains − losses</b>.</p>
+          </div>
         </section>
 
         <section id="scenarios" class="section scenario-section">
@@ -202,6 +210,8 @@ export function renderApplicationShell(): string {
         <p>Resilience Routes is an educational simulation. It does not use live operational data or provide emergency guidance.</p>
       </footer>
     </div>
+
+    ${renderMissionBriefing()}
 
     <aside id="guide-panel" class="drawer" aria-hidden="true" aria-labelledby="guide-title">
       <button id="close-guide" class="close-button" type="button" aria-label="Close quick reference">×</button>
