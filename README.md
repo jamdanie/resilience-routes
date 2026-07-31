@@ -10,7 +10,7 @@ The project keeps the familiar entry points and names:
 - `src/style.css`
 - `src/game/SupplyChainScene.ts`
 - `src/game/types.ts`
-- `src/ui/landing.ts`
+- `src/ui/landing.ts` 
 - `src/data/scenarios.json`
 
 The difference is that each file now has one clear job. `main.ts` is intentionally only four lines and starts the application. The interface, game engine, scenario data, glossary, decision workflow, report, and styling live in separate modules.
