@@ -5,6 +5,7 @@ import type {
   GameReport,
   HudUpdate,
   LogisticsAssetInfo,
+  LogisticsSnapshot,
   Scenario,
   WeatherUpdate
 } from "../game/types";
@@ -60,6 +61,8 @@ export function bootstrapApplication(): void {
   const assetRoute = requiredElement<HTMLElement>("#asset-route");
   const assetCargo = requiredElement<HTMLElement>("#asset-cargo");
   const assetDefinition = requiredElement<HTMLElement>("#asset-definition");
+  const assetStatusSummary = requiredElement<HTMLElement>("#asset-status-summary");
+  const assetStatusBoard = requiredElement<HTMLElement>("#asset-status-board");
   const weatherPanel = requiredElement<HTMLElement>("#weather-panel");
   const weatherSeverity = requiredElement<HTMLElement>("#weather-severity");
   const weatherTitle = requiredElement<HTMLElement>("#weather-title");
@@ -97,6 +100,8 @@ export function bootstrapApplication(): void {
     assetRoute.textContent = "Select an icon on the map.";
     assetCargo.textContent = "Movement details will appear here.";
     assetDefinition.innerHTML = `<b>Live logistics</b><span>Animated assets show how goods continue moving, hold, delay, or reroute during a disruption.</span>`;
+    assetStatusSummary.textContent = "4 assets awaiting launch";
+    assetStatusBoard.innerHTML = `<p class="asset-board-empty">Launch the scenario to connect the live movement board.</p>`;
     weatherPanel.dataset.phase = "idle";
     weatherSeverity.textContent = "Forecast monitoring";
     weatherTitle.textContent = "High-wind system expected";
@@ -150,6 +155,34 @@ export function bootstrapApplication(): void {
     missionLog.prepend(article);
   };
 
+  const renderLogisticsSnapshot = (snapshot: LogisticsSnapshot): void => {
+    assetStatusSummary.textContent = `${snapshot.moving} moving · ${snapshot.delayed} delayed · ${snapshot.holding} holding · ${snapshot.rerouted} on alternate routes`;
+    assetStatusBoard.replaceChildren();
+
+    snapshot.assets.forEach((asset) => {
+      const row = document.createElement("article");
+      row.className = "asset-board-row";
+      row.dataset.status = asset.status.toLowerCase().replaceAll(" ", "-");
+
+      const identity = document.createElement("span");
+      const name = document.createElement("b");
+      name.textContent = asset.name;
+      const mode = document.createElement("small");
+      mode.textContent = asset.mode;
+      identity.append(name, mode);
+
+      const condition = document.createElement("span");
+      const status = document.createElement("b");
+      status.textContent = asset.status;
+      const route = document.createElement("small");
+      route.textContent = asset.routeState;
+      condition.append(status, route);
+
+      row.append(identity, condition);
+      assetStatusBoard.append(row);
+    });
+  };
+
   startExerciseButton.addEventListener("click", () => briefing.open(difficultySelect.value as Difficulty));
   homeGlossaryButton.addEventListener("click", glossary.open);
   requiredElement<HTMLButtonElement>("#glossary-button").addEventListener("click", glossary.open);
@@ -195,9 +228,12 @@ export function bootstrapApplication(): void {
       assetName.textContent = asset.name;
       assetStatus.textContent = `${asset.status}. ${asset.operationalNote}`;
       assetStatusDot.dataset.status = asset.status.toLowerCase().replaceAll(" ", "-");
-      assetRoute.textContent = asset.route;
+      assetRoute.textContent = `${asset.routeState}: ${asset.route}`;
       assetCargo.textContent = asset.cargo;
       assetDefinition.innerHTML = `<b>${asset.mode}</b><span>${asset.meaning}</span>`;
+    });
+    game.events.on("logistics-snapshot", (snapshot: LogisticsSnapshot) => {
+      renderLogisticsSnapshot(snapshot);
     });
     game.events.on("weather-update", (weather: WeatherUpdate) => {
       weatherPanel.dataset.phase = weather.phase;

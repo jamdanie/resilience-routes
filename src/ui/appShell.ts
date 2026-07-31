@@ -155,6 +155,13 @@ export function renderApplicationShell(): string {
                   <b>Live logistics</b>
                   <span>Animated assets show how goods continue moving, hold, delay, or reroute during a disruption.</span>
                 </div>
+                <div class="asset-board-heading">
+                  <span>Network movement board</span>
+                  <small id="asset-status-summary">4 assets awaiting launch</small>
+                </div>
+                <div id="asset-status-board" class="asset-status-board">
+                  <p class="asset-board-empty">Launch the scenario to connect the live movement board.</p>
+                </div>
               </section>
 
               <section id="weather-panel" class="weather-panel" data-phase="idle" aria-live="polite">
