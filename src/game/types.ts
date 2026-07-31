@@ -20,6 +20,7 @@ export interface Scenario {
   when: string;
   where: string;
   keyTerms: GlossaryTerm[];
+  cascadeSteps: string[];
   question: string;
   options: string[];
   optionRationales: string[];
@@ -35,6 +36,12 @@ export interface DecisionRecord {
   selectedOption: string;
   correct: boolean;
   resilienceChange: number;
+  resilienceBefore: number;
+  resilienceAfter: number;
+  disruptionLoss: number;
+  responseRecovery: number;
+  wrongAnswerPenalty: number;
+  calculation: string;
   rationale: string;
   takeaway: string;
 }

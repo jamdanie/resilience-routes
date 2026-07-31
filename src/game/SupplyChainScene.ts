@@ -23,6 +23,14 @@ interface NodeView {
 interface ChallengeRequest {
   scenario: Scenario;
   showHint: boolean;
+  scoring: {
+    currentResilience: number;
+    basePenalty: number;
+    disruptionLoss: number;
+    disruptionMultiplier: number;
+    responseRecovery: number;
+    wrongAnswerPenalty: number;
+  };
   resolve: (selectedIndex: number) => void;
 }
 
@@ -423,9 +431,21 @@ export class SupplyChainScene extends Phaser.Scene {
       text: `${node.scenario.title}: ${node.scenario.event}`
     });
 
+    const disruptionLoss = Math.round(
+      node.scenario.basePenalty * this.settings.disruptionMultiplier
+    );
+
     const request: ChallengeRequest = {
       scenario: node.scenario,
       showHint: this.settings.showHints,
+      scoring: {
+        currentResilience: this.resilience,
+        basePenalty: node.scenario.basePenalty,
+        disruptionLoss,
+        disruptionMultiplier: this.settings.disruptionMultiplier,
+        responseRecovery: this.settings.correctAnswerRecovery,
+        wrongAnswerPenalty: this.settings.wrongAnswerPenalty
+      },
       resolve: (selectedIndex: number) => this.resolveChallenge(node, selectedIndex)
     };
 
@@ -445,6 +465,8 @@ export class SupplyChainScene extends Phaser.Scene {
     const resilienceChange = correct
       ? Math.max(-2, this.settings.correctAnswerRecovery - disruptionLoss)
       : -(disruptionLoss + this.settings.wrongAnswerPenalty);
+
+    const resilienceBefore = this.resilience;
 
     this.resilience = Phaser.Math.Clamp(
       this.resilience + resilienceChange,
@@ -468,6 +490,16 @@ export class SupplyChainScene extends Phaser.Scene {
       selectedOption: scenario.options[safeIndex] ?? "No response",
       correct,
       resilienceChange,
+      resilienceBefore,
+      resilienceAfter: this.resilience,
+      disruptionLoss,
+      responseRecovery: correct ? this.settings.correctAnswerRecovery : 0,
+      wrongAnswerPenalty: correct ? 0 : this.settings.wrongAnswerPenalty,
+      calculation: correct
+        ? this.settings.correctAnswerRecovery - disruptionLoss < -2
+          ? `${resilienceBefore} + ${this.settings.correctAnswerRecovery} - ${disruptionLoss} = ${resilienceBefore + this.settings.correctAnswerRecovery - disruptionLoss}; apply the −2 safeguard → ${this.resilience}`
+          : `${resilienceBefore} + ${this.settings.correctAnswerRecovery} - ${disruptionLoss} = ${this.resilience}`
+        : `${resilienceBefore} - ${disruptionLoss} - ${this.settings.wrongAnswerPenalty} = ${this.resilience}`,
       rationale: scenario.optionRationales[safeIndex] ?? scenario.takeaway,
       takeaway: scenario.takeaway
     });

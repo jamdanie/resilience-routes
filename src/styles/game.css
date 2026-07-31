@@ -242,6 +242,183 @@
   margin-top: 6px;
 }
 
+.cascade-section {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(16, 36, 58, 0.9), rgba(9, 25, 42, 0.96));
+}
+
+.cascade-chain {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.cascade-step {
+  position: relative;
+  min-height: 118px;
+  padding: 14px;
+  border: 1px solid #31516f;
+  border-radius: 12px;
+  background: #0a1a2c;
+}
+
+.cascade-step:not(:last-child)::after {
+  content: "→";
+  position: absolute;
+  top: 50%;
+  right: -18px;
+  color: var(--blue);
+  font-size: 1.1rem;
+  font-weight: 900;
+  transform: translateY(-50%);
+}
+
+.cascade-step > span {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  margin-bottom: 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  color: var(--blue-soft);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.cascade-step p {
+  margin: 0;
+  color: var(--muted-strong);
+  font-size: 0.78rem;
+  line-height: 1.52;
+}
+
+.recommended-explanation {
+  display: grid;
+  gap: 5px;
+  margin: 12px 0;
+  padding: 13px;
+  border-left: 3px solid var(--green);
+  background: rgba(55, 123, 91, 0.14);
+}
+
+.recommended-explanation span {
+  color: var(--green);
+  font-size: 0.67rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.recommended-explanation p {
+  margin: 0;
+}
+
+.worked-score {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #355b7d;
+  border-radius: 13px;
+  background: #081827;
+}
+
+.worked-score-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.worked-score-heading span {
+  color: var(--blue);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.worked-score-heading h4 {
+  margin: 3px 0 0;
+  font-size: 1rem;
+}
+
+.worked-score-heading > strong {
+  flex: 0 0 auto;
+  padding: 7px 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  color: var(--blue-soft);
+}
+
+.math-steps {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.math-step {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 9px;
+  align-items: start;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #0d2034;
+}
+
+.math-step p {
+  margin: 0;
+}
+
+.math-step > span {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  color: #06111e;
+  background: var(--blue);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.fast-score {
+  margin: 11px 0 0 !important;
+  padding-top: 11px;
+  border-top: 1px solid var(--line);
+}
+
+.math-step code,
+.fast-score code,
+.report-calculation code {
+  color: var(--blue-soft);
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+}
+
+.report-calculation {
+  display: grid;
+  gap: 5px;
+  margin: 10px 0;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #081827;
+}
+
+.report-calculation > span {
+  color: var(--blue);
+}
+
+.report-calculation small {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
 .report-modal {
   width: min(1100px, 100%);
 }

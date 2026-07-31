@@ -249,6 +249,13 @@ export function renderApplicationShell(): string {
           <article><h3>When risk increases</h3><p id="modal-when"></p></article>
           <article><h3>Where effects appear</h3><p id="modal-where"></p></article>
         </div>
+        <section class="cascade-section" aria-labelledby="cascade-title">
+          <div class="term-heading">
+            <div><p class="eyebrow">Cascading effect</p><h3 id="cascade-title">Follow the disruption from cause to consequence</h3></div>
+            <small>A cascading effect is a problem that moves through connected systems.</small>
+          </div>
+          <div id="modal-cascade" class="cascade-chain"></div>
+        </section>
         <section class="term-section">
           <div class="term-heading"><div><p class="eyebrow">Definitions</p><h3>Key terms used in this scenario</h3></div><small>Open each term before deciding.</small></div>
           <div id="modal-terms" class="term-grid"></div>

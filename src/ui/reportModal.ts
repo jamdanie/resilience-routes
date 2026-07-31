@@ -66,6 +66,11 @@ export function createReportModalController(
                   <h3>${decision.selectedOption}</h3>
                   <p><b>Result:</b> ${decision.correct ? "Effective response" : "Response increased risk"} · Resilience ${decision.resilienceChange >= 0 ? "+" : ""}${decision.resilienceChange}</p>
                   <p><b>Reason:</b> ${decision.rationale}</p>
+                  <div class="report-calculation">
+                    <span>Score calculation</span>
+                    <code>${decision.calculation}</code>
+                    <small>Started at ${decision.resilienceBefore}; ended at ${decision.resilienceAfter}. Disruption loss: ${decision.disruptionLoss}.${decision.responseRecovery ? ` Response recovery: ${decision.responseRecovery}.` : ""}${decision.wrongAnswerPenalty ? ` Added decision penalty: ${decision.wrongAnswerPenalty}.` : ""}</small>
+                  </div>
                   <p><b>Lesson:</b> ${decision.takeaway}</p>
                 </div>
               </article>
