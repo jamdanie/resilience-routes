@@ -54,7 +54,9 @@ src/
 ├── game/
 │   ├── config.ts
 │   ├── createSupplyChainGame.ts
+│   ├── LiveLogisticsLayer.ts
 │   ├── SupplyChainScene.ts
+│   ├── WeatherSystemLayer.ts
 │   └── types.ts
 ├── ui/
 │   ├── appShell.ts
@@ -89,3 +91,7 @@ This matches a GitHub Pages repository named `resilience-routes`. The included w
 ## Educational-use statement
 
 All locations, disruptions, scores, and network conditions are fictional. The project does not use live flight, maritime, logistics, cybersecurity, weather, or emergency data and should not be used for operational decisions.
+
+## Dynamic disruption behavior
+
+The map does more than label a response as delayed, holding, or rerouted. Scenario decisions now change asset speed, stop unsafe movement, draw alternate paths, and update the network movement board. Weather remains a separate temporary effect, so a scenario restriction is still active after the storm clears.

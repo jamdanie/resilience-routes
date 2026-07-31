@@ -77,10 +77,28 @@ export interface LogisticsAssetInfo {
   name: string;
   mode: LogisticsMode;
   status: LogisticsStatus;
+  routeState: "Planned route" | "Alternate route";
   route: string;
   cargo: string;
   meaning: string;
   operationalNote: string;
+}
+
+export interface LogisticsTransition {
+  assetId: string;
+  name: string;
+  mode: LogisticsMode;
+  previousStatus: LogisticsStatus;
+  status: LogisticsStatus;
+  reason: string;
+}
+
+export interface LogisticsSnapshot {
+  assets: LogisticsAssetInfo[];
+  moving: number;
+  delayed: number;
+  holding: number;
+  rerouted: number;
 }
 
 export type WeatherPhase = "approaching" | "warning" | "clearing";

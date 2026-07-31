@@ -8,6 +8,7 @@ import type {
   Difficulty,
   GameReport,
   HudUpdate,
+  LogisticsTransition,
   Scenario
 } from "./types";
 
@@ -73,7 +74,8 @@ export class SupplyChainScene extends Phaser.Scene {
     this.logisticsLayer = new LiveLogisticsLayer(this);
     this.logisticsLayer.create();
     this.weatherLayer = new WeatherSystemLayer(this, (phase) => {
-      this.logisticsLayer.applyWeatherPhase(phase);
+      const transitions = this.logisticsLayer.applyWeatherPhase(phase);
+      this.emitTransportationUpdate("Weather effect", transitions, phase === "warning" ? "critical" : "info");
     });
     this.weatherLayer.create();
     this.createNodes();
@@ -444,11 +446,15 @@ export class SupplyChainScene extends Phaser.Scene {
     if (this.challengeOpen || this.finished || node.completed) return;
 
     this.challengeOpen = true;
-    this.logisticsLayer.applyScenarioDisruption(node.scenario.id);
+    node.card.setFillStyle(0x35212a, 1).setStrokeStyle(2, 0xff7d88, 1);
+    node.status.setText("ACTIVE DISRUPTION").setColor("#ff9ca5");
+    node.container.disableInteractive();
+
+    const transitions = this.logisticsLayer.applyScenarioDisruption(node.scenario.id);
     this.game.events.emit("node-focus", node.scenario);
     this.game.events.emit("mission-log", {
       level: "warning",
-      text: `${node.scenario.title}: ${node.scenario.event}`
+      text: `${node.scenario.title}: ${node.scenario.event} ${this.describeTransitions(transitions)}`
     });
 
     const disruptionLoss = Math.round(
@@ -495,15 +501,22 @@ export class SupplyChainScene extends Phaser.Scene {
     );
 
     node.completed = true;
-    node.card.setFillStyle(0x12332d, 1).setStrokeStyle(2, 0x70c995, 1);
-    node.label.setColor("#dff8ec");
-    node.status.setText("STABILIZED").setColor("#70c995");
     node.container.setScale(1);
     node.container.disableInteractive();
 
     this.completed += 1;
     this.challengeOpen = false;
-    this.logisticsLayer.resolveScenario(scenario.id, correct);
+    const transitions = this.logisticsLayer.resolveScenario(scenario.id, correct);
+
+    if (correct) {
+      node.card.setFillStyle(0x12332d, 1).setStrokeStyle(2, 0x70c995, 1);
+      node.label.setColor("#dff8ec");
+      node.status.setText("STABILIZED").setColor("#70c995");
+    } else {
+      node.card.setFillStyle(0x382c1b, 1).setStrokeStyle(2, 0xf0bd62, 1);
+      node.label.setColor("#fff0cf");
+      node.status.setText("DEGRADED").setColor("#f0bd62");
+    }
 
     this.decisions.push({
       scenarioId: scenario.id,
@@ -533,9 +546,9 @@ export class SupplyChainScene extends Phaser.Scene {
     });
     this.game.events.emit("mission-log", {
       level: correct ? "success" : "critical",
-      text: `${scenario.title} stabilized. Resilience ${
+      text: `${scenario.title} ${correct ? "stabilized" : "remains degraded"}. Resilience ${
         resilienceChange >= 0 ? "+" : ""
-      }${resilienceChange}.`
+      }${resilienceChange}. ${this.describeTransitions(transitions)}`
     });
 
     this.emitHud();
@@ -558,12 +571,37 @@ export class SupplyChainScene extends Phaser.Scene {
     this.game.events.emit("hud-update", update);
   }
 
+  private emitTransportationUpdate(
+    label: string,
+    transitions: LogisticsTransition[],
+    level: "info" | "warning" | "critical" | "success"
+  ): void {
+    if (transitions.length === 0) return;
+    this.game.events.emit("mission-log", {
+      level,
+      text: `${label}: ${this.describeTransitions(transitions)}`
+    });
+  }
+
+  private describeTransitions(transitions: LogisticsTransition[]): string {
+    if (transitions.length === 0) return "No transportation status changed.";
+    return transitions
+      .map((transition) => `${transition.name} is ${transition.status.toLowerCase()}`)
+      .join("; ") + ".";
+  }
+
   private finishGame(outcome: GameReport["outcome"]): void {
     if (this.finished) return;
 
     this.finished = true;
     this.logisticsLayer.setMissionComplete();
     this.promptText.setText("Mission complete. Review the after-action report.");
+    this.game.events.emit("mission-log", {
+      level: outcome === "completed" ? "success" : "critical",
+      text: outcome === "completed"
+        ? "Mission objective complete. Transportation activity is frozen for after-action review."
+        : "Mission ended before the network objective was completed. Transportation activity is frozen for review."
+    });
 
     const report: GameReport = {
       difficulty: this.difficulty,
