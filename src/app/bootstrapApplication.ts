@@ -5,7 +5,8 @@ import type {
   GameReport,
   HudUpdate,
   LogisticsAssetInfo,
-  Scenario
+  Scenario,
+  WeatherUpdate
 } from "../game/types";
 import { renderApplicationShell } from "../ui/appShell";
 import {
@@ -59,6 +60,13 @@ export function bootstrapApplication(): void {
   const assetRoute = requiredElement<HTMLElement>("#asset-route");
   const assetCargo = requiredElement<HTMLElement>("#asset-cargo");
   const assetDefinition = requiredElement<HTMLElement>("#asset-definition");
+  const weatherPanel = requiredElement<HTMLElement>("#weather-panel");
+  const weatherSeverity = requiredElement<HTMLElement>("#weather-severity");
+  const weatherTitle = requiredElement<HTMLElement>("#weather-title");
+  const weatherSummary = requiredElement<HTMLElement>("#weather-summary");
+  const weatherWind = requiredElement<HTMLElement>("#weather-wind");
+  const weatherArea = requiredElement<HTMLElement>("#weather-area");
+  const weatherTiming = requiredElement<HTMLElement>("#weather-timing");
 
   const guide = createGuidePanelController();
   const glossary = createGlossaryPanelController();
@@ -89,6 +97,13 @@ export function bootstrapApplication(): void {
     assetRoute.textContent = "Select an icon on the map.";
     assetCargo.textContent = "Movement details will appear here.";
     assetDefinition.innerHTML = `<b>Live logistics</b><span>Animated assets show how goods continue moving, hold, delay, or reroute during a disruption.</span>`;
+    weatherPanel.dataset.phase = "idle";
+    weatherSeverity.textContent = "Forecast monitoring";
+    weatherTitle.textContent = "High-wind system expected";
+    weatherSummary.textContent = "Launch the scenario to track the storm across the regional network.";
+    weatherWind.textContent = "Forecast pending";
+    weatherArea.textContent = "Coastal and inland routes";
+    weatherTiming.textContent = "Awaiting launch";
     logCounter = 0;
   };
 
@@ -183,6 +198,15 @@ export function bootstrapApplication(): void {
       assetRoute.textContent = asset.route;
       assetCargo.textContent = asset.cargo;
       assetDefinition.innerHTML = `<b>${asset.mode}</b><span>${asset.meaning}</span>`;
+    });
+    game.events.on("weather-update", (weather: WeatherUpdate) => {
+      weatherPanel.dataset.phase = weather.phase;
+      weatherSeverity.textContent = weather.severity;
+      weatherTitle.textContent = weather.title;
+      weatherSummary.textContent = weather.summary;
+      weatherWind.textContent = weather.wind;
+      weatherArea.textContent = weather.affectedArea;
+      weatherTiming.textContent = weather.timing;
     });
     game.events.on("decision-result", (result: DecisionResult) => {
       const direction = result.resilienceChange >= 0 ? "+" : "";

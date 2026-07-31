@@ -82,3 +82,15 @@ export interface LogisticsAssetInfo {
   meaning: string;
   operationalNote: string;
 }
+
+export type WeatherPhase = "approaching" | "warning" | "clearing";
+
+export interface WeatherUpdate {
+  phase: WeatherPhase;
+  title: string;
+  severity: string;
+  summary: string;
+  wind: string;
+  affectedArea: string;
+  timing: string;
+}

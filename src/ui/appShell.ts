@@ -157,6 +157,18 @@ export function renderApplicationShell(): string {
                 </div>
               </section>
 
+              <section id="weather-panel" class="weather-panel" data-phase="idle" aria-live="polite">
+                <div class="panel-title"><span>Weather disruption</span><i class="weather-pulse"></i></div>
+                <span id="weather-severity" class="intel-type">Forecast monitoring</span>
+                <h3 id="weather-title">High-wind system expected</h3>
+                <p id="weather-summary">Launch the scenario to track the storm across the regional network.</p>
+                <dl class="weather-details">
+                  <div><dt>Wind</dt><dd id="weather-wind">Forecast pending</dd></div>
+                  <div><dt>Area</dt><dd id="weather-area">Coastal and inland routes</dd></div>
+                  <div><dt>Timing</dt><dd id="weather-timing">Awaiting launch</dd></div>
+                </dl>
+              </section>
+
               <section class="incident-panel">
                 <div class="panel-title"><span>Mission log</span><button id="clear-log" type="button">Clear</button></div>
                 <div id="mission-log" class="mission-log" aria-live="polite">

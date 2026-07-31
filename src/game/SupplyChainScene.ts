@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import scenariosJson from "../data/scenarios.json";
 import { difficultySettings, MISSION_TARGET } from "./config";
 import { LiveLogisticsLayer } from "./LiveLogisticsLayer";
+import { WeatherSystemLayer } from "./WeatherSystemLayer";
 import type {
   DecisionRecord,
   Difficulty,
@@ -56,6 +57,7 @@ export class SupplyChainScene extends Phaser.Scene {
   private lastTimerUpdate = 0;
   private finished = false;
   private logisticsLayer!: LiveLogisticsLayer;
+  private weatherLayer!: WeatherSystemLayer;
 
   constructor(difficulty: Difficulty) {
     super("SupplyChainScene");
@@ -70,6 +72,10 @@ export class SupplyChainScene extends Phaser.Scene {
     this.drawWorld();
     this.logisticsLayer = new LiveLogisticsLayer(this);
     this.logisticsLayer.create();
+    this.weatherLayer = new WeatherSystemLayer(this, (phase) => {
+      this.logisticsLayer.applyWeatherPhase(phase);
+    });
+    this.weatherLayer.create();
     this.createNodes();
     this.createPlayer();
     this.createControls();
@@ -84,6 +90,7 @@ export class SupplyChainScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number): void {
+    this.weatherLayer.update(delta);
     this.logisticsLayer.update(delta);
     if (this.finished || this.challengeOpen) return;
 

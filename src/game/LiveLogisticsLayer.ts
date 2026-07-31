@@ -2,7 +2,8 @@ import Phaser from "phaser";
 import type {
   LogisticsAssetInfo,
   LogisticsMode,
-  LogisticsStatus
+  LogisticsStatus,
+  WeatherPhase
 } from "./types";
 
 interface LogisticsAssetDefinition extends Omit<LogisticsAssetInfo, "status" | "operationalNote"> {
@@ -24,6 +25,9 @@ interface LogisticsAssetView {
   totalLength: number;
   progress: number;
   status: LogisticsStatus;
+  scenarioStatus: LogisticsStatus | null;
+  weatherStatus: LogisticsStatus | null;
+  missionComplete: boolean;
 }
 
 const STATUS_COLORS: Record<LogisticsStatus, number> = {
@@ -40,6 +44,14 @@ const STATUS_SPEED: Record<LogisticsStatus, number> = {
   Holding: 0,
   Rerouted: 0.82,
   "Mission complete": 0.45
+};
+
+const STATUS_PRIORITY: Record<LogisticsStatus, number> = {
+  "In transit": 0,
+  Rerouted: 1,
+  Delayed: 2,
+  Holding: 3,
+  "Mission complete": 4
 };
 
 const ASSETS: LogisticsAssetDefinition[] = [
@@ -143,7 +155,7 @@ export class LiveLogisticsLayer {
 
   applyScenarioDisruption(scenarioId: string): void {
     const effects = SCENARIO_EFFECTS[scenarioId] ?? [];
-    effects.forEach(({ assetId, status }) => this.setStatus(assetId, status));
+    effects.forEach(({ assetId, status }) => this.setScenarioStatus(assetId, status));
   }
 
   resolveScenario(scenarioId: string, correct: boolean): void {
@@ -156,12 +168,40 @@ export class LiveLogisticsLayer {
         : status === "Rerouted"
           ? "Delayed"
           : status;
-      this.setStatus(assetId, resolvedStatus);
+      this.setScenarioStatus(assetId, resolvedStatus);
+    });
+  }
+
+  applyWeatherPhase(phase: WeatherPhase): void {
+    const weatherEffects: Record<WeatherPhase, Record<string, LogisticsStatus>> = {
+      approaching: {
+        "vessel-cascade": "Delayed",
+        "airlift-27": "Delayed"
+      },
+      warning: {
+        "vessel-cascade": "Holding",
+        "airlift-27": "Holding",
+        "freight-6": "Delayed",
+        "roadlink-14": "Delayed"
+      },
+      clearing: {
+        "vessel-cascade": "Rerouted",
+        "airlift-27": "Rerouted"
+      }
+    };
+
+    const activeEffects = weatherEffects[phase];
+    this.assets.forEach((asset) => {
+      asset.weatherStatus = activeEffects[asset.definition.id] ?? null;
+      this.applyEffectiveStatus(asset);
     });
   }
 
   setMissionComplete(): void {
-    this.assets.forEach((asset) => this.setStatus(asset.definition.id, "Mission complete"));
+    this.assets.forEach((asset) => {
+      asset.missionComplete = true;
+      this.applyEffectiveStatus(asset);
+    });
   }
 
   private drawLayerLabel(): void {
@@ -229,7 +269,10 @@ export class LiveLogisticsLayer {
       segmentLengths,
       totalLength,
       progress: definition.startProgress,
-      status: "In transit"
+      status: "In transit",
+      scenarioStatus: null,
+      weatherStatus: null,
+      missionComplete: false
     };
     this.assets.set(definition.id, view);
 
@@ -324,18 +367,29 @@ export class LiveLogisticsLayer {
     return { point: asset.points[0].clone(), angle: 0 };
   }
 
-  private setStatus(assetId: string, status: LogisticsStatus): void {
+  private setScenarioStatus(assetId: string, status: LogisticsStatus): void {
     const asset = this.assets.get(assetId);
     if (!asset) return;
+
+    asset.scenarioStatus = status;
+    this.applyEffectiveStatus(asset);
+  }
+
+  private applyEffectiveStatus(asset: LogisticsAssetView): void {
+    const status = asset.missionComplete
+      ? "Mission complete"
+      : [asset.scenarioStatus, asset.weatherStatus]
+          .filter((candidate): candidate is LogisticsStatus => candidate !== null)
+          .sort((a, b) => STATUS_PRIORITY[b] - STATUS_PRIORITY[a])[0] ?? "In transit";
 
     asset.status = status;
     asset.statusDot.setFillStyle(STATUS_COLORS[status], 1);
     asset.statusLabel
       .setText(status.toUpperCase())
       .setColor(`#${STATUS_COLORS[status].toString(16).padStart(6, "0")}`)
-      .setVisible(status !== "In transit" || this.selectedAssetId === assetId);
+      .setVisible(status !== "In transit" || this.selectedAssetId === asset.definition.id);
 
-    if (this.selectedAssetId === assetId) this.emitAssetFocus(asset);
+    if (this.selectedAssetId === asset.definition.id) this.emitAssetFocus(asset);
   }
 
   private emitAssetFocus(asset: LogisticsAssetView): void {

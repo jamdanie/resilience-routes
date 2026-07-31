@@ -2,8 +2,6 @@ export function renderLandingScreen(): string {
   return `
     <main id="landing-screen" class="landing-screen">
       <div class="landing-grid" aria-hidden="true"></div>
-      <div class="landing-orbit orbit-one" aria-hidden="true"></div>
-      <div class="landing-orbit orbit-two" aria-hidden="true"></div>
 
       <header class="landing-header">
         <div class="landing-brand">
@@ -41,7 +39,6 @@ export function renderLandingScreen(): string {
             <strong>Pacific Northwest Continuity Exercise</strong>
           </div>
           <div class="brief-map" aria-hidden="true">
-            <i class="route route-a"></i><i class="route route-b"></i><i class="route route-c"></i>
             <b class="node node-a"></b><b class="node node-b"></b><b class="node node-c"></b><b class="node node-d"></b>
           </div>
           <dl>

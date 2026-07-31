@@ -20,27 +20,6 @@
   mask-image: linear-gradient(to bottom, black, transparent 88%);
 }
 
-.landing-orbit {
-  position: absolute;
-  border: 1px solid rgba(94, 177, 241, 0.12);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.orbit-one {
-  top: 12%;
-  right: 4%;
-  width: 430px;
-  height: 430px;
-}
-
-.orbit-two {
-  top: -4%;
-  right: -12%;
-  width: 760px;
-  height: 760px;
-}
-
 .landing-header,
 .landing-content,
 .landing-footer,
