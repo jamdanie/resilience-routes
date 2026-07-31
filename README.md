@@ -1,32 +1,33 @@
-# Resilience Routes V5
+# Resilience Routes
 
-**Global Operations & Critical Infrastructure Simulator**
+Resilience Routes is a portfolio-ready educational simulator about supply-chain interdependence, critical infrastructure, disruption, and recovery decisions.
 
-Resilience Routes is a static, browser-based educational simulation inspired by Sunny Wescott's concept for teaching global supply-chain interdependence, infrastructure resilience, hazard response, and resource sharing.
+## What this rebuild changes
 
-**Live site:** https://jamdanie.github.io/resilience-routes/
+The project keeps the familiar entry points and names:
 
-## V5 highlights
+- `src/main.ts`
+- `src/style.css`
+- `src/game/SupplyChainScene.ts`
+- `src/game/types.ts`
+- `src/ui/landing.ts`
+- `src/data/scenarios.json`
 
-- Animated simulated ships, cargo aircraft, freight trains, and trucks
-- Global and regional logistics routes
-- Ports, airports, rail, warehouses, power, fuel, water, and logistics data
-- Hospitals, schools, emergency operations centers, cloud infrastructure, and large gatherings
-- Cyber threats, AI-enabled social engineering, infrastructure anomalies, weather, and crowd risk
-- Planning phase with limited preparedness investments
-- Live operational event feed
-- Selectable shipments, infrastructure, threats, and points of interest
-- Command decisions that affect health, capacity, delay, resilience, confidence, and score
-- Logistics, cyber, and public-safety advisor perspectives
-- After-action review and print-to-PDF support
-- Contributor attribution and government learning resources
-- GitHub Pages compatible: no database, account, API key, or paid tracker required
+The difference is that each file now has one clear job. `main.ts` is intentionally only four lines and starts the application. The interface, game engine, scenario data, glossary, decision workflow, report, and styling live in separate modules.
 
-## Important limitation
+## Learning approach
 
-All positions, routes, movements, threats, incidents, crowd sizes, and system conditions are fictional and generated locally for educational gameplay. The application does not use FlightRadar24, AIS, live aircraft, live vessel, emergency-warning, law-enforcement, or intelligence feeds.
+Every disruption follows the same sequence:
 
-## Local development
+1. **Define** unfamiliar terms in everyday language.
+2. **Explain** why the infrastructure matters.
+3. **Trace** how, when, and where the disruption spreads.
+4. **Decide** between realistic response options.
+5. **Review** why the selected option helped or increased risk.
+
+No previous supply-chain or emergency-management experience is assumed.
+
+## Run locally
 
 ```powershell
 npm ci
@@ -34,17 +35,57 @@ npm run build
 npm run dev
 ```
 
-## Apply to the existing repository
+Vite will display a local address similar to:
 
-Copy this package's contents into the root of the existing local `resilience-routes` project.
-
-Recommended branch workflow:
-
-```powershell
-git checkout -b feature/v5-simulator
-git add .
-git commit -m "Build Version 5 living operations simulator"
-git push -u origin feature/v5-simulator
+```text
+http://localhost:5173/resilience-routes/
 ```
 
-After reviewing the branch, merge it into `main`. GitHub Pages will deploy to the same live URL.
+## Project structure
+
+```text
+src/
+├── main.ts
+├── style.css
+├── app/
+│   └── bootstrapApplication.ts
+├── data/
+│   └── scenarios.json
+├── game/
+│   ├── config.ts
+│   ├── createSupplyChainGame.ts
+│   ├── SupplyChainScene.ts
+│   └── types.ts
+├── ui/
+│   ├── appShell.ts
+│   ├── challengeModal.ts
+│   ├── dom.ts
+│   ├── drawer.ts
+│   ├── glossary.ts
+│   ├── glossaryPanel.ts
+│   ├── guidePanel.ts
+│   ├── hud.ts
+│   ├── landing.ts
+│   └── reportModal.ts
+└── styles/
+    ├── tokens.css
+    ├── base.css
+    ├── layout.css
+    ├── components.css
+    ├── game.css
+    └── responsive.css
+```
+
+## Deployment
+
+The included Vite configuration uses:
+
+```ts
+base: "/resilience-routes/"
+```
+
+This matches a GitHub Pages repository named `resilience-routes`. The included workflow builds and deploys the `dist` folder.
+
+## Educational-use statement
+
+All locations, disruptions, scores, and network conditions are fictional. The project does not use live flight, maritime, logistics, cybersecurity, weather, or emergency data and should not be used for operational decisions.
