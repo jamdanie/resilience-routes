@@ -142,6 +142,21 @@ export function renderApplicationShell(): string {
                 </div>
               </section>
 
+              <section class="asset-panel" aria-live="polite">
+                <div class="panel-title"><span>Live movements</span><i id="asset-status-dot" class="asset-status-dot"></i></div>
+                <span id="asset-mode" class="intel-type">Asset tracking</span>
+                <h3 id="asset-name">Select a moving asset</h3>
+                <p id="asset-status" class="asset-status">Ships, aircraft, trains, and trucks continue moving behind the network nodes.</p>
+                <dl class="asset-details">
+                  <div><dt>Route</dt><dd id="asset-route">Select an icon on the map.</dd></div>
+                  <div><dt>Cargo</dt><dd id="asset-cargo">Movement details will appear here.</dd></div>
+                </dl>
+                <div id="asset-definition" class="focus-terms">
+                  <b>Live logistics</b>
+                  <span>Animated assets show how goods continue moving, hold, delay, or reroute during a disruption.</span>
+                </div>
+              </section>
+
               <section class="incident-panel">
                 <div class="panel-title"><span>Mission log</span><button id="clear-log" type="button">Clear</button></div>
                 <div id="mission-log" class="mission-log" aria-live="polite">

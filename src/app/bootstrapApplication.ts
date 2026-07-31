@@ -1,6 +1,12 @@
 import type Phaser from "phaser";
 import { createSupplyChainGame } from "../game/createSupplyChainGame";
-import type { Difficulty, GameReport, HudUpdate, Scenario } from "../game/types";
+import type {
+  Difficulty,
+  GameReport,
+  HudUpdate,
+  LogisticsAssetInfo,
+  Scenario
+} from "../game/types";
 import { renderApplicationShell } from "../ui/appShell";
 import {
   createChallengeModalController,
@@ -46,6 +52,13 @@ export function bootstrapApplication(): void {
   const focusEvent = requiredElement<HTMLElement>("#focus-event");
   const focusTerms = requiredElement<HTMLElement>("#focus-terms");
   const missionLog = requiredElement<HTMLElement>("#mission-log");
+  const assetMode = requiredElement<HTMLElement>("#asset-mode");
+  const assetName = requiredElement<HTMLElement>("#asset-name");
+  const assetStatus = requiredElement<HTMLElement>("#asset-status");
+  const assetStatusDot = requiredElement<HTMLElement>("#asset-status-dot");
+  const assetRoute = requiredElement<HTMLElement>("#asset-route");
+  const assetCargo = requiredElement<HTMLElement>("#asset-cargo");
+  const assetDefinition = requiredElement<HTMLElement>("#asset-definition");
 
   const guide = createGuidePanelController();
   const glossary = createGlossaryPanelController();
@@ -69,6 +82,13 @@ export function bootstrapApplication(): void {
     focusEvent.textContent = "Hover over, approach, or select a node to preview the disruption located there.";
     focusTerms.innerHTML = `<b>Terms will be defined before the decision.</b><span>No prior supply-chain experience is required.</span>`;
     missionLog.innerHTML = `<article class="log-item info"><time>READY</time><p>Launch the scenario to initialize the operating picture.</p></article>`;
+    assetMode.textContent = "Asset tracking";
+    assetName.textContent = "Select a moving asset";
+    assetStatus.textContent = "Ships, aircraft, trains, and trucks continue moving behind the network nodes.";
+    assetStatusDot.dataset.status = "idle";
+    assetRoute.textContent = "Select an icon on the map.";
+    assetCargo.textContent = "Movement details will appear here.";
+    assetDefinition.innerHTML = `<b>Live logistics</b><span>Animated assets show how goods continue moving, hold, delay, or reroute during a disruption.</span>`;
     logCounter = 0;
   };
 
@@ -154,6 +174,15 @@ export function bootstrapApplication(): void {
       focusTitle.textContent = scenario.title;
       focusEvent.textContent = scenario.event;
       focusTerms.innerHTML = `<b>${scenario.keyTerms.length} terms defined</b><span>${scenario.keyTerms.map((term) => term.term).join(" · ")}</span>`;
+    });
+    game.events.on("logistics-focus", (asset: LogisticsAssetInfo) => {
+      assetMode.textContent = asset.mode;
+      assetName.textContent = asset.name;
+      assetStatus.textContent = `${asset.status}. ${asset.operationalNote}`;
+      assetStatusDot.dataset.status = asset.status.toLowerCase().replaceAll(" ", "-");
+      assetRoute.textContent = asset.route;
+      assetCargo.textContent = asset.cargo;
+      assetDefinition.innerHTML = `<b>${asset.mode}</b><span>${asset.meaning}</span>`;
     });
     game.events.on("decision-result", (result: DecisionResult) => {
       const direction = result.resilienceChange >= 0 ? "+" : "";

@@ -62,3 +62,23 @@ export interface HudUpdate {
   target: number;
   remainingSeconds: number | null;
 }
+
+export type LogisticsMode = "Vessel" | "Aircraft" | "Freight train" | "Truck";
+
+export type LogisticsStatus =
+  | "In transit"
+  | "Delayed"
+  | "Holding"
+  | "Rerouted"
+  | "Mission complete";
+
+export interface LogisticsAssetInfo {
+  id: string;
+  name: string;
+  mode: LogisticsMode;
+  status: LogisticsStatus;
+  route: string;
+  cargo: string;
+  meaning: string;
+  operationalNote: string;
+}

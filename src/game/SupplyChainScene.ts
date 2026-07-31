@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import scenariosJson from "../data/scenarios.json";
 import { difficultySettings, MISSION_TARGET } from "./config";
+import { LiveLogisticsLayer } from "./LiveLogisticsLayer";
 import type {
   DecisionRecord,
   Difficulty,
@@ -38,6 +39,7 @@ export class SupplyChainScene extends Phaser.Scene {
   private readonly difficulty: Difficulty;
   private readonly settings;
   private player!: Phaser.GameObjects.Arc;
+  private playerHalo!: Phaser.GameObjects.Arc;
   private playerLabel!: Phaser.GameObjects.Text;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!: Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
@@ -53,6 +55,7 @@ export class SupplyChainScene extends Phaser.Scene {
   private decisions: DecisionRecord[] = [];
   private lastTimerUpdate = 0;
   private finished = false;
+  private logisticsLayer!: LiveLogisticsLayer;
 
   constructor(difficulty: Difficulty) {
     super("SupplyChainScene");
@@ -65,6 +68,8 @@ export class SupplyChainScene extends Phaser.Scene {
     this.remainingSeconds = this.settings.timeLimitSeconds;
 
     this.drawWorld();
+    this.logisticsLayer = new LiveLogisticsLayer(this);
+    this.logisticsLayer.create();
     this.createNodes();
     this.createPlayer();
     this.createControls();
@@ -79,6 +84,7 @@ export class SupplyChainScene extends Phaser.Scene {
   }
 
   update(time: number, delta: number): void {
+    this.logisticsLayer.update(delta);
     if (this.finished || this.challengeOpen) return;
 
     this.updateMovement(delta);
@@ -202,6 +208,7 @@ export class SupplyChainScene extends Phaser.Scene {
 
   private drawLegend(): void {
     const legend = this.add.container(30, 105);
+    legend.setDepth(3);
     const panel = this.add
       .rectangle(0, 0, 162, 48, 0x0b192a, 0.92)
       .setOrigin(0)
@@ -225,6 +232,7 @@ export class SupplyChainScene extends Phaser.Scene {
     this.nodes = scenarios.map((scenario) => {
       const y = scenario.y + 30;
       const container = this.add.container(scenario.x, y);
+      container.setDepth(4);
       const accentColor = Phaser.Display.Color.HexStringToColor(scenario.color).color;
 
       const shadow = this.add
@@ -308,9 +316,10 @@ export class SupplyChainScene extends Phaser.Scene {
   private createPlayer(): void {
     this.player = this.add
       .circle(475, 320, 15, 0x58aef5, 1)
-      .setStrokeStyle(4, 0xe0f1ff, 1);
+      .setStrokeStyle(4, 0xe0f1ff, 1)
+      .setDepth(5);
 
-    this.add.circle(475, 320, 23, 0x58aef5, 0.12);
+    this.playerHalo = this.add.circle(475, 320, 23, 0x58aef5, 0.12).setDepth(5);
 
     this.playerLabel = this.add
       .text(475, 349, "RESPONSE LEAD", {
@@ -319,7 +328,8 @@ export class SupplyChainScene extends Phaser.Scene {
         color: "#dcecff",
         fontStyle: "bold"
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(5);
   }
 
   private createControls(): void {
@@ -349,7 +359,8 @@ export class SupplyChainScene extends Phaser.Scene {
         padding: { x: 15, y: 9 }
       })
       .setOrigin(0.5)
-      .setStroke("#07111f", 1);
+      .setStroke("#07111f", 1)
+      .setDepth(6);
   }
 
   private updateMovement(delta: number): void {
@@ -378,6 +389,7 @@ export class SupplyChainScene extends Phaser.Scene {
       540
     );
     this.playerLabel.setPosition(this.player.x, this.player.y + 29);
+    this.playerHalo.setPosition(this.player.x, this.player.y);
   }
 
   private updateNearbyPrompt(): void {
@@ -425,6 +437,7 @@ export class SupplyChainScene extends Phaser.Scene {
     if (this.challengeOpen || this.finished || node.completed) return;
 
     this.challengeOpen = true;
+    this.logisticsLayer.applyScenarioDisruption(node.scenario.id);
     this.game.events.emit("node-focus", node.scenario);
     this.game.events.emit("mission-log", {
       level: "warning",
@@ -483,6 +496,7 @@ export class SupplyChainScene extends Phaser.Scene {
 
     this.completed += 1;
     this.challengeOpen = false;
+    this.logisticsLayer.resolveScenario(scenario.id, correct);
 
     this.decisions.push({
       scenarioId: scenario.id,
@@ -541,6 +555,7 @@ export class SupplyChainScene extends Phaser.Scene {
     if (this.finished) return;
 
     this.finished = true;
+    this.logisticsLayer.setMissionComplete();
     this.promptText.setText("Mission complete. Review the after-action report.");
 
     const report: GameReport = {

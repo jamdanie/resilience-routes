@@ -308,7 +308,8 @@ select {
 }
 
 .intel-panel,
-.incident-panel {
+.incident-panel,
+.asset-panel {
   padding: 17px;
 }
 
@@ -319,6 +320,73 @@ select {
 
 .intel-panel p {
   font-size: 0.85rem;
+}
+
+.asset-panel h3 {
+  margin: 8px 0 7px;
+  font-size: 1.08rem;
+}
+
+.asset-panel p {
+  margin-bottom: 12px;
+  font-size: 0.78rem;
+}
+
+.asset-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #587087;
+  box-shadow: 0 0 0 4px rgba(88, 112, 135, 0.12);
+}
+
+.asset-status-dot[data-status="in-transit"] {
+  background: var(--green);
+  box-shadow: 0 0 0 4px rgba(101, 213, 157, 0.12);
+}
+
+.asset-status-dot[data-status="delayed"] {
+  background: var(--amber);
+}
+
+.asset-status-dot[data-status="holding"] {
+  background: var(--red);
+}
+
+.asset-status-dot[data-status="rerouted"] {
+  background: var(--blue);
+}
+
+.asset-status-dot[data-status="mission-complete"] {
+  background: #9d8df1;
+}
+
+.asset-details {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.asset-details div {
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #081725;
+}
+
+.asset-details dt {
+  color: var(--blue);
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.asset-details dd {
+  margin: 4px 0 0;
+  color: #9db2c7;
+  font-size: 0.7rem;
+  line-height: 1.4;
 }
 
 .intel-type {
