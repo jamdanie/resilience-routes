@@ -1,66 +1,46 @@
 import Phaser from "phaser";
 import scenariosJson from "../data/scenarios.json";
+import { difficultySettings, MISSION_TARGET } from "./config";
+import { LiveLogisticsLayer } from "./LiveLogisticsLayer";
+import { WeatherSystemLayer } from "./WeatherSystemLayer";
 import type {
   DecisionRecord,
   Difficulty,
   GameReport,
+  HudUpdate,
   Scenario
 } from "./types";
 
 const scenarios = scenariosJson as Scenario[];
 
-interface DifficultySettings {
-  movementSpeed: number;
-  disruptionMultiplier: number;
-  wrongAnswerPenalty: number;
-  correctAnswerRecovery: number;
-  timeLimitSeconds: number | null;
-  showHints: boolean;
-  startingResilience: number;
-}
-
-const difficultySettings: Record<Difficulty, DifficultySettings> = {
-  easy: {
-    movementSpeed: 225,
-    disruptionMultiplier: 0.65,
-    wrongAnswerPenalty: 3,
-    correctAnswerRecovery: 8,
-    timeLimitSeconds: null,
-    showHints: true,
-    startingResilience: 90
-  },
-  medium: {
-    movementSpeed: 205,
-    disruptionMultiplier: 1,
-    wrongAnswerPenalty: 7,
-    correctAnswerRecovery: 5,
-    timeLimitSeconds: 240,
-    showHints: false,
-    startingResilience: 82
-  },
-  hard: {
-    movementSpeed: 190,
-    disruptionMultiplier: 1.35,
-    wrongAnswerPenalty: 12,
-    correctAnswerRecovery: 2,
-    timeLimitSeconds: 180,
-    showHints: false,
-    startingResilience: 74
-  }
-};
-
 interface NodeView {
   scenario: Scenario;
   container: Phaser.GameObjects.Container;
   card: Phaser.GameObjects.Rectangle;
+  status: Phaser.GameObjects.Text;
   label: Phaser.GameObjects.Text;
   completed: boolean;
 }
 
+interface ChallengeRequest {
+  scenario: Scenario;
+  showHint: boolean;
+  scoring: {
+    currentResilience: number;
+    basePenalty: number;
+    disruptionLoss: number;
+    disruptionMultiplier: number;
+    responseRecovery: number;
+    wrongAnswerPenalty: number;
+  };
+  resolve: (selectedIndex: number) => void;
+}
+
 export class SupplyChainScene extends Phaser.Scene {
-  private difficulty: Difficulty;
-  private settings: DifficultySettings;
+  private readonly difficulty: Difficulty;
+  private readonly settings;
   private player!: Phaser.GameObjects.Arc;
+  private playerHalo!: Phaser.GameObjects.Arc;
   private playerLabel!: Phaser.GameObjects.Text;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasd!: Record<"W" | "A" | "S" | "D", Phaser.Input.Keyboard.Key>;
@@ -72,9 +52,12 @@ export class SupplyChainScene extends Phaser.Scene {
   private resilience = 0;
   private completed = 0;
   private remainingSeconds: number | null = null;
+  private elapsedSeconds = 0;
   private decisions: DecisionRecord[] = [];
   private lastTimerUpdate = 0;
   private finished = false;
+  private logisticsLayer!: LiveLogisticsLayer;
+  private weatherLayer!: WeatherSystemLayer;
 
   constructor(difficulty: Difficulty) {
     super("SupplyChainScene");
@@ -87,166 +70,247 @@ export class SupplyChainScene extends Phaser.Scene {
     this.remainingSeconds = this.settings.timeLimitSeconds;
 
     this.drawWorld();
+    this.logisticsLayer = new LiveLogisticsLayer(this);
+    this.logisticsLayer.create();
+    this.weatherLayer = new WeatherSystemLayer(this, (phase) => {
+      this.logisticsLayer.applyWeatherPhase(phase);
+    });
+    this.weatherLayer.create();
     this.createNodes();
     this.createPlayer();
     this.createControls();
     this.createPrompt();
     this.emitHud();
 
+    this.game.events.emit("mission-log", {
+      level: "info",
+      text: "Regional operating picture initialized. Select an unresolved node."
+    });
     this.game.events.emit("game-ready");
   }
 
   update(time: number, delta: number): void {
+    this.weatherLayer.update(delta);
+    this.logisticsLayer.update(delta);
     if (this.finished || this.challengeOpen) return;
 
     this.updateMovement(delta);
     this.updateNearbyPrompt();
 
-    if (
-      this.remainingSeconds !== null &&
-      time - this.lastTimerUpdate >= 1000
-    ) {
-      const secondsElapsed = Math.floor((time - this.lastTimerUpdate) / 1000);
-      this.remainingSeconds = Math.max(0, this.remainingSeconds - secondsElapsed);
+    if (time - this.lastTimerUpdate >= 1000) {
+      const secondsElapsed = Math.max(
+        1,
+        Math.floor((time - this.lastTimerUpdate) / 1000)
+      );
       this.lastTimerUpdate = time;
-      this.emitHud();
+      this.elapsedSeconds += secondsElapsed;
 
-      if (this.remainingSeconds <= 0) {
-        this.finishGame("time-expired");
+      if (this.remainingSeconds !== null) {
+        this.remainingSeconds = Math.max(
+          0,
+          this.remainingSeconds - secondsElapsed
+        );
+
+        if (this.remainingSeconds <= 0) {
+          this.emitHud();
+          this.finishGame("time-expired");
+          return;
+        }
       }
+
+      this.emitHud();
     }
   }
 
   private drawWorld(): void {
-    this.cameras.main.setBackgroundColor("#111827");
+    this.cameras.main.setBackgroundColor("#07111f");
 
-    const graphics = this.add.graphics();
+    const background = this.add.graphics();
+    background.fillGradientStyle(0x0a1728, 0x0a1728, 0x10243a, 0x10243a, 1);
+    background.fillRect(0, 0, 960, 600);
 
-    graphics.fillStyle(0x162033, 1);
-    graphics.fillRoundedRect(20, 18, 920, 70, 14);
+    background.lineStyle(1, 0x27405b, 0.28);
+    for (let x = 0; x <= 960; x += 48) background.lineBetween(x, 96, x, 600);
+    for (let y = 96; y <= 600; y += 48) background.lineBetween(0, y, 960, y);
 
-    graphics.lineStyle(1, 0x26344a, 0.55);
-    for (let x = 0; x <= 960; x += 48) {
-      graphics.lineBetween(x, 96, x, 600);
-    }
-    for (let y = 96; y <= 600; y += 48) {
-      graphics.lineBetween(0, y, 960, y);
-    }
+    background.fillStyle(0x0d1c2f, 0.98);
+    background.fillRoundedRect(20, 18, 920, 70, 14);
+    background.lineStyle(1, 0x355474, 0.7);
+    background.strokeRoundedRect(20, 18, 920, 70, 14);
 
-    graphics.lineStyle(6, 0x40516b, 0.72);
-    const routes = [
-      [155, 190, 445, 160],
-      [445, 160, 755, 210],
-      [755, 210, 695, 465],
-      [695, 465, 270, 450],
-      [270, 450, 155, 190],
-      [445, 160, 270, 450]
-    ];
+    this.drawRoutes();
 
-    for (const [x1, y1, x2, y2] of routes) {
-      graphics.lineBetween(x1, y1, x2, y2);
-    }
-
-    this.add.text(48, 35, "REGIONAL SUPPLY NETWORK", {
+    this.add.text(48, 33, "REGIONAL SUPPLY NETWORK", {
       fontFamily: "Arial, sans-serif",
       fontSize: "20px",
-      color: "#f3f6fb",
+      color: "#f2f7ff",
       fontStyle: "bold"
     });
 
     this.add.text(
       48,
       61,
-      "Click a node or move through the network to investigate a disruption.",
+      "Investigate connected infrastructure, define the risk, and choose a response.",
       {
         fontFamily: "Arial, sans-serif",
-        fontSize: "13px",
-        color: "#9cabc1"
+        fontSize: "12px",
+        color: "#94abc2"
       }
     );
 
     this.add
-      .text(900, 52, "MISSION 01", {
+      .text(900, 42, "MISSION 01", {
         fontFamily: "Arial, sans-serif",
-        fontSize: "12px",
-        color: "#8ba4cb",
+        fontSize: "11px",
+        color: "#77c8ff",
         fontStyle: "bold"
       })
       .setOrigin(1, 0.5);
+
+    this.add
+      .text(900, 65, "PACIFIC NORTHWEST CONTINUITY", {
+        fontFamily: "Arial, sans-serif",
+        fontSize: "9px",
+        color: "#718ba4"
+      })
+      .setOrigin(1, 0.5);
+
+    this.drawLegend();
+  }
+
+  private drawRoutes(): void {
+    const routes: Array<[number, number, number, number, number]> = [
+      [155, 190, 445, 160, 0x45b7e8],
+      [445, 160, 755, 210, 0xe3b455],
+      [755, 210, 695, 465, 0xd97d58],
+      [695, 465, 270, 450, 0x9a89ef],
+      [270, 450, 155, 190, 0x70c37d],
+      [445, 160, 270, 450, 0x6484a3]
+    ];
+
+    const routeLayer = this.add.graphics();
+    for (const [x1, y1, x2, y2, color] of routes) {
+      routeLayer.lineStyle(8, 0x07111f, 0.95);
+      routeLayer.lineBetween(x1, y1, x2, y2);
+      routeLayer.lineStyle(3, color, 0.62);
+      routeLayer.lineBetween(x1, y1, x2, y2);
+    }
+
+    const flowLayer = this.add.graphics();
+    flowLayer.lineStyle(1, 0x9ccdf1, 0.22);
+    routes.forEach(([x1, y1, x2, y2]) => {
+      const segments = 12;
+      for (let index = 0; index < segments; index += 2) {
+        const start = index / segments;
+        const end = Math.min(1, (index + 1) / segments);
+        flowLayer.lineBetween(
+          Phaser.Math.Linear(x1, x2, start),
+          Phaser.Math.Linear(y1, y2, start),
+          Phaser.Math.Linear(x1, x2, end),
+          Phaser.Math.Linear(y1, y2, end)
+        );
+      }
+    });
+  }
+
+  private drawLegend(): void {
+    const legend = this.add.container(30, 105);
+    legend.setDepth(3);
+    const panel = this.add
+      .rectangle(0, 0, 162, 48, 0x0b192a, 0.92)
+      .setOrigin(0)
+      .setStrokeStyle(1, 0x2a4662, 0.9);
+    const dotOpen = this.add.circle(15, 16, 5, 0x45b7e8, 1);
+    const dotDone = this.add.circle(15, 33, 5, 0x70c37d, 1);
+    const openText = this.add.text(28, 10, "UNRESOLVED NODE", {
+      fontFamily: "Arial, sans-serif",
+      fontSize: "9px",
+      color: "#9db2c7"
+    });
+    const doneText = this.add.text(28, 27, "STABILIZED NODE", {
+      fontFamily: "Arial, sans-serif",
+      fontSize: "9px",
+      color: "#9db2c7"
+    });
+    legend.add([panel, dotOpen, dotDone, openText, doneText]);
   }
 
   private createNodes(): void {
     this.nodes = scenarios.map((scenario) => {
       const y = scenario.y + 30;
       const container = this.add.container(scenario.x, y);
+      container.setDepth(4);
+      const accentColor = Phaser.Display.Color.HexStringToColor(scenario.color).color;
 
       const shadow = this.add
-        .rectangle(3, 5, 154, 84, 0x060a12, 0.28)
+        .rectangle(3, 6, 164, 92, 0x020711, 0.35)
         .setOrigin(0.5);
 
       const card = this.add
-        .rectangle(0, 0, 154, 84, 0x1d293c, 1)
-        .setStrokeStyle(2, 0x52647f, 1)
+        .rectangle(0, 0, 164, 92, 0x122238, 0.98)
+        .setStrokeStyle(2, 0x466681, 1)
         .setOrigin(0.5);
 
-      const accentColor =
-        Phaser.Display.Color.HexStringToColor(scenario.color).color;
-
       const accent = this.add
-        .rectangle(-69, 0, 6, 64, accentColor, 1)
+        .rectangle(-74, 0, 6, 70, accentColor, 1)
         .setOrigin(0.5);
 
       const type = this.add
-        .text(-56, -25, scenario.nodeType.toUpperCase(), {
+        .text(-61, -28, scenario.nodeType.toUpperCase(), {
           fontFamily: "Arial, sans-serif",
-          fontSize: "10px",
-          color: "#91a4bf",
+          fontSize: "9px",
+          color: "#8ca4bc",
           fontStyle: "bold"
         })
         .setOrigin(0, 0.5);
 
       const label = this.add
-        .text(-56, 4, scenario.title, {
+        .text(-61, 1, scenario.title, {
           fontFamily: "Arial, sans-serif",
           fontSize: "14px",
-          color: "#f3f6fb",
+          color: "#f2f7ff",
           fontStyle: "bold",
-          wordWrap: { width: 112 }
+          wordWrap: { width: 122 }
         })
         .setOrigin(0, 0.5);
 
-      const action = this.add
-        .text(-56, 29, "CLICK TO INVESTIGATE", {
+      const status = this.add
+        .text(-61, 31, "INVESTIGATE", {
           fontFamily: "Arial, sans-serif",
           fontSize: "9px",
-          color: "#6f8db9"
+          color: scenario.color,
+          fontStyle: "bold"
         })
         .setOrigin(0, 0.5);
 
-      container.add([shadow, card, accent, type, label, action]);
-      container.setSize(154, 84);
+      container.add([shadow, card, accent, type, label, status]);
+      container.setSize(164, 92);
       container.setInteractive(
-        new Phaser.Geom.Rectangle(-77, -42, 154, 84),
+        new Phaser.Geom.Rectangle(-82, -46, 164, 92),
         Phaser.Geom.Rectangle.Contains
       );
-
-      container.on("pointerover", () => {
-        if (this.finished) return;
-        card.setStrokeStyle(2, 0x8fb2ea, 1);
-        this.game.events.emit("node-focus", scenario);
-      });
-
-      container.on("pointerout", () => {
-        if (!this.finished) card.setStrokeStyle(2, 0x52647f, 1);
-      });
 
       const node: NodeView = {
         scenario,
         container,
         card,
+        status,
         label,
         completed: false
       };
+
+      container.on("pointerover", () => {
+        if (this.finished || node.completed) return;
+        card.setStrokeStyle(2, accentColor, 1);
+        container.setScale(1.025);
+        this.game.events.emit("node-focus", scenario);
+      });
+
+      container.on("pointerout", () => {
+        if (this.finished || node.completed) return;
+        card.setStrokeStyle(2, 0x466681, 1);
+        container.setScale(1);
+      });
 
       container.on("pointerdown", () => {
         if (!node.completed) this.openChallenge(node);
@@ -258,17 +322,21 @@ export class SupplyChainScene extends Phaser.Scene {
 
   private createPlayer(): void {
     this.player = this.add
-      .circle(475, 320, 15, 0x4d7ee8, 1)
-      .setStrokeStyle(4, 0xdce8ff, 1);
+      .circle(475, 320, 15, 0x58aef5, 1)
+      .setStrokeStyle(4, 0xe0f1ff, 1)
+      .setDepth(5);
+
+    this.playerHalo = this.add.circle(475, 320, 23, 0x58aef5, 0.12).setDepth(5);
 
     this.playerLabel = this.add
-      .text(475, 347, "YOU", {
+      .text(475, 349, "RESPONSE LEAD", {
         fontFamily: "Arial, sans-serif",
-        fontSize: "10px",
-        color: "#dce8ff",
+        fontSize: "9px",
+        color: "#dcecff",
         fontStyle: "bold"
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(5);
   }
 
   private createControls(): void {
@@ -292,12 +360,14 @@ export class SupplyChainScene extends Phaser.Scene {
     this.promptText = this.add
       .text(480, 570, "Click a node, or move near one and press E.", {
         fontFamily: "Arial, sans-serif",
-        fontSize: "13px",
-        color: "#dce8ff",
-        backgroundColor: "#162033",
-        padding: { x: 14, y: 8 }
+        fontSize: "12px",
+        color: "#dcecff",
+        backgroundColor: "#0d1d30",
+        padding: { x: 15, y: 9 }
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setStroke("#07111f", 1)
+      .setDepth(6);
   }
 
   private updateMovement(delta: number): void {
@@ -310,36 +380,35 @@ export class SupplyChainScene extends Phaser.Scene {
     if (this.cursors.down.isDown || this.wasd.S.isDown) vertical += 1;
 
     const direction = new Phaser.Math.Vector2(horizontal, vertical);
+    if (direction.lengthSq() === 0) return;
 
-    if (direction.lengthSq() > 0) {
-      direction.normalize();
-      const distance = this.settings.movementSpeed * (delta / 1000);
+    direction.normalize();
+    const distance = this.settings.movementSpeed * (delta / 1000);
 
-      this.player.x = Phaser.Math.Clamp(
-        this.player.x + direction.x * distance,
-        24,
-        936
-      );
-      this.player.y = Phaser.Math.Clamp(
-        this.player.y + direction.y * distance,
-        110,
-        540
-      );
-      this.playerLabel.setPosition(this.player.x, this.player.y + 27);
-    }
+    this.player.x = Phaser.Math.Clamp(
+      this.player.x + direction.x * distance,
+      24,
+      936
+    );
+    this.player.y = Phaser.Math.Clamp(
+      this.player.y + direction.y * distance,
+      110,
+      540
+    );
+    this.playerLabel.setPosition(this.player.x, this.player.y + 29);
+    this.playerHalo.setPosition(this.player.x, this.player.y);
   }
 
   private updateNearbyPrompt(): void {
     const nearest = this.getNearestAvailableNode();
 
-    if (nearest && nearest.distance <= 100) {
-      this.promptText.setText(
-        `Press E to investigate ${nearest.node.scenario.title}`
-      );
+    if (nearest && nearest.distance <= 105) {
+      this.promptText.setText(`Press E to investigate ${nearest.node.scenario.title}`);
       this.game.events.emit("node-focus", nearest.node.scenario);
-    } else {
-      this.promptText.setText("Click a node, or move near one and press E.");
+      return;
     }
+
+    this.promptText.setText("Click a node, or move near one and press E.");
   }
 
   private getNearestAvailableNode():
@@ -363,9 +432,8 @@ export class SupplyChainScene extends Phaser.Scene {
     if (this.challengeOpen || this.finished) return;
 
     const nearest = this.getNearestAvailableNode();
-
-    if (!nearest || nearest.distance > 100) {
-      this.promptText.setText("Move closer to an unfinished node or click it.");
+    if (!nearest || nearest.distance > 105) {
+      this.promptText.setText("Move closer to an unresolved node, or click it directly.");
       return;
     }
 
@@ -376,21 +444,40 @@ export class SupplyChainScene extends Phaser.Scene {
     if (this.challengeOpen || this.finished || node.completed) return;
 
     this.challengeOpen = true;
+    this.logisticsLayer.applyScenarioDisruption(node.scenario.id);
     this.game.events.emit("node-focus", node.scenario);
+    this.game.events.emit("mission-log", {
+      level: "warning",
+      text: `${node.scenario.title}: ${node.scenario.event}`
+    });
 
-    this.game.events.emit("show-challenge", {
+    const disruptionLoss = Math.round(
+      node.scenario.basePenalty * this.settings.disruptionMultiplier
+    );
+
+    const request: ChallengeRequest = {
       scenario: node.scenario,
       showHint: this.settings.showHints,
-      resolve: (selectedIndex: number) =>
-        this.resolveChallenge(node, selectedIndex)
-    });
+      scoring: {
+        currentResilience: this.resilience,
+        basePenalty: node.scenario.basePenalty,
+        disruptionLoss,
+        disruptionMultiplier: this.settings.disruptionMultiplier,
+        responseRecovery: this.settings.correctAnswerRecovery,
+        wrongAnswerPenalty: this.settings.wrongAnswerPenalty
+      },
+      resolve: (selectedIndex: number) => this.resolveChallenge(node, selectedIndex)
+    };
+
+    this.game.events.emit("show-challenge", request);
   }
 
   private resolveChallenge(node: NodeView, selectedIndex: number): void {
     if (node.completed || this.finished) return;
 
     const scenario = node.scenario;
-    const correct = selectedIndex === scenario.correctIndex;
+    const safeIndex = Phaser.Math.Clamp(selectedIndex, 0, scenario.options.length - 1);
+    const correct = safeIndex === scenario.correctIndex;
     const disruptionLoss = Math.round(
       scenario.basePenalty * this.settings.disruptionMultiplier
     );
@@ -399,6 +486,8 @@ export class SupplyChainScene extends Phaser.Scene {
       ? Math.max(-2, this.settings.correctAnswerRecovery - disruptionLoss)
       : -(disruptionLoss + this.settings.wrongAnswerPenalty);
 
+    const resilienceBefore = this.resilience;
+
     this.resilience = Phaser.Math.Clamp(
       this.resilience + resilienceChange,
       0,
@@ -406,19 +495,33 @@ export class SupplyChainScene extends Phaser.Scene {
     );
 
     node.completed = true;
-    node.card.setFillStyle(0x1a3330, 1).setStrokeStyle(2, 0x5bb98a, 1);
-    node.label.setColor("#dff8ec").setText(`Resolved: ${scenario.title}`);
+    node.card.setFillStyle(0x12332d, 1).setStrokeStyle(2, 0x70c995, 1);
+    node.label.setColor("#dff8ec");
+    node.status.setText("STABILIZED").setColor("#70c995");
+    node.container.setScale(1);
     node.container.disableInteractive();
 
     this.completed += 1;
     this.challengeOpen = false;
+    this.logisticsLayer.resolveScenario(scenario.id, correct);
 
     this.decisions.push({
       scenarioId: scenario.id,
       title: scenario.title,
-      selectedOption: scenario.options[selectedIndex] ?? "No response",
+      selectedOption: scenario.options[safeIndex] ?? "No response",
       correct,
       resilienceChange,
+      resilienceBefore,
+      resilienceAfter: this.resilience,
+      disruptionLoss,
+      responseRecovery: correct ? this.settings.correctAnswerRecovery : 0,
+      wrongAnswerPenalty: correct ? 0 : this.settings.wrongAnswerPenalty,
+      calculation: correct
+        ? this.settings.correctAnswerRecovery - disruptionLoss < -2
+          ? `${resilienceBefore} + ${this.settings.correctAnswerRecovery} - ${disruptionLoss} = ${resilienceBefore + this.settings.correctAnswerRecovery - disruptionLoss}; apply the −2 safeguard → ${this.resilience}`
+          : `${resilienceBefore} + ${this.settings.correctAnswerRecovery} - ${disruptionLoss} = ${this.resilience}`
+        : `${resilienceBefore} - ${disruptionLoss} - ${this.settings.wrongAnswerPenalty} = ${this.resilience}`,
+      rationale: scenario.optionRationales[safeIndex] ?? scenario.takeaway,
       takeaway: scenario.takeaway
     });
 
@@ -428,29 +531,38 @@ export class SupplyChainScene extends Phaser.Scene {
       resilience: this.resilience,
       takeaway: scenario.takeaway
     });
+    this.game.events.emit("mission-log", {
+      level: correct ? "success" : "critical",
+      text: `${scenario.title} stabilized. Resilience ${
+        resilienceChange >= 0 ? "+" : ""
+      }${resilienceChange}.`
+    });
 
     this.emitHud();
 
     if (this.resilience <= 0) {
       this.finishGame("network-failed");
-    } else if (this.completed >= 3) {
+    } else if (this.completed >= MISSION_TARGET) {
       this.finishGame("completed");
     }
   }
 
   private emitHud(): void {
-    this.game.events.emit("hud-update", {
+    const update: HudUpdate = {
       difficulty: this.difficulty,
       resilience: this.resilience,
       completed: this.completed,
+      target: MISSION_TARGET,
       remainingSeconds: this.remainingSeconds
-    });
+    };
+    this.game.events.emit("hud-update", update);
   }
 
   private finishGame(outcome: GameReport["outcome"]): void {
     if (this.finished) return;
 
     this.finished = true;
+    this.logisticsLayer.setMissionComplete();
     this.promptText.setText("Mission complete. Review the after-action report.");
 
     const report: GameReport = {
@@ -458,6 +570,7 @@ export class SupplyChainScene extends Phaser.Scene {
       completed: this.completed,
       resilience: this.resilience,
       outcome,
+      elapsedSeconds: this.elapsedSeconds,
       decisions: this.decisions
     };
 

@@ -1,40 +1,39 @@
-# First milestone plan
+# Resilience Routes Roadmap
 
-## Definition of done
+## Current release goal
 
-The first milestone is complete when:
+The clean rebuild is complete when a first-time player can:
 
-- the site deploys from `main` through GitHub Actions
-- a first-time player can understand the controls without help
-- the player can select easy, medium, or hard
-- the player can move through one map
-- at least three infrastructure nodes are playable
-- every node explains why, how, when, and where
-- choices change the resilience score
-- an after-action report explains the learning result
-- contributor roles and project status are visible
-- no database, credentials, or personal data are used
+- understand the purpose from the landing page;
+- enter Mission Control without verbal instructions;
+- choose Easy, Medium, or Hard difficulty;
+- launch the Phaser network;
+- investigate a physical or digital infrastructure node;
+- read plain-language definitions before choosing a response;
+- receive a rationale for the selected option;
+- stabilize three nodes;
+- review and print an after-action report;
+- use the interface on desktop, tablet, or phone;
+- deploy the same code through GitHub Pages.
 
-## Suggested issue list
+## Next milestones
 
-1. Confirm audience and first map scale
-2. Approve game loop and win condition
-3. Review global trade resources and dependencies
-4. Review infrastructure node list
-5. Review hazard inject content
-6. Approve visual palette and map direction
-7. Add U.S. state or regional scenario
-8. Run first five-person playtest
-9. Record revision log
-10. Prepare toolkit demonstration
+1. Add a second regional map.
+2. Add facilitator-controlled scenario injects.
+3. Add a scenario editor for non-programmers.
+4. Add dependency visualization between infrastructure sectors.
+5. Add optional team roles and shared decision rounds.
+6. Add accessibility testing with keyboard-only and screen-reader users.
+7. Run a structured playtest and record revisions.
+8. Add automated tests for scoring and scenario validation.
 
 ## Playtest questions
 
-- Could the player start without verbal instructions?
-- Did the player understand the learning objective?
-- Did the movement and interaction keys work?
-- Was the why, how, when, and where information readable?
-- Did the choices feel connected to real supply-chain consequences?
-- Was the difficulty setting noticeable?
-- What was confusing or unnecessary?
-- What should be added before a second scenario?
+- Could the player begin without verbal help?
+- Were unfamiliar words defined before they were used in a decision?
+- Did the player understand how one disruption affected connected systems?
+- Did the response rationales explain why each choice helped or increased risk?
+- Was the movement optional rather than a barrier?
+- Was the mission objective clear?
+- Was the after-action report useful enough for discussion?
+- What felt too slow, too dense, or unnecessary?
