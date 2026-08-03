@@ -46,6 +46,26 @@
     "takeaway": "Redundancy works only when alternate routes and transportation capacity are arranged before the main node fails.",
     "responsePrinciple": "Confirm the alternate node, reserve onward transportation, and move the highest-priority cargo first.",
     "basePenalty": 10,
+    "logisticsEffects": [
+      {
+        "assetId": "vessel-cascade",
+        "activeStatus": "Holding",
+        "activeReason": "The closed terminal prevents the vessel from unloading safely.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Space was confirmed at a secondary terminal before the vessel changed course.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "No usable terminal capacity was secured, so the vessel remains offshore."
+      },
+      {
+        "assetId": "roadlink-14",
+        "activeStatus": "Delayed",
+        "activeReason": "Missed port appointments have interrupted the truck's planned pickup sequence.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Reserved road capacity now connects the secondary terminal to inland distribution.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "The truck is waiting for cargo that remains tied to the closed terminal."
+      }
+    ],
     "cascadeSteps": [
       "The main container terminal closes and ships cannot unload normally.",
       "Containers, cranes, chassis, rail slots, and truck appointments fall out of sequence.",
@@ -100,6 +120,26 @@
     "takeaway": "Prioritization matters because alternate routes usually have less capacity than the primary corridor.",
     "responsePrinciple": "Identify essential cargo, confirm safe alternate routes, and match volume to available capacity.",
     "basePenalty": 11,
+    "logisticsEffects": [
+      {
+        "assetId": "freight-6",
+        "activeStatus": "Holding",
+        "activeReason": "The train stopped before entering the flooded rail segment.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Priority cars were assigned to a verified rail bypass with available capacity.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "The train remains queued because alternate rail capacity was not confirmed."
+      },
+      {
+        "assetId": "roadlink-14",
+        "activeStatus": "Delayed",
+        "activeReason": "Displaced rail freight is adding demand to the road network.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Only priority loads were shifted to a checked road route.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "Unplanned freight transfers exceeded available truck and road capacity."
+      }
+    ],
     "cascadeSteps": [
       "Floodwater closes a high-volume rail segment.",
       "Trains wait or divert, while nearby yards begin to fill.",
@@ -154,6 +194,26 @@
     "takeaway": "Continuity plans must protect workers while identifying alternate nodes for truly urgent cargo.",
     "responsePrinciple": "Use safety thresholds, shift essential cargo, and restore normal operations only when conditions are verified.",
     "basePenalty": 9,
+    "logisticsEffects": [
+      {
+        "assetId": "airlift-27",
+        "activeStatus": "Holding",
+        "activeReason": "Unsafe visibility and ramp conditions prevent local cargo operations.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Urgent cargo was diverted to a safer airport using verified thresholds.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "The aircraft cannot continue while local conditions remain unsafe."
+      },
+      {
+        "assetId": "roadlink-14",
+        "activeStatus": "Delayed",
+        "activeReason": "Smoke and flight changes have disrupted airport truck appointments.",
+        "correctStatus": "Rerouted",
+        "correctReason": "The truck is collecting urgent cargo from the alternate airport.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "The truck remains tied to an airport that cannot accept the shipment."
+      }
+    ],
     "cascadeSteps": [
       "Smoke reduces visibility and creates unsafe air quality at the cargo airport.",
       "Flights, ramp work, and nearby truck movement slow or pause.",
@@ -208,6 +268,26 @@
     "takeaway": "Resilience includes tested manual procedures, network isolation, verified restoration, and controlled access.",
     "responsePrinciple": "Contain first, operate through a tested fallback, verify trust, and restore in controlled stages.",
     "basePenalty": 13,
+    "logisticsEffects": [
+      {
+        "assetId": "roadlink-14",
+        "activeStatus": "Holding",
+        "activeReason": "Untrusted gate and inventory data prevent the truck from receiving a verified load.",
+        "correctStatus": "In transit",
+        "correctReason": "A tested manual fallback produced a verified dispatch instruction.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "The dispatch remains unverified because affected systems were not contained."
+      },
+      {
+        "assetId": "freight-6",
+        "activeStatus": "Delayed",
+        "activeReason": "The train is moving slowly while cargo records are checked manually.",
+        "correctStatus": "In transit",
+        "correctReason": "Verified records restored normal release and routing procedures.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "Untrusted cargo records continue to slow train release."
+      }
+    ],
     "cascadeSteps": [
       "A cyberattack makes scheduling and inventory data unavailable or untrusted.",
       "Gate appointments, routing instructions, and cargo records become unreliable.",
@@ -262,6 +342,17 @@
     "takeaway": "Resource sharing and priority rules help limited transportation capacity support the most important needs first.",
     "responsePrinciple": "Define essential deliveries, consolidate compatible loads, and coordinate fuel access across partners.",
     "basePenalty": 10,
+    "logisticsEffects": [
+      {
+        "assetId": "roadlink-14",
+        "activeStatus": "Holding",
+        "activeReason": "The truck lacks enough allocated fuel to complete its normal route.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Consolidated priority loads are moving on a shorter fuel-supported route.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "Fuel was not prioritized, so the truck remains unavailable."
+      }
+    ],
     "cascadeSteps": [
       "A regional fuel shortage reduces the number of truck trips that carriers can operate.",
       "Carriers prioritize some routes and delay lightly loaded or lower-priority trips.",

@@ -115,7 +115,7 @@ export function renderApplicationShell(): string {
               <strong id="hud-resilience">—</strong>
               <div class="hud-meter"><i id="hud-resilience-fill"></i></div>
             </article>
-            <article><span>Nodes stabilized</span><strong id="hud-completed">0 / 3</strong><small>Mission objective</small></article>
+            <article><span>Disruptions addressed</span><strong id="hud-completed">0 / 3</strong><small>Mission objective</small></article>
             <article><span>Time remaining</span><strong id="hud-timer">—</strong><small id="hud-timer-label">Launch to begin</small></article>
             <article><span>Difficulty</span><strong id="hud-difficulty">—</strong><small>Response conditions</small></article>
           </div>

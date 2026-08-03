@@ -270,16 +270,18 @@ export class LiveLogisticsLayer {
     });
   }
 
-  applyScenarioDisruption(scenarioId: string): LogisticsTransition[] {
-    const transitions = (SCENARIO_EFFECTS[scenarioId] ?? []).map((effect) =>
+  applyScenarioDisruption(scenario: string | ScenarioAssetEffect[]): LogisticsTransition[] {
+    const effects = typeof scenario === "string" ? SCENARIO_EFFECTS[scenario] ?? [] : scenario;
+    const transitions = effects.map((effect) =>
       this.setScenarioStatus(effect.assetId, effect.activeStatus, effect.activeReason)
     ).filter((transition): transition is LogisticsTransition => transition !== null);
     this.emitSnapshot();
     return transitions;
   }
 
-  resolveScenario(scenarioId: string, correct: boolean): LogisticsTransition[] {
-    const transitions = (SCENARIO_EFFECTS[scenarioId] ?? []).map((effect) =>
+  resolveScenario(scenario: string | ScenarioAssetEffect[], correct: boolean): LogisticsTransition[] {
+    const effects = typeof scenario === "string" ? SCENARIO_EFFECTS[scenario] ?? [] : scenario;
+    const transitions = effects.map((effect) =>
       this.setScenarioStatus(
         effect.assetId,
         correct ? effect.correctStatus : effect.incorrectStatus,

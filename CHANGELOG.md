@@ -1,5 +1,14 @@
 # Changelog
 
+## 5.2.0
+
+- Reset the timed mission clock correctly when running another Medium or Hard mission
+- Prevented incomplete or decision-free runs from receiving a strong performance band
+- Moved current-region transportation effects into scenario data
+- Added automatic scenario-schema validation to local builds and pull requests
+- Added no-code and JSON contribution routes with a complete Pacific Northwest example
+- Clarified that other regions should be developed as separate mission sets
+
 ## 5.1.0
 
 - Connected scenario decisions to visible transportation states
