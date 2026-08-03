@@ -7,6 +7,16 @@ export interface GlossaryTerm {
   whyItMatters: string;
 }
 
+export interface ScenarioLogisticsEffect {
+  assetId: string;
+  activeStatus: LogisticsStatus;
+  activeReason: string;
+  correctStatus: LogisticsStatus;
+  correctReason: string;
+  incorrectStatus: LogisticsStatus;
+  incorrectReason: string;
+}
+
 export interface Scenario {
   id: string;
   title: string;
@@ -28,6 +38,7 @@ export interface Scenario {
   takeaway: string;
   responsePrinciple: string;
   basePenalty: number;
+  logisticsEffects: ScenarioLogisticsEffect[];
 }
 
 export interface DecisionRecord {

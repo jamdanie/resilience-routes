@@ -55,7 +55,7 @@ export class SupplyChainScene extends Phaser.Scene {
   private remainingSeconds: number | null = null;
   private elapsedSeconds = 0;
   private decisions: DecisionRecord[] = [];
-  private lastTimerUpdate = 0;
+  private timerAccumulatorMs = 0;
   private finished = false;
   private logisticsLayer!: LiveLogisticsLayer;
   private weatherLayer!: WeatherSystemLayer;
@@ -67,8 +67,14 @@ export class SupplyChainScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.challengeOpen = false;
     this.resilience = this.settings.startingResilience;
+    this.completed = 0;
     this.remainingSeconds = this.settings.timeLimitSeconds;
+    this.elapsedSeconds = 0;
+    this.decisions = [];
+    this.timerAccumulatorMs = 0;
+    this.finished = false;
 
     this.drawWorld();
     this.logisticsLayer = new LiveLogisticsLayer(this);
@@ -91,7 +97,7 @@ export class SupplyChainScene extends Phaser.Scene {
     this.game.events.emit("game-ready");
   }
 
-  update(time: number, delta: number): void {
+  update(_time: number, delta: number): void {
     this.weatherLayer.update(delta);
     this.logisticsLayer.update(delta);
     if (this.finished || this.challengeOpen) return;
@@ -99,12 +105,10 @@ export class SupplyChainScene extends Phaser.Scene {
     this.updateMovement(delta);
     this.updateNearbyPrompt();
 
-    if (time - this.lastTimerUpdate >= 1000) {
-      const secondsElapsed = Math.max(
-        1,
-        Math.floor((time - this.lastTimerUpdate) / 1000)
-      );
-      this.lastTimerUpdate = time;
+    this.timerAccumulatorMs += delta;
+    if (this.timerAccumulatorMs >= 1000) {
+      const secondsElapsed = Math.floor(this.timerAccumulatorMs / 1000);
+      this.timerAccumulatorMs -= secondsElapsed * 1000;
       this.elapsedSeconds += secondsElapsed;
 
       if (this.remainingSeconds !== null) {
@@ -450,7 +454,7 @@ export class SupplyChainScene extends Phaser.Scene {
     node.status.setText("ACTIVE DISRUPTION").setColor("#ff9ca5");
     node.container.disableInteractive();
 
-    const transitions = this.logisticsLayer.applyScenarioDisruption(node.scenario.id);
+    const transitions = this.logisticsLayer.applyScenarioDisruption(node.scenario.logisticsEffects);
     this.game.events.emit("node-focus", node.scenario);
     this.game.events.emit("mission-log", {
       level: "warning",
@@ -506,7 +510,7 @@ export class SupplyChainScene extends Phaser.Scene {
 
     this.completed += 1;
     this.challengeOpen = false;
-    const transitions = this.logisticsLayer.resolveScenario(scenario.id, correct);
+    const transitions = this.logisticsLayer.resolveScenario(scenario.logisticsEffects, correct);
 
     if (correct) {
       node.card.setFillStyle(0x12332d, 1).setStrokeStyle(2, 0x70c995, 1);

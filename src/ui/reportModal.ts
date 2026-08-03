@@ -1,4 +1,5 @@
 import type { GameReport } from "../game/types";
+import { MISSION_TARGET } from "../game/config";
 import { formatSeconds, requiredElement } from "./dom";
 
 export interface ReportModalController {
@@ -12,11 +13,15 @@ function outcomeLabel(report: GameReport): string {
   return "Network resilience failed";
 }
 
-function performanceBand(resilience: number): string {
-  if (resilience >= 80) return "Strong";
-  if (resilience >= 60) return "Effective";
-  if (resilience >= 40) return "Strained";
-  return "Critical";
+function performanceSummary(report: GameReport, accuracy: number): string {
+  if (report.decisions.length === 0) return "No performance band — no decisions recorded";
+  if (report.outcome !== "completed" || report.completed < MISSION_TARGET) {
+    return "Incomplete mission";
+  }
+  if (report.resilience >= 80 && accuracy >= 80) return "Strong performance band";
+  if (report.resilience >= 60 && accuracy >= 60) return "Effective performance band";
+  if (report.resilience >= 40 && accuracy >= 40) return "Strained performance band";
+  return "Critical performance band";
 }
 
 export function createReportModalController(
@@ -48,9 +53,9 @@ export function createReportModalController(
       : 0;
 
     summary.innerHTML = `
-      <article><span>Outcome</span><strong>${outcomeLabel(report)}</strong><small>${performanceBand(report.resilience)} performance band</small></article>
+      <article><span>Outcome</span><strong>${outcomeLabel(report)}</strong><small>${performanceSummary(report, accuracy)}</small></article>
       <article><span>Final resilience</span><strong>${report.resilience}</strong><small>0–100 network score</small></article>
-      <article><span>Nodes stabilized</span><strong>${report.completed}</strong><small>Mission target: 3</small></article>
+      <article><span>Disruptions addressed</span><strong>${report.completed}</strong><small>Mission target: ${MISSION_TARGET}</small></article>
       <article><span>Decision accuracy</span><strong>${accuracy}%</strong><small>${correctCount} effective response${correctCount === 1 ? "" : "s"}</small></article>
       <article><span>Elapsed time</span><strong>${formatSeconds(report.elapsedSeconds)}</strong><small>${report.difficulty} difficulty</small></article>
     `;

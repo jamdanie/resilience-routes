@@ -42,7 +42,7 @@ export function renderLandingScreen(): string {
             <b class="node node-a"></b><b class="node node-b"></b><b class="node node-c"></b><b class="node node-d"></b>
           </div>
           <dl>
-            <div><dt>Objective</dt><dd>Stabilize 3 network nodes</dd></div>
+            <div><dt>Objective</dt><dd>Address 3 network disruptions</dd></div>
             <div><dt>Learning model</dt><dd>Brief → Define → Explain → Decide → Review</dd></div>
             <div><dt>Data source</dt><dd>Fictional educational scenarios</dd></div>
             <div><dt>Controls</dt><dd>Mouse, keyboard, or touch</dd></div>
