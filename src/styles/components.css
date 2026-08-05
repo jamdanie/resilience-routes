@@ -186,7 +186,8 @@
   font-weight: 800;
 }
 
-select {
+select,
+input {
   width: 100%;
   min-height: 46px;
   padding: 10px 13px;
@@ -194,6 +195,155 @@ select {
   border-radius: var(--radius-sm);
   color: var(--text);
   background: #0a192a;
+}
+
+input::placeholder {
+  color: #6f879d;
+}
+
+.landing-mission-select {
+  display: grid;
+  gap: 7px;
+  max-width: 520px;
+  margin-top: 18px;
+}
+
+.landing-mission-select > span {
+  color: var(--blue-soft);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.seed-control label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.seed-control label small {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 500;
+}
+
+.seed-control > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.run-identity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: -10px 0 18px;
+  padding: 9px 13px;
+  border: 1px solid rgba(76, 165, 225, 0.18);
+  border-radius: var(--radius-sm);
+  background: rgba(7, 22, 36, 0.72);
+}
+
+.run-identity span {
+  color: var(--blue-soft);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.run-identity b {
+  color: var(--muted-strong);
+  font-size: 0.72rem;
+  text-align: right;
+}
+
+.scenario-library,
+.scenario-mission-group {
+  display: grid;
+  gap: 18px;
+}
+
+.scenario-mission-group + .scenario-mission-group {
+  margin-top: 34px;
+  padding-top: 34px;
+  border-top: 1px solid var(--line);
+}
+
+.scenario-mission-group > div:first-child span {
+  color: var(--blue);
+  font-size: 0.68rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.scenario-mission-group > div:first-child h3 {
+  margin: 5px 0 7px;
+  font-size: 1.35rem;
+}
+
+.scenario-mission-group > div:first-child p,
+.history-intro {
+  max-width: 720px;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+.run-history {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.history-row {
+  display: grid;
+  grid-template-columns: 1.1fr 1.25fr 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding: 15px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+}
+
+.history-row > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.history-row span {
+  color: var(--blue-soft);
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.history-row b {
+  overflow: hidden;
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-row small {
+  color: var(--muted);
+  font-size: 0.66rem;
+}
+
+.history-empty {
+  margin: 0;
+  padding: 24px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  text-align: center;
 }
 
 .mission-actions-card small {

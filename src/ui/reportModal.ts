@@ -1,5 +1,4 @@
 import type { GameReport } from "../game/types";
-import { MISSION_TARGET } from "../game/config";
 import { formatSeconds, requiredElement } from "./dom";
 
 export interface ReportModalController {
@@ -15,7 +14,7 @@ function outcomeLabel(report: GameReport): string {
 
 function performanceSummary(report: GameReport, accuracy: number): string {
   if (report.decisions.length === 0) return "No performance band — no decisions recorded";
-  if (report.outcome !== "completed" || report.completed < MISSION_TARGET) {
+  if (report.outcome !== "completed" || report.completed < report.target) {
     return "Incomplete mission";
   }
   if (report.resilience >= 80 && accuracy >= 80) return "Strong performance band";
@@ -25,7 +24,8 @@ function performanceSummary(report: GameReport, accuracy: number): string {
 }
 
 export function createReportModalController(
-  onRestart: () => void
+  onRestart: () => void,
+  onReportSaved?: (report: GameReport) => void
 ): ReportModalController {
   const backdrop = requiredElement<HTMLElement>("#report-backdrop");
   const summary = requiredElement<HTMLElement>("#report-summary");
@@ -33,6 +33,7 @@ export function createReportModalController(
   const restartButton = requiredElement<HTMLButtonElement>("#restart-button");
   const closeButton = requiredElement<HTMLButtonElement>("#close-report");
   const printButton = requiredElement<HTMLButtonElement>("#print-report");
+  const reportTitle = requiredElement<HTMLElement>("#report-title");
 
   const hide = (): void => {
     backdrop.classList.add("hidden");
@@ -47,17 +48,20 @@ export function createReportModalController(
   printButton.addEventListener("click", () => window.print());
 
   const show = (report: GameReport): void => {
+    onReportSaved?.(report);
     const correctCount = report.decisions.filter((decision) => decision.correct).length;
     const accuracy = report.decisions.length
       ? Math.round((correctCount / report.decisions.length) * 100)
       : 0;
 
+    reportTitle.textContent = `${report.missionName} results`;
     summary.innerHTML = `
       <article><span>Outcome</span><strong>${outcomeLabel(report)}</strong><small>${performanceSummary(report, accuracy)}</small></article>
       <article><span>Final resilience</span><strong>${report.resilience}</strong><small>0–100 network score</small></article>
-      <article><span>Disruptions addressed</span><strong>${report.completed}</strong><small>Mission target: ${MISSION_TARGET}</small></article>
+      <article><span>Disruptions addressed</span><strong>${report.completed}</strong><small>Mission target: ${report.target}</small></article>
       <article><span>Decision accuracy</span><strong>${accuracy}%</strong><small>${correctCount} effective response${correctCount === 1 ? "" : "s"}</small></article>
       <article><span>Elapsed time</span><strong>${formatSeconds(report.elapsedSeconds)}</strong><small>${report.difficulty} difficulty</small></article>
+      <article><span>Run identity</span><strong>${report.seed}</strong><small>${report.condition.title} · ${report.region}</small></article>
     `;
 
     decisions.innerHTML = report.decisions.length

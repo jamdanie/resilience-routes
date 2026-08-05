@@ -1,6 +1,5 @@
 import Phaser from "phaser";
-import scenariosJson from "../data/scenarios.json";
-import { difficultySettings, MISSION_TARGET } from "./config";
+import { difficultySettings } from "./config";
 import { LiveLogisticsLayer } from "./LiveLogisticsLayer";
 import { WeatherSystemLayer } from "./WeatherSystemLayer";
 import type {
@@ -9,10 +8,9 @@ import type {
   GameReport,
   HudUpdate,
   LogisticsTransition,
+  MissionRunPlan,
   Scenario
 } from "./types";
-
-const scenarios = scenariosJson as Scenario[];
 
 interface NodeView {
   scenario: Scenario;
@@ -20,6 +18,7 @@ interface NodeView {
   card: Phaser.GameObjects.Rectangle;
   status: Phaser.GameObjects.Text;
   label: Phaser.GameObjects.Text;
+  active: boolean;
   completed: boolean;
 }
 
@@ -39,6 +38,7 @@ interface ChallengeRequest {
 
 export class SupplyChainScene extends Phaser.Scene {
   private readonly difficulty: Difficulty;
+  private readonly runPlan: MissionRunPlan;
   private readonly settings;
   private player!: Phaser.GameObjects.Arc;
   private playerHalo!: Phaser.GameObjects.Arc;
@@ -60,10 +60,29 @@ export class SupplyChainScene extends Phaser.Scene {
   private logisticsLayer!: LiveLogisticsLayer;
   private weatherLayer!: WeatherSystemLayer;
 
-  constructor(difficulty: Difficulty) {
+  constructor(difficulty: Difficulty, runPlan: MissionRunPlan) {
     super("SupplyChainScene");
     this.difficulty = difficulty;
-    this.settings = difficultySettings[difficulty];
+    this.runPlan = runPlan;
+    const baseSettings = difficultySettings[difficulty];
+    this.settings = {
+      ...baseSettings,
+      startingResilience: Phaser.Math.Clamp(
+        baseSettings.startingResilience + runPlan.condition.startingResilienceAdjustment,
+        0,
+        100
+      ),
+      disruptionMultiplier:
+        baseSettings.disruptionMultiplier * runPlan.condition.disruptionMultiplier,
+      correctAnswerRecovery: Math.max(
+        0,
+        baseSettings.correctAnswerRecovery + runPlan.condition.recoveryAdjustment
+      ),
+      wrongAnswerPenalty: Math.max(
+        0,
+        baseSettings.wrongAnswerPenalty + runPlan.condition.wrongAnswerAdjustment
+      )
+    };
   }
 
   create(): void {
@@ -77,12 +96,16 @@ export class SupplyChainScene extends Phaser.Scene {
     this.finished = false;
 
     this.drawWorld();
-    this.logisticsLayer = new LiveLogisticsLayer(this);
+    this.logisticsLayer = new LiveLogisticsLayer(
+      this,
+      this.runPlan.mission.assets,
+      this.runPlan.mission.weather
+    );
     this.logisticsLayer.create();
     this.weatherLayer = new WeatherSystemLayer(this, (phase) => {
       const transitions = this.logisticsLayer.applyWeatherPhase(phase);
       this.emitTransportationUpdate("Weather effect", transitions, phase === "warning" ? "critical" : "info");
-    });
+    }, this.runPlan.mission.weather);
     this.weatherLayer.create();
     this.createNodes();
     this.createPlayer();
@@ -92,8 +115,9 @@ export class SupplyChainScene extends Phaser.Scene {
 
     this.game.events.emit("mission-log", {
       level: "info",
-      text: "Regional operating picture initialized. Select an unresolved node."
+      text: `${this.runPlan.condition.title}: ${this.runPlan.condition.summary} Mission seed ${this.runPlan.seed}.`
     });
+    this.game.events.emit("mission-started", this.runPlan);
     this.game.events.emit("game-ready");
   }
 
@@ -146,7 +170,7 @@ export class SupplyChainScene extends Phaser.Scene {
 
     this.drawRoutes();
 
-    this.add.text(48, 33, "REGIONAL SUPPLY NETWORK", {
+    this.add.text(48, 33, this.runPlan.mission.mapTitle.toUpperCase(), {
       fontFamily: "Arial, sans-serif",
       fontSize: "20px",
       color: "#f2f7ff",
@@ -165,7 +189,7 @@ export class SupplyChainScene extends Phaser.Scene {
     );
 
     this.add
-      .text(900, 42, "MISSION 01", {
+      .text(900, 42, `SEED ${this.runPlan.seed}`, {
         fontFamily: "Arial, sans-serif",
         fontSize: "11px",
         color: "#77c8ff",
@@ -174,7 +198,7 @@ export class SupplyChainScene extends Phaser.Scene {
       .setOrigin(1, 0.5);
 
     this.add
-      .text(900, 65, "PACIFIC NORTHWEST CONTINUITY", {
+      .text(900, 65, this.runPlan.mission.mapSubtitle.toUpperCase(), {
         fontFamily: "Arial, sans-serif",
         fontSize: "9px",
         color: "#718ba4"
@@ -185,26 +209,24 @@ export class SupplyChainScene extends Phaser.Scene {
   }
 
   private drawRoutes(): void {
-    const routes: Array<[number, number, number, number, number]> = [
-      [155, 190, 445, 160, 0x45b7e8],
-      [445, 160, 755, 210, 0xe3b455],
-      [755, 210, 695, 465, 0xd97d58],
-      [695, 465, 270, 450, 0x9a89ef],
-      [270, 450, 155, 190, 0x70c37d],
-      [445, 160, 270, 450, 0x6484a3]
-    ];
+    const routes = this.runPlan.mission.routes.map((route) => ({
+      ...route,
+      colorValue: Phaser.Display.Color.HexStringToColor(route.color).color
+    }));
 
     const routeLayer = this.add.graphics();
-    for (const [x1, y1, x2, y2, color] of routes) {
+    for (const route of routes) {
+      const [[x1, y1], [x2, y2]] = [route.from, route.to];
       routeLayer.lineStyle(8, 0x07111f, 0.95);
       routeLayer.lineBetween(x1, y1, x2, y2);
-      routeLayer.lineStyle(3, color, 0.62);
+      routeLayer.lineStyle(3, route.colorValue, 0.62);
       routeLayer.lineBetween(x1, y1, x2, y2);
     }
 
     const flowLayer = this.add.graphics();
     flowLayer.lineStyle(1, 0x9ccdf1, 0.22);
-    routes.forEach(([x1, y1, x2, y2]) => {
+    routes.forEach((route) => {
+      const [[x1, y1], [x2, y2]] = [route.from, route.to];
       const segments = 12;
       for (let index = 0; index < segments; index += 2) {
         const start = index / segments;
@@ -223,11 +245,12 @@ export class SupplyChainScene extends Phaser.Scene {
     const legend = this.add.container(30, 105);
     legend.setDepth(3);
     const panel = this.add
-      .rectangle(0, 0, 162, 48, 0x0b192a, 0.92)
+      .rectangle(0, 0, 162, 65, 0x0b192a, 0.92)
       .setOrigin(0)
       .setStrokeStyle(1, 0x2a4662, 0.9);
     const dotOpen = this.add.circle(15, 16, 5, 0x45b7e8, 1);
     const dotDone = this.add.circle(15, 33, 5, 0x70c37d, 1);
+    const dotStandby = this.add.circle(15, 50, 5, 0x587087, 1);
     const openText = this.add.text(28, 10, "UNRESOLVED NODE", {
       fontFamily: "Arial, sans-serif",
       fontSize: "9px",
@@ -238,11 +261,18 @@ export class SupplyChainScene extends Phaser.Scene {
       fontSize: "9px",
       color: "#9db2c7"
     });
-    legend.add([panel, dotOpen, dotDone, openText, doneText]);
+    const standbyText = this.add.text(28, 44, "STANDBY THIS RUN", {
+      fontFamily: "Arial, sans-serif",
+      fontSize: "9px",
+      color: "#71879c"
+    });
+    legend.add([panel, dotOpen, dotDone, dotStandby, openText, doneText, standbyText]);
   }
 
   private createNodes(): void {
-    this.nodes = scenarios.map((scenario) => {
+    const activeIds = new Set(this.runPlan.activeScenarioIds);
+    this.nodes = this.runPlan.scenarios.map((scenario) => {
+      const active = activeIds.has(scenario.id);
       const y = scenario.y + 30;
       const container = this.add.container(scenario.x, y);
       container.setDepth(4);
@@ -253,8 +283,8 @@ export class SupplyChainScene extends Phaser.Scene {
         .setOrigin(0.5);
 
       const card = this.add
-        .rectangle(0, 0, 164, 92, 0x122238, 0.98)
-        .setStrokeStyle(2, 0x466681, 1)
+        .rectangle(0, 0, 164, 92, active ? 0x122238 : 0x0b1726, active ? 0.98 : 0.72)
+        .setStrokeStyle(2, active ? 0x466681 : 0x26394c, active ? 1 : 0.7)
         .setOrigin(0.5);
 
       const accent = this.add
@@ -281,20 +311,24 @@ export class SupplyChainScene extends Phaser.Scene {
         .setOrigin(0, 0.5);
 
       const status = this.add
-        .text(-61, 31, "INVESTIGATE", {
+        .text(-61, 31, active ? "INVESTIGATE" : "STANDBY", {
           fontFamily: "Arial, sans-serif",
           fontSize: "9px",
-          color: scenario.color,
+          color: active ? scenario.color : "#60758a",
           fontStyle: "bold"
         })
         .setOrigin(0, 0.5);
 
       container.add([shadow, card, accent, type, label, status]);
       container.setSize(164, 92);
-      container.setInteractive(
-        new Phaser.Geom.Rectangle(-82, -46, 164, 92),
-        Phaser.Geom.Rectangle.Contains
-      );
+      if (active) {
+        container.setInteractive(
+          new Phaser.Geom.Rectangle(-82, -46, 164, 92),
+          Phaser.Geom.Rectangle.Contains
+        );
+      } else {
+        container.setAlpha(0.72);
+      }
 
       const node: NodeView = {
         scenario,
@@ -302,24 +336,25 @@ export class SupplyChainScene extends Phaser.Scene {
         card,
         status,
         label,
+        active,
         completed: false
       };
 
       container.on("pointerover", () => {
-        if (this.finished || node.completed) return;
+        if (this.finished || node.completed || !node.active) return;
         card.setStrokeStyle(2, accentColor, 1);
         container.setScale(1.025);
         this.game.events.emit("node-focus", scenario);
       });
 
       container.on("pointerout", () => {
-        if (this.finished || node.completed) return;
+        if (this.finished || node.completed || !node.active) return;
         card.setStrokeStyle(2, 0x466681, 1);
         container.setScale(1);
       });
 
       container.on("pointerdown", () => {
-        if (!node.completed) this.openChallenge(node);
+        if (node.active && !node.completed) this.openChallenge(node);
       });
 
       return node;
@@ -327,15 +362,16 @@ export class SupplyChainScene extends Phaser.Scene {
   }
 
   private createPlayer(): void {
+    const [startX, startY] = this.runPlan.mission.playerStart;
     this.player = this.add
-      .circle(475, 320, 15, 0x58aef5, 1)
+      .circle(startX, startY, 15, 0x58aef5, 1)
       .setStrokeStyle(4, 0xe0f1ff, 1)
       .setDepth(5);
 
-    this.playerHalo = this.add.circle(475, 320, 23, 0x58aef5, 0.12).setDepth(5);
+    this.playerHalo = this.add.circle(startX, startY, 23, 0x58aef5, 0.12).setDepth(5);
 
     this.playerLabel = this.add
-      .text(475, 349, "RESPONSE LEAD", {
+      .text(startX, startY + 29, "RESPONSE LEAD", {
         fontFamily: "Arial, sans-serif",
         fontSize: "9px",
         color: "#dcecff",
@@ -421,7 +457,7 @@ export class SupplyChainScene extends Phaser.Scene {
     | { node: NodeView; distance: number }
     | undefined {
     return this.nodes
-      .filter((node) => !node.completed)
+      .filter((node) => node.active && !node.completed)
       .map((node) => ({
         node,
         distance: Phaser.Math.Distance.Between(
@@ -447,7 +483,7 @@ export class SupplyChainScene extends Phaser.Scene {
   }
 
   private openChallenge(node: NodeView): void {
-    if (this.challengeOpen || this.finished || node.completed) return;
+    if (this.challengeOpen || this.finished || node.completed || !node.active) return;
 
     this.challengeOpen = true;
     node.card.setFillStyle(0x35212a, 1).setStrokeStyle(2, 0xff7d88, 1);
@@ -559,7 +595,7 @@ export class SupplyChainScene extends Phaser.Scene {
 
     if (this.resilience <= 0) {
       this.finishGame("network-failed");
-    } else if (this.completed >= MISSION_TARGET) {
+    } else if (this.completed >= this.runPlan.mission.target) {
       this.finishGame("completed");
     }
   }
@@ -569,7 +605,7 @@ export class SupplyChainScene extends Phaser.Scene {
       difficulty: this.difficulty,
       resilience: this.resilience,
       completed: this.completed,
-      target: MISSION_TARGET,
+      target: this.runPlan.mission.target,
       remainingSeconds: this.remainingSeconds
     };
     this.game.events.emit("hud-update", update);
@@ -608,6 +644,12 @@ export class SupplyChainScene extends Phaser.Scene {
     });
 
     const report: GameReport = {
+      missionId: this.runPlan.mission.id,
+      missionName: this.runPlan.mission.name,
+      region: this.runPlan.mission.region,
+      seed: this.runPlan.seed,
+      condition: this.runPlan.condition,
+      target: this.runPlan.mission.target,
       difficulty: this.difficulty,
       completed: this.completed,
       resilience: this.resilience,

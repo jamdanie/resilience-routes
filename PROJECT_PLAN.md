@@ -16,16 +16,23 @@ The clean rebuild is complete when a first-time player can:
 - use the interface on desktop, tablet, or phone;
 - deploy the same code through GitHub Pages.
 
+## Completed expansion milestones
+
+- Added Pacific Northwest and Gulf Coast / Texas mission packs.
+- Added deterministic seeded randomization for active incidents, response order, and operating conditions.
+- Added browser-local run history and reproducible mission loading.
+- Added validation for mission definitions, regional asset references, weather, and scenario content.
+- Added automated tests for replay consistency and run variation.
+
 ## Next milestones
 
-1. Add a second regional map.
-2. Add facilitator-controlled scenario injects.
-3. Add a scenario editor for non-programmers.
-4. Add dependency visualization between infrastructure sectors.
-5. Add optional team roles and shared decision rounds.
-6. Add accessibility testing with keyboard-only and screen-reader users.
-7. Run a structured playtest and record revisions.
-8. Add automated tests for scoring and scenario validation.
+1. Add an in-browser scenario editor with preview and JSON export.
+2. Add a dependency-inspection mode that explains route and sector relationships.
+3. Add optional team roles and shared decision rounds.
+4. Add a facilitator mode with selectable seeds and pause/resume controls.
+5. Add accessibility testing with keyboard-only and screen-reader users.
+6. Add scoring unit tests and a lightweight end-to-end browser test.
+7. Add installable offline/PWA support for classrooms with unreliable connectivity.
 
 ## Playtest questions
 

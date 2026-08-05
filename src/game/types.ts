@@ -17,6 +17,88 @@ export interface ScenarioLogisticsEffect {
   incorrectReason: string;
 }
 
+export type MapPoint = [number, number];
+
+export interface MissionRoute {
+  from: MapPoint;
+  to: MapPoint;
+  color: string;
+}
+
+export interface MissionAssetDefinition {
+  id: string;
+  name: string;
+  mode: LogisticsMode;
+  route: string;
+  alternateRoute: string;
+  cargo: string;
+  meaning: string;
+  color: string;
+  speed: number;
+  startProgress: number;
+  path: MapPoint[];
+  alternatePath: MapPoint[];
+}
+
+export interface WeatherAssetEffect {
+  assetId: string;
+  status: LogisticsStatus;
+  reason: string;
+}
+
+export interface MissionWeatherPhase {
+  title: string;
+  severity: string;
+  summary: string;
+  wind: string;
+  affectedArea: string;
+  timing: string;
+  assetEffects: WeatherAssetEffect[];
+}
+
+export interface MissionWeather {
+  cycleSeconds: number;
+  phases: Record<WeatherPhase, MissionWeatherPhase>;
+}
+
+export interface OperatingCondition {
+  id: string;
+  title: string;
+  summary: string;
+  disruptionMultiplier: number;
+  recoveryAdjustment: number;
+  wrongAnswerAdjustment: number;
+  startingResilienceAdjustment: number;
+}
+
+export interface MissionDefinition {
+  id: string;
+  name: string;
+  region: string;
+  mapTitle: string;
+  mapSubtitle: string;
+  description: string;
+  commandIntent: string;
+  target: number;
+  playerStart: MapPoint;
+  routes: MissionRoute[];
+  assets: MissionAssetDefinition[];
+  weather: MissionWeather;
+  operatingConditions: OperatingCondition[];
+}
+
+export interface MissionPack extends MissionDefinition {
+  scenarios: Scenario[];
+}
+
+export interface MissionRunPlan {
+  seed: string;
+  mission: MissionPack;
+  condition: OperatingCondition;
+  scenarios: Scenario[];
+  activeScenarioIds: string[];
+}
+
 export interface Scenario {
   id: string;
   title: string;
@@ -58,12 +140,35 @@ export interface DecisionRecord {
 }
 
 export interface GameReport {
+  missionId: string;
+  missionName: string;
+  region: string;
+  seed: string;
+  condition: OperatingCondition;
   difficulty: Difficulty;
+  target: number;
   completed: number;
   resilience: number;
   outcome: "completed" | "network-failed" | "time-expired";
   elapsedSeconds: number;
   decisions: DecisionRecord[];
+}
+
+export interface StoredRunSummary {
+  id: string;
+  completedAt: string;
+  missionId: string;
+  missionName: string;
+  region: string;
+  seed: string;
+  conditionTitle: string;
+  difficulty: Difficulty;
+  outcome: GameReport["outcome"];
+  resilience: number;
+  completed: number;
+  target: number;
+  accuracy: number;
+  elapsedSeconds: number;
 }
 
 export interface HudUpdate {

@@ -1,0 +1,372 @@
+[
+  {
+    "id": "gulf-channel-closure",
+    "title": "Bayline Ship Channel",
+    "nodeType": "Port waterway",
+    "x": 155,
+    "y": 180,
+    "color": "#4fc3d7",
+    "event": "A grounded vessel temporarily blocks the only deep-water channel serving the main container and energy terminals.",
+    "why": "A ship channel is the navigable water route connecting offshore traffic to inland terminals. Even when the terminals are undamaged, ships cannot reach them when the channel is blocked.",
+    "how": "Inbound vessels hold offshore, outbound vessels remain at berth, terminal storage fills, and rail and truck transfers lose their planned sequence.",
+    "when": "The risk grows when anchorage space is limited, storage tanks or container yards are near capacity, or essential cargo has no nearby alternate port.",
+    "where": "The first effects appear at the channel and terminals, then spread to refineries, warehouses, inland rail yards, manufacturers, and fuel customers.",
+    "keyTerms": [
+      {
+        "term": "Ship channel",
+        "definition": "A maintained water route deep and wide enough for large vessels to reach a port.",
+        "example": "A container vessel follows a marked channel from open water to a terminal berth.",
+        "whyItMatters": "Several terminals can depend on one channel, making it a shared point of failure."
+      },
+      {
+        "term": "Anchorage",
+        "definition": "A designated area where a vessel can wait safely before entering port.",
+        "example": "A vessel waits offshore at anchorage until a pilot and berth are available.",
+        "whyItMatters": "Anchorage space prevents waiting vessels from creating a navigation or safety problem."
+      },
+      {
+        "term": "Berth window",
+        "definition": "The scheduled period when a terminal is ready to receive and work a vessel.",
+        "example": "A ship is assigned a twelve-hour berth window for unloading.",
+        "whyItMatters": "A channel delay can cause several vessels to miss their windows and create a longer backlog."
+      }
+    ],
+    "question": "Which first response best limits congestion and protects priority cargo?",
+    "options": [
+      "Continue sending every vessel toward the blocked channel",
+      "Coordinate safe anchorage, confirm alternate terminal capacity, and prioritize essential cargo",
+      "Cancel all regional cargo movement until the vessel is removed"
+    ],
+    "optionRationales": [
+      "Sending more vessels toward the closure increases offshore congestion without creating channel capacity.",
+      "This response controls vessel queues, verifies an alternate before rerouting, and protects the cargo that creates the greatest harm if delayed.",
+      "Stopping every movement also blocks cargo that could use safe alternatives or remain moving inland."
+    ],
+    "correctIndex": 1,
+    "takeaway": "A blocked shared channel requires queue control, verified alternatives, and priority rules before rerouting.",
+    "responsePrinciple": "Control the queue, verify destination capacity, and move priority cargo through safe alternatives.",
+    "basePenalty": 11,
+    "logisticsEffects": [
+      {
+        "assetId": "gulf-vessel-9",
+        "activeStatus": "Holding",
+        "activeReason": "The vessel cannot safely enter the blocked ship channel.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Alternate terminal space and a safe approach were confirmed before the vessel changed course.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "No safe channel or verified terminal capacity is available."
+      },
+      {
+        "assetId": "gulf-freight-12",
+        "activeStatus": "Delayed",
+        "activeReason": "The train is waiting for cargo that cannot reach the terminal transfer point.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Priority cargo is moving through a confirmed alternate terminal and rail interchange.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "The rail plan remains tied to the blocked channel and missed berth windows."
+      }
+    ],
+    "cascadeSteps": [
+      "A grounded vessel blocks the deep-water ship channel.",
+      "Inbound and outbound vessels lose access to several terminals.",
+      "Terminal storage, rail appointments, and truck transfers fall out of sequence.",
+      "Energy, manufacturing, retail, and emergency deliveries are delayed inland."
+    ]
+  },
+  {
+    "id": "gulf-energy-outage",
+    "title": "Energy Transfer Center",
+    "nodeType": "Energy terminal",
+    "x": 420,
+    "y": 120,
+    "color": "#f0a65a",
+    "event": "A regional power failure stops pumps, loading equipment, and monitoring systems at a fuel-transfer terminal.",
+    "why": "Fuel terminals receive, store, and transfer products between pipelines, tanks, rail cars, vessels, and trucks. Power is needed for pumps, controls, communications, and safe loading.",
+    "how": "Loading stops, trucks and rail cars queue, inventory cannot move to customers, and emergency generators begin consuming the same limited fuel that communities need.",
+    "when": "The risk increases during extreme heat, storms, grid damage, generator maintenance, or when backup fuel and manual procedures have not been tested.",
+    "where": "Effects begin at the terminal and spread to fuel stations, hospitals, utility restoration fleets, airports, farms, and emergency operations.",
+    "keyTerms": [
+      {
+        "term": "Transfer terminal",
+        "definition": "A facility that receives, stores, and moves fuel or another bulk product between transportation systems.",
+        "example": "Fuel moves from a storage tank into trucks that deliver it to local stations.",
+        "whyItMatters": "Inventory may physically exist at the terminal but remain unusable when pumps and controls fail."
+      },
+      {
+        "term": "Black-start capability",
+        "definition": "The ability to restart an essential system without relying on the normal electric grid.",
+        "example": "A tested generator restarts a limited set of terminal pumps after a grid outage.",
+        "whyItMatters": "Limited independent power can restore priority operations before full grid service returns."
+      },
+      {
+        "term": "Allocation",
+        "definition": "A rule for dividing a limited resource among competing needs.",
+        "example": "Available fuel is assigned first to hospitals, emergency vehicles, and utility repair crews.",
+        "whyItMatters": "Without clear allocation, scarce fuel can be consumed by lower-priority demand."
+      }
+    ],
+    "question": "What is the strongest continuity response while normal power is unavailable?",
+    "options": [
+      "Use tested backup power for limited loading and allocate fuel to essential services",
+      "Attempt to restart every terminal process at the same time",
+      "Release fuel without inventory, safety, or destination verification"
+    ],
+    "optionRationales": [
+      "This response matches limited backup power to essential operations and directs scarce fuel toward the highest-consequence needs.",
+      "Restarting everything may exceed generator capacity and cause another shutdown or unsafe operation.",
+      "Unverified releases create inventory, safety, and delivery errors during an already constrained period."
+    ],
+    "correctIndex": 0,
+    "takeaway": "Backup power is most useful when it is tested and assigned to a clearly prioritized set of operations.",
+    "responsePrinciple": "Restore a limited safe process, verify inventory, and allocate scarce fuel by consequence.",
+    "basePenalty": 12,
+    "logisticsEffects": [
+      {
+        "assetId": "gulf-road-22",
+        "activeStatus": "Holding",
+        "activeReason": "Fuel loading is unavailable while terminal pumps and controls are offline.",
+        "correctStatus": "In transit",
+        "correctReason": "Tested backup power restored a verified priority loading lane.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "The terminal could not safely verify or load the truck."
+      },
+      {
+        "assetId": "gulf-air-5",
+        "activeStatus": "Delayed",
+        "activeReason": "Aviation and generator fuel availability is being verified during the outage.",
+        "correctStatus": "In transit",
+        "correctReason": "Essential aviation support received a confirmed allocation.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "No verified priority fuel allocation reached the air-cargo operation."
+      }
+    ],
+    "cascadeSteps": [
+      "Grid power fails at the fuel-transfer terminal.",
+      "Pumps, loading racks, communications, and monitoring stop.",
+      "Fuel trucks and rail cars queue while usable inventory declines elsewhere.",
+      "Hospitals, utilities, airports, farms, and emergency fleets face shortages."
+    ]
+  },
+  {
+    "id": "gulf-surge-rail",
+    "title": "Bayline Rail Interchange",
+    "nodeType": "Rail",
+    "x": 760,
+    "y": 175,
+    "color": "#e06c75",
+    "event": "Storm surge and drainage failure flood the rail interchange connecting coastal terminals to inland routes.",
+    "why": "An interchange sorts and transfers rail cars between routes. Flooding at one interchange can block cargo from several terminals even when inland tracks remain usable.",
+    "how": "Trains stop outside the flooded area, yards fill, crews lose access, and heavy freight shifts toward roads with less carrying capacity.",
+    "when": "The risk rises near high tide, during prolonged rainfall, when pumps lose power, or when alternate yards are already receiving diverted trains.",
+    "where": "The flooding begins near the coast and spreads through port, refinery, warehouse, agricultural, and construction supply chains.",
+    "keyTerms": [
+      {
+        "term": "Rail interchange",
+        "definition": "A location where rail cars or trains transfer between routes or railroad networks.",
+        "example": "Cars arriving from a port are reorganized into trains bound for inland destinations.",
+        "whyItMatters": "One interchange can connect several cargo sources to a much larger inland network."
+      },
+      {
+        "term": "Embargo",
+        "definition": "A temporary restriction on accepting specified rail traffic when a route or destination cannot handle it safely.",
+        "example": "A railroad stops accepting new cars for a flooded coastal destination.",
+        "whyItMatters": "A targeted embargo prevents more equipment from entering a growing queue."
+      },
+      {
+        "term": "Intermodal transfer",
+        "definition": "Moving cargo between transportation modes such as rail and truck without changing the cargo itself.",
+        "example": "A container is lifted from a rail car onto a truck chassis.",
+        "whyItMatters": "Transfers can preserve movement, but only when equipment, drivers, roads, and terminal capacity are available."
+      }
+    ],
+    "question": "Which response best limits the rail backlog without creating a road-capacity failure?",
+    "options": [
+      "Apply a targeted embargo, verify an inland bypass, and transfer only priority cargo to trucks",
+      "Move every rail shipment to trucks immediately",
+      "Keep accepting trains into the flooded interchange"
+    ],
+    "optionRationales": [
+      "This response limits the incoming queue, uses a verified rail alternative, and protects road capacity for the most important loads.",
+      "The road network, drivers, chassis, and terminals may not have enough capacity for every displaced rail shipment.",
+      "Accepting more trains adds congestion and equipment to a location that cannot process them safely."
+    ],
+    "correctIndex": 0,
+    "takeaway": "Diversion works when incoming volume is controlled and each alternate mode is checked for capacity.",
+    "responsePrinciple": "Stop adding to the queue, verify bypass capacity, and transfer only consequence-based priority loads.",
+    "basePenalty": 11,
+    "logisticsEffects": [
+      {
+        "assetId": "gulf-freight-12",
+        "activeStatus": "Holding",
+        "activeReason": "The train stopped before entering the flooded interchange.",
+        "correctStatus": "Rerouted",
+        "correctReason": "A verified inland rail bypass accepted the priority cars.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "The train remains in a growing queue without a confirmed bypass."
+      },
+      {
+        "assetId": "gulf-road-22",
+        "activeStatus": "Delayed",
+        "activeReason": "Rail diversions are increasing demand for trucks and road space.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Only selected priority loads were transferred to a checked road corridor.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "Uncontrolled transfers exceeded available road and truck capacity."
+      }
+    ],
+    "cascadeSteps": [
+      "Storm surge floods the coastal rail interchange.",
+      "Trains stop while yards, crews, and equipment lose access.",
+      "Cargo shifts toward inland bypasses and roads with limited capacity.",
+      "Energy, agriculture, construction, and retail deliveries arrive late."
+    ]
+  },
+  {
+    "id": "gulf-cyber-pipeline",
+    "title": "Coastal Scheduling Exchange",
+    "nodeType": "Digital logistics",
+    "x": 730,
+    "y": 425,
+    "color": "#a68aef",
+    "event": "A cyber incident makes pipeline nominations, terminal appointments, and fuel-delivery schedules unavailable or untrusted.",
+    "why": "Bulk energy movement depends on coordinated schedules. Physical equipment may still work, but operators cannot safely move products when quantities, destinations, and timing cannot be trusted.",
+    "how": "Terminal releases slow, trucks miss appointments, duplicate requests appear, and partners begin making decisions from different versions of the schedule.",
+    "when": "The risk increases when manual fallback lists are outdated, accounts are shared, vendors use connected systems, or restoration is rushed without verifying data.",
+    "where": "The initial outage affects the scheduling exchange and then reaches pipelines, fuel terminals, carriers, airports, utilities, and emergency operations.",
+    "keyTerms": [
+      {
+        "term": "Nomination",
+        "definition": "A scheduled request stating how much product should move through a pipeline and where it should go.",
+        "example": "A terminal nominates a quantity of fuel for delivery during a defined period.",
+        "whyItMatters": "Incorrect nominations can send the wrong quantity or product to the wrong destination."
+      },
+      {
+        "term": "Data integrity",
+        "definition": "Confidence that information is accurate, complete, and has not been changed improperly.",
+        "example": "Operators compare restored schedules with signed records before releasing fuel.",
+        "whyItMatters": "Available data is not useful when operators cannot trust it."
+      },
+      {
+        "term": "Out-of-band verification",
+        "definition": "Confirming information through a separate trusted method instead of the affected system.",
+        "example": "A known partner confirms a priority delivery through a verified phone number.",
+        "whyItMatters": "A separate channel helps detect false instructions and supports limited safe operations."
+      }
+    ],
+    "question": "Which response best preserves essential fuel movement while limiting cyber risk?",
+    "options": [
+      "Use tested manual schedules, isolate affected systems, and verify priority movements through trusted contacts",
+      "Accept every automated schedule as accurate once the system reconnects",
+      "Share one administrator account across all partners"
+    ],
+    "optionRationales": [
+      "This response contains the incident while using a tested and independently verified process for essential movement.",
+      "Reconnection does not prove that restored schedules are accurate or that the cause has been removed.",
+      "A shared administrator account removes accountability and gives excessive access during an incident."
+    ],
+    "correctIndex": 0,
+    "takeaway": "Continuity during a cyber incident depends on trusted fallback records, containment, and independent verification.",
+    "responsePrinciple": "Contain the affected system, verify essential instructions through a separate channel, and restore in controlled stages.",
+    "basePenalty": 13,
+    "logisticsEffects": [
+      {
+        "assetId": "gulf-road-22",
+        "activeStatus": "Holding",
+        "activeReason": "The truck does not have a trusted loading appointment or destination record.",
+        "correctStatus": "In transit",
+        "correctReason": "A verified manual schedule released the priority delivery.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "The truck remains staged because the schedule cannot be trusted."
+      },
+      {
+        "assetId": "gulf-vessel-9",
+        "activeStatus": "Delayed",
+        "activeReason": "Terminal planning is moving slowly while product schedules are verified.",
+        "correctStatus": "In transit",
+        "correctReason": "Verified terminal and cargo records restored controlled movement.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "Untrusted scheduling data continues to limit terminal operations."
+      }
+    ],
+    "cascadeSteps": [
+      "A cyber incident makes energy schedules unavailable or untrusted.",
+      "Pipeline nominations, terminal appointments, and truck releases slow.",
+      "Partners receive conflicting information and duplicate priority requests.",
+      "Fuel availability becomes uncertain for airports, utilities, hospitals, and emergency fleets."
+    ]
+  },
+  {
+    "id": "gulf-evacuation-freight",
+    "title": "Inland Response Hub",
+    "nodeType": "Warehouse",
+    "x": 285,
+    "y": 425,
+    "color": "#72c78c",
+    "event": "Evacuation traffic and emergency staging reduce highway capacity around the main inland distribution hub.",
+    "why": "The hub receives supplies from several transportation modes and sends them to communities. It cannot support those communities when trucks cannot enter, load, or leave on safe routes.",
+    "how": "Travel times increase, drivers reach hour limits, fuel use rises, loading appointments are missed, and emergency and commercial traffic compete for the same roads.",
+    "when": "The risk grows when evacuation orders expand, contraflow changes road direction, fuel stations lose power, or destination facilities close without updating carriers.",
+    "where": "Effects appear around the hub and highways, then spread to shelters, hospitals, stores, utility crews, and communities outside the immediate coastal hazard area.",
+    "keyTerms": [
+      {
+        "term": "Contraflow",
+        "definition": "Temporarily changing traffic lanes so more vehicles can move away from a hazardous area.",
+        "example": "Inbound highway lanes are converted to outbound evacuation lanes.",
+        "whyItMatters": "Contraflow helps evacuation but can remove normal freight access to coastal destinations."
+      },
+      {
+        "term": "Staging area",
+        "definition": "A controlled location where people, vehicles, or supplies wait until they are assigned and released.",
+        "example": "Water trucks wait inland until a shelter confirms delivery access.",
+        "whyItMatters": "Staging reduces uncontrolled traffic and prevents supplies from being sent to closed or unsafe locations."
+      },
+      {
+        "term": "Delivery window",
+        "definition": "A planned period when a route and destination can safely receive a shipment.",
+        "example": "A hospital accepts a fuel delivery during a two-hour emergency access window.",
+        "whyItMatters": "Coordinated windows keep critical trucks from competing with peak evacuation traffic."
+      }
+    ],
+    "question": "Which action best protects evacuation movement and essential deliveries?",
+    "options": [
+      "Stage trucks inland, confirm destination access, and assign timed delivery windows for priority loads",
+      "Send every truck toward the coast on its normal schedule",
+      "Stop communicating route and destination changes to carriers"
+    ],
+    "optionRationales": [
+      "This response separates staging from active routes, verifies that destinations can receive cargo, and uses limited road space at planned times.",
+      "Normal schedules can place trucks into evacuation traffic or send them toward closed destinations.",
+      "Withholding changes causes failed trips, congestion, and deliveries to locations that cannot receive them."
+    ],
+    "correctIndex": 0,
+    "takeaway": "Emergency staging and verified delivery windows protect both public movement and essential freight.",
+    "responsePrinciple": "Stage before dispatch, verify the destination, and release priority loads during coordinated access windows.",
+    "basePenalty": 10,
+    "logisticsEffects": [
+      {
+        "assetId": "gulf-road-22",
+        "activeStatus": "Holding",
+        "activeReason": "The truck is staged inland while evacuation traffic controls coastal access.",
+        "correctStatus": "Rerouted",
+        "correctReason": "A verified delivery window opened on an alternate emergency route.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "The truck entered congested traffic without a confirmed destination window."
+      },
+      {
+        "assetId": "gulf-air-5",
+        "activeStatus": "Delayed",
+        "activeReason": "Ground transportation limits are slowing cargo transfer from the inland airfield.",
+        "correctStatus": "In transit",
+        "correctReason": "Priority air cargo was matched to a verified ground delivery window.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "Urgent cargo remains at the airfield without coordinated ground access."
+      }
+    ],
+    "cascadeSteps": [
+      "Evacuation traffic and traffic controls reduce normal highway capacity.",
+      "Freight vehicles miss loading and delivery appointments.",
+      "Drivers, fuel, staging space, and destination access become constrained.",
+      "Shelters, hospitals, stores, and utility crews wait longer for essential supplies."
+    ]
+  }
+]

@@ -1,0 +1,158 @@
+{
+  "id": "pacific-northwest",
+  "name": "Pacific Northwest Continuity Exercise",
+  "region": "Pacific Northwest",
+  "mapTitle": "Regional supply network",
+  "mapSubtitle": "Pacific Northwest continuity",
+  "description": "Protect port, rail, air, warehouse, and digital logistics connections across a fictional coastal and inland network.",
+  "commandIntent": "Maintain essential movement while adapting to weather, capacity limits, infrastructure failures, and trusted-information problems.",
+  "target": 3,
+  "playerStart": [475, 320],
+  "routes": [
+    { "from": [155, 190], "to": [445, 160], "color": "#45b7e8" },
+    { "from": [445, 160], "to": [755, 210], "color": "#e3b455" },
+    { "from": [755, 210], "to": [695, 465], "color": "#d97d58" },
+    { "from": [695, 465], "to": [270, 450], "color": "#9a89ef" },
+    { "from": [270, 450], "to": [155, 190], "color": "#70c37d" },
+    { "from": [445, 160], "to": [270, 450], "color": "#6484a3" }
+  ],
+  "assets": [
+    {
+      "id": "vessel-cascade",
+      "name": "MV Cascade",
+      "mode": "Vessel",
+      "route": "Coastal approach → Port Horizon → inland transfer",
+      "alternateRoute": "Coastal holding area → secondary terminal → inland transfer",
+      "cargo": "Packaged food, medical supplies, and containerized goods",
+      "meaning": "A cargo vessel moves large quantities of goods between ports.",
+      "color": "#45b7e8",
+      "speed": 35,
+      "startProgress": 0.08,
+      "path": [[82, 310], [155, 190], [445, 160], [82, 310]],
+      "alternatePath": [[82, 310], [92, 500], [270, 500], [445, 160], [82, 310]]
+    },
+    {
+      "id": "airlift-27",
+      "name": "SkyLift 27",
+      "mode": "Aircraft",
+      "route": "Skybridge Airport → Northstar Logistics Hub",
+      "alternateRoute": "Skybridge airspace → eastern diversion → Northstar Logistics Hub",
+      "cargo": "Urgent medicine, electronics, and time-sensitive parts",
+      "meaning": "Air cargo moves urgent or high-value goods quickly between hubs.",
+      "color": "#e3b455",
+      "speed": 66,
+      "startProgress": 0.34,
+      "path": [[755, 210], [695, 465], [270, 450], [755, 210]],
+      "alternatePath": [[755, 210], [895, 125], [890, 390], [695, 465], [270, 450], [755, 210]]
+    },
+    {
+      "id": "freight-6",
+      "name": "PNW Freight 6",
+      "mode": "Freight train",
+      "route": "Riverbend Rail Junction → Cedar Distribution Center",
+      "alternateRoute": "Riverbend bypass → western interchange → Cedar Distribution Center",
+      "cargo": "Grain, fuel, building materials, and industrial equipment",
+      "meaning": "A freight train moves heavy cargo efficiently across long inland routes.",
+      "color": "#70c37d",
+      "speed": 42,
+      "startProgress": 0.58,
+      "path": [[445, 160], [270, 450], [155, 190], [445, 160]],
+      "alternatePath": [[445, 160], [565, 315], [480, 520], [270, 450], [155, 190], [445, 160]]
+    },
+    {
+      "id": "roadlink-14",
+      "name": "RoadLink 14",
+      "mode": "Truck",
+      "route": "Cedar Distribution Center → Northstar Logistics Hub → Skybridge Airport",
+      "alternateRoute": "Cedar Distribution Center → Riverbend bypass → Skybridge Airport",
+      "cargo": "Groceries, hospital supplies, and priority replacement parts",
+      "meaning": "A truck handles flexible last-mile and alternate-route deliveries.",
+      "color": "#9a89ef",
+      "speed": 50,
+      "startProgress": 0.76,
+      "path": [[270, 450], [695, 465], [755, 210], [270, 450]],
+      "alternatePath": [[270, 450], [445, 330], [755, 210], [695, 465], [270, 450]]
+    }
+  ],
+  "weather": {
+    "cycleSeconds": 60,
+    "phases": {
+      "approaching": {
+        "title": "Pacific windstorm approaching",
+        "severity": "Weather advisory",
+        "summary": "A fast-moving frontal system is approaching the regional network from the coast.",
+        "wind": "Sustained 30–40 mph; stronger gusts possible",
+        "affectedArea": "Coastal approach, port, and airport",
+        "timing": "Conditions deteriorating",
+        "assetEffects": [
+          { "assetId": "vessel-cascade", "status": "Delayed", "reason": "Increasing coastal winds are slowing the vessel's approach." },
+          { "assetId": "airlift-27", "status": "Delayed", "reason": "The aircraft is operating with additional wind checks and spacing." }
+        ]
+      },
+      "warning": {
+        "title": "High-wind warning active",
+        "severity": "Operational disruption",
+        "summary": "Unsafe winds have stopped exposed cargo handling and reduced transportation capacity.",
+        "wind": "Gusts 50–65 mph across exposed infrastructure",
+        "affectedArea": "Port, airport, rail approaches, and highways",
+        "timing": "Peak impacts occurring now",
+        "assetEffects": [
+          { "assetId": "vessel-cascade", "status": "Holding", "reason": "High winds have stopped exposed port and vessel operations." },
+          { "assetId": "airlift-27", "status": "Holding", "reason": "Crosswinds exceed the exercise safety threshold for cargo operations." },
+          { "assetId": "freight-6", "status": "Delayed", "reason": "Wind inspections and debris checks are reducing rail speed." },
+          { "assetId": "roadlink-14", "status": "Delayed", "reason": "High-profile vehicles are moving at reduced speed in strong winds." }
+        ]
+      },
+      "clearing": {
+        "title": "Storm clearing east of the network",
+        "severity": "Recovery operations",
+        "summary": "Winds are decreasing, but inspections and cargo backlogs continue to affect movement.",
+        "wind": "Gusts decreasing below 30 mph",
+        "affectedArea": "Eastern routes and alternate corridors",
+        "timing": "Conditions gradually improving",
+        "assetEffects": [
+          { "assetId": "vessel-cascade", "status": "Rerouted", "reason": "The vessel is using a protected approach while the main terminal is inspected." },
+          { "assetId": "airlift-27", "status": "Rerouted", "reason": "The aircraft is using an alternate arrival path during recovery inspections." }
+        ]
+      }
+    }
+  },
+  "operatingConditions": [
+    {
+      "id": "normal-demand",
+      "title": "Normal regional demand",
+      "summary": "The network begins with normal demand and planned backup capacity available.",
+      "disruptionMultiplier": 1,
+      "recoveryAdjustment": 0,
+      "wrongAnswerAdjustment": 0,
+      "startingResilienceAdjustment": 0
+    },
+    {
+      "id": "peak-season",
+      "title": "Peak-season congestion",
+      "summary": "Warehouses and transportation routes are already operating near capacity.",
+      "disruptionMultiplier": 1.1,
+      "recoveryAdjustment": -1,
+      "wrongAnswerAdjustment": 1,
+      "startingResilienceAdjustment": -3
+    },
+    {
+      "id": "mutual-aid",
+      "title": "Mutual-aid teams staged",
+      "summary": "Partner organizations have shared limited staff and transportation capacity before the first inject.",
+      "disruptionMultiplier": 0.95,
+      "recoveryAdjustment": 1,
+      "wrongAnswerAdjustment": 0,
+      "startingResilienceAdjustment": 2
+    },
+    {
+      "id": "communications-strain",
+      "title": "Communications capacity strained",
+      "summary": "Partners are receiving delayed updates, increasing the cost of an uncoordinated response.",
+      "disruptionMultiplier": 1,
+      "recoveryAdjustment": 0,
+      "wrongAnswerAdjustment": 2,
+      "startingResilienceAdjustment": -1
+    }
+  ]
+}

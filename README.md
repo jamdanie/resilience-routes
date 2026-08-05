@@ -1,60 +1,67 @@
 # Resilience Routes
 
-Resilience Routes is a portfolio-ready educational simulator about supply-chain interdependence, critical infrastructure, disruption, and recovery decisions.
+Resilience Routes is a portfolio-ready educational simulator about supply-chain interdependence, critical infrastructure, disruption, and recovery decisions. It includes two regional mission packs, seeded procedural runs, changing operating conditions, animated weather and logistics, and browser-local performance history.
 
 ## What this rebuild changes
 
-The project keeps the familiar entry points and names: 
+The project keeps the familiar entry points and names:
 
 - `src/main.ts`
-- `src/style.css`     
-- `src/game/SupplyChainScene.ts`      
+- `src/style.css`
+- `src/game/SupplyChainScene.ts`
 - `src/game/types.ts`
-- `src/ui/landing.ts` 
+- `src/ui/landing.ts`
 - `src/data/scenarios.json`
 
 The difference is that each file now has one clear job. `main.ts` is intentionally only four lines and starts the application. The interface, game engine, scenario data, glossary, decision workflow, report, and styling live in separate modules.
 
 ## Learning approach
-     
+
 Every disruption follows the same sequence:
- 
-1. **Define** unfamiliar terms in everyday language. 
-2. **Explain** why the infrastructure matters.  
+
+1. **Define** unfamiliar terms in everyday language.
+2. **Explain** why the infrastructure matters.
 3. **Trace** how, when, and where the disruption spreads.
-4. **Decide** between realistic response options.     
-5. **Review** why the selected option helped or increased risk.          
+4. **Decide** between realistic response options.
+5. **Review** why the selected option helped or increased risk.
 
 No previous supply-chain or emergency-management experience is assumed.
 
 ## Run locally
-        
+
 ```powershell
-npm ci 
+npm ci
 npm run build
 npm run dev
 ```
-  
+
 Vite will display a local address similar to:
 
-```text 
+```text
 http://localhost:5173/resilience-routes/
 ```
-  
+
 ## Project structure
- 
+
 ```text
-src/   
+src/
 ├── main.ts
 ├── style.css
 ├── app/
 │   └── bootstrapApplication.ts
 ├── data/
-│   └── scenarios.json
+│   ├── missions.ts
+│   ├── scenarios.json
+│   ├── gulf-coast-scenarios.json
+│   └── missions/
+│       ├── pacific-northwest.json
+│       └── gulf-coast.json
 ├── game/
 │   ├── config.ts
 │   ├── createSupplyChainGame.ts
 │   ├── LiveLogisticsLayer.ts
+│   ├── randomization.ts
+│   ├── runHistory.ts
 │   ├── SupplyChainScene.ts
 │   ├── WeatherSystemLayer.ts
 │   └── types.ts
@@ -95,3 +102,9 @@ All locations, disruptions, scores, and network conditions are fictional. The pr
 ## Dynamic disruption behavior
 
 The map does more than label a response as delayed, holding, or rerouted. Scenario decisions now change asset speed, stop unsafe movement, draw alternate paths, and update the network movement board. Weather remains a separate temporary effect, so a scenario restriction is still active after the storm clears.
+
+## Replayable mission generation
+
+Each run combines a regional mission pack with a seed. The seed determines which three disruptions are active, the answer order on every inject, and the starting operating condition. Leaving the seed blank creates a new run. Reusing a seed with the same region reproduces the same setup for fair comparison, classroom discussion, and regression testing.
+
+Completed runs are stored only in the current browser. The history panel compares region, difficulty, score, accuracy, operating condition, elapsed time, and seed without collecting personal information or using a server.

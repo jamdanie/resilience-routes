@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import type { WeatherPhase, WeatherUpdate } from "./types";
+import type { MissionWeather, WeatherPhase, WeatherUpdate } from "./types";
 
 const CYCLE_SECONDS = 60;
 
@@ -33,15 +33,21 @@ const WEATHER_DETAILS: Record<WeatherPhase, Omit<WeatherUpdate, "phase">> = {
 export class WeatherSystemLayer {
   private readonly scene: Phaser.Scene;
   private readonly onPhaseChange: (phase: WeatherPhase) => void;
+  private readonly weather: MissionWeather | null;
   private stormContainer!: Phaser.GameObjects.Container;
   private rainLayer!: Phaser.GameObjects.Graphics;
   private phaseLabel!: Phaser.GameObjects.Text;
   private elapsedSeconds = 0;
   private lastPhase: WeatherPhase | null = null;
 
-  constructor(scene: Phaser.Scene, onPhaseChange: (phase: WeatherPhase) => void) {
+  constructor(
+    scene: Phaser.Scene,
+    onPhaseChange: (phase: WeatherPhase) => void,
+    weather: MissionWeather | null = null
+  ) {
     this.scene = scene;
     this.onPhaseChange = onPhaseChange;
+    this.weather = weather;
   }
 
   create(): void {
@@ -50,8 +56,9 @@ export class WeatherSystemLayer {
   }
 
   update(delta: number): void {
-    this.elapsedSeconds = (this.elapsedSeconds + delta / 1000) % CYCLE_SECONDS;
-    const cycleProgress = this.elapsedSeconds / CYCLE_SECONDS;
+    const cycleSeconds = this.weather?.cycleSeconds ?? CYCLE_SECONDS;
+    this.elapsedSeconds = (this.elapsedSeconds + delta / 1000) % cycleSeconds;
+    const cycleProgress = this.elapsedSeconds / cycleSeconds;
     const phase = this.phaseForTime(this.elapsedSeconds);
 
     if (phase !== this.lastPhase) this.updatePhase(phase);
@@ -136,8 +143,9 @@ export class WeatherSystemLayer {
   }
 
   private phaseForTime(seconds: number): WeatherPhase {
-    if (seconds < 12) return "approaching";
-    if (seconds < 42) return "warning";
+    const cycleSeconds = this.weather?.cycleSeconds ?? CYCLE_SECONDS;
+    if (seconds < cycleSeconds * 0.2) return "approaching";
+    if (seconds < cycleSeconds * 0.7) return "warning";
     return "clearing";
   }
 
@@ -166,6 +174,9 @@ export class WeatherSystemLayer {
   }
 
   private weatherPayload(phase: WeatherPhase): WeatherUpdate {
-    return { phase, ...WEATHER_DETAILS[phase] };
+    const configured = this.weather?.phases[phase];
+    if (!configured) return { phase, ...WEATHER_DETAILS[phase] };
+    const { assetEffects: _assetEffects, ...details } = configured;
+    return { phase, ...details };
   }
 }

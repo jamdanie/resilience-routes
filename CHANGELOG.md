@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.0.0
+
+- Added separate Pacific Northwest and Gulf Coast / Texas regional mission packs
+- Added five Gulf Coast disruptions with region-specific logistics effects
+- Added seeded random selection of active disruptions, operating conditions, and response order
+- Added reproducible run loading and browser-local performance history
+- Added mission-pack validation for maps, assets, weather, conditions, and scenario references
+- Added automated tests for deterministic replay and meaningful run variation
+
 ## 5.2.0
 
 - Reset the timed mission clock correctly when running another Medium or Hard mission

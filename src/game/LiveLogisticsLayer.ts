@@ -1,7 +1,10 @@
 import Phaser from "phaser";
 import type {
   LogisticsAssetInfo,
+  MissionAssetDefinition,
+  MissionWeather,
   LogisticsMode,
+  ScenarioLogisticsEffect,
   LogisticsSnapshot,
   LogisticsStatus,
   LogisticsTransition,
@@ -239,16 +242,29 @@ const SCENARIO_EFFECTS: Record<string, ScenarioAssetEffect[]> = {
 
 export class LiveLogisticsLayer {
   private readonly scene: Phaser.Scene;
+  private readonly definitions: LogisticsAssetDefinition[];
+  private readonly weather: MissionWeather | null;
   private readonly assets = new Map<string, LogisticsAssetView>();
   private selectedAssetId: string | null = null;
 
-  constructor(scene: Phaser.Scene) {
+  constructor(
+    scene: Phaser.Scene,
+    definitions: MissionAssetDefinition[] = [],
+    weather: MissionWeather | null = null
+  ) {
     this.scene = scene;
+    this.weather = weather;
+    this.definitions = definitions.length > 0
+      ? definitions.map((definition) => ({
+          ...definition,
+          color: Phaser.Display.Color.HexStringToColor(definition.color).color
+        }))
+      : ASSETS;
   }
 
   create(): void {
     this.drawLayerLabel();
-    ASSETS.forEach((definition) => this.createAsset(definition));
+    this.definitions.forEach((definition) => this.createAsset(definition));
     this.emitSnapshot();
     this.scene.time.delayedCall(0, () => this.emitSnapshot());
   }
@@ -270,7 +286,7 @@ export class LiveLogisticsLayer {
     });
   }
 
-  applyScenarioDisruption(scenario: string | ScenarioAssetEffect[]): LogisticsTransition[] {
+  applyScenarioDisruption(scenario: string | ScenarioLogisticsEffect[]): LogisticsTransition[] {
     const effects = typeof scenario === "string" ? SCENARIO_EFFECTS[scenario] ?? [] : scenario;
     const transitions = effects.map((effect) =>
       this.setScenarioStatus(effect.assetId, effect.activeStatus, effect.activeReason)
@@ -279,7 +295,7 @@ export class LiveLogisticsLayer {
     return transitions;
   }
 
-  resolveScenario(scenario: string | ScenarioAssetEffect[], correct: boolean): LogisticsTransition[] {
+  resolveScenario(scenario: string | ScenarioLogisticsEffect[], correct: boolean): LogisticsTransition[] {
     const effects = typeof scenario === "string" ? SCENARIO_EFFECTS[scenario] ?? [] : scenario;
     const transitions = effects.map((effect) =>
       this.setScenarioStatus(
@@ -310,7 +326,15 @@ export class LiveLogisticsLayer {
       }
     };
 
-    const activeEffects = weatherEffects[phase];
+    const configuredEffects = this.weather?.phases[phase].assetEffects;
+    const activeEffects = configuredEffects
+      ? Object.fromEntries(
+          configuredEffects.map((effect) => [
+            effect.assetId,
+            { status: effect.status, reason: effect.reason }
+          ])
+        )
+      : weatherEffects[phase];
     const transitions: LogisticsTransition[] = [];
     this.assets.forEach((asset) => {
       const effect = activeEffects[asset.definition.id];

@@ -1,4 +1,13 @@
+import { missionPacks } from "../data/missions";
+
+function renderMissionOptions(): string {
+  return missionPacks
+    .map((mission) => `<option value="${mission.id}">${mission.name}</option>`)
+    .join("");
+}
+
 export function renderLandingScreen(): string {
+  const firstMission = missionPacks[0];
   return `
     <main id="landing-screen" class="landing-screen">
       <div class="landing-grid" aria-hidden="true"></div>
@@ -26,23 +35,28 @@ export function renderLandingScreen(): string {
             <button id="start-exercise" class="primary-button large" type="button">Begin Mission Briefing</button>
             <button id="open-glossary-home" class="secondary-button large" type="button">Review Key Terms</button>
           </div>
+          <label class="landing-mission-select" for="landing-mission">
+            <span>Choose a regional mission</span>
+            <select id="landing-mission">${renderMissionOptions()}</select>
+          </label>
           <div class="landing-proof" aria-label="Platform features">
-            <span><b>5</b> connected disruptions</span>
+            <span><b>${missionPacks.length}</b> regional missions</span>
+            <span><b>Random</b> disruption set</span>
             <span><b>3</b> difficulty levels</span>
-            <span><b>1</b> after-action report</span>
           </div>
         </div>
 
         <aside class="landing-brief" aria-label="Mission preview">
           <div class="brief-heading">
             <span>Mission preview</span>
-            <strong>Pacific Northwest Continuity Exercise</strong>
+            <strong id="landing-preview-title">${firstMission.name}</strong>
           </div>
           <div class="brief-map" aria-hidden="true">
             <b class="node node-a"></b><b class="node node-b"></b><b class="node node-c"></b><b class="node node-d"></b>
           </div>
           <dl>
-            <div><dt>Objective</dt><dd>Address 3 network disruptions</dd></div>
+            <div><dt>Region</dt><dd id="landing-preview-region">${firstMission.region}</dd></div>
+            <div><dt>Objective</dt><dd id="landing-preview-objective">Address ${firstMission.target} randomly selected disruptions</dd></div>
             <div><dt>Learning model</dt><dd>Brief → Define → Explain → Decide → Review</dd></div>
             <div><dt>Data source</dt><dd>Fictional educational scenarios</dd></div>
             <div><dt>Controls</dt><dd>Mouse, keyboard, or touch</dd></div>
