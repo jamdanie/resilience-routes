@@ -1,5 +1,17 @@
 # Changelog
 
+## 6.1.1
+
+- Removed inactive standby cards from the live map while retaining the full scenario library
+- Added automatic spacing for active decision cards to prevent overlap
+- Kept temporary inject names hidden until hover or selection
+- Reduced temporary inject hit areas so they do not block node clicks
+- Enlarged mouse targets and added pointer cursors for nodes, assets, and weather
+- Kept completed nodes clickable for review in the intelligence panel
+- Made the terrain layer visible by default and moved its control directly above the map
+- Reduced responsive header wrapping and vertical space
+
+
 ## 6.1.0
 
 - Randomized vehicle starting position, speed, direction, and initial route by mission seed

@@ -446,8 +446,9 @@ export class LiveLogisticsLayer {
     }).setOrigin(0.5, 1).setVisible(false);
 
     container.add([halo, icon, statusDot, statusLabel]);
-    container.setSize(52, 52);
-    container.setInteractive(new Phaser.Geom.Rectangle(-26, -26, 52, 52), Phaser.Geom.Rectangle.Contains);
+    container.setSize(64, 64);
+    container.setInteractive(new Phaser.Geom.Rectangle(-32, -32, 64, 64), Phaser.Geom.Rectangle.Contains);
+    if (container.input) container.input.cursor = "pointer";
 
     const view: LogisticsAssetView = {
       definition,

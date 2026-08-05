@@ -93,13 +93,17 @@ export class AmbientEventSystem {
         padding: { x: 6, y: 3 },
         fontStyle: "bold"
       })
-      .setOrigin(0.5, 0);
+      .setOrigin(0.5, 0)
+      .setVisible(false);
     container.add([influence, marker, symbol, label]);
-    container.setSize(event.radius * 2, event.radius * 2);
+    container.setSize(56, 56);
     container.setInteractive(
-      new Phaser.Geom.Circle(0, 0, event.radius),
+      new Phaser.Geom.Circle(0, 0, 28),
       Phaser.Geom.Circle.Contains
     );
+    if (container.input) container.input.cursor = "pointer";
+    container.on("pointerover", () => label.setVisible(true));
+    container.on("pointerout", () => label.setVisible(false));
     container.on("pointerdown", () => this.scene.game.events.emit("ambient-event-focus", event));
     this.active.set(event.id, { event, container, elapsedSeconds: 0 });
     this.onStart(event);

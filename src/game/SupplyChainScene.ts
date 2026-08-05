@@ -269,12 +269,11 @@ export class SupplyChainScene extends Phaser.Scene {
     const legend = this.add.container(30, 105);
     legend.setDepth(3);
     const panel = this.add
-      .rectangle(0, 0, 162, 65, 0x0b192a, 0.92)
+      .rectangle(0, 0, 162, 48, 0x0b192a, 0.92)
       .setOrigin(0)
       .setStrokeStyle(1, 0x2a4662, 0.9);
     const dotOpen = this.add.circle(15, 16, 5, 0x45b7e8, 1);
     const dotDone = this.add.circle(15, 33, 5, 0x70c37d, 1);
-    const dotStandby = this.add.circle(15, 50, 5, 0x587087, 1);
     const openText = this.add.text(28, 10, "UNRESOLVED NODE", {
       fontFamily: "Arial, sans-serif",
       fontSize: "9px",
@@ -285,20 +284,16 @@ export class SupplyChainScene extends Phaser.Scene {
       fontSize: "9px",
       color: "#9db2c7"
     });
-    const standbyText = this.add.text(28, 44, "STANDBY THIS RUN", {
-      fontFamily: "Arial, sans-serif",
-      fontSize: "9px",
-      color: "#71879c"
-    });
-    legend.add([panel, dotOpen, dotDone, dotStandby, openText, doneText, standbyText]);
+    legend.add([panel, dotOpen, dotDone, openText, doneText]);
   }
 
   private createNodes(): void {
     const activeIds = new Set(this.runPlan.activeScenarioIds);
-    this.nodes = this.runPlan.scenarios.map((scenario) => {
-      const active = activeIds.has(scenario.id);
-      const y = scenario.y + 30;
-      const container = this.add.container(scenario.x, y);
+    const activeScenarios = this.runPlan.scenarios.filter((scenario) => activeIds.has(scenario.id));
+    const positions = this.layoutActiveNodes(activeScenarios);
+    this.nodes = activeScenarios.map((scenario) => {
+      const position = positions.get(scenario.id) ?? { x: scenario.x, y: scenario.y + 30 };
+      const container = this.add.container(position.x, position.y);
       container.setDepth(4);
       const accentColor = Phaser.Display.Color.HexStringToColor(scenario.color).color;
 
@@ -307,8 +302,8 @@ export class SupplyChainScene extends Phaser.Scene {
         .setOrigin(0.5);
 
       const card = this.add
-        .rectangle(0, 0, 164, 92, active ? 0x122238 : 0x0b1726, active ? 0.98 : 0.72)
-        .setStrokeStyle(2, active ? 0x466681 : 0x26394c, active ? 1 : 0.7)
+        .rectangle(0, 0, 164, 92, 0x122238, 0.98)
+        .setStrokeStyle(2, 0x466681, 1)
         .setOrigin(0.5);
 
       const accent = this.add
@@ -335,24 +330,21 @@ export class SupplyChainScene extends Phaser.Scene {
         .setOrigin(0, 0.5);
 
       const status = this.add
-        .text(-61, 31, active ? "INVESTIGATE" : "STANDBY", {
+        .text(-61, 31, "CLICK TO INVESTIGATE", {
           fontFamily: "Arial, sans-serif",
           fontSize: "9px",
-          color: active ? scenario.color : "#60758a",
+          color: scenario.color,
           fontStyle: "bold"
         })
         .setOrigin(0, 0.5);
 
       container.add([shadow, card, accent, type, label, status]);
       container.setSize(164, 92);
-      if (active) {
-        container.setInteractive(
-          new Phaser.Geom.Rectangle(-82, -46, 164, 92),
-          Phaser.Geom.Rectangle.Contains
-        );
-      } else {
-        container.setAlpha(0.72);
-      }
+      container.setInteractive(
+        new Phaser.Geom.Rectangle(-90, -54, 180, 108),
+        Phaser.Geom.Rectangle.Contains
+      );
+      if (container.input) container.input.cursor = "pointer";
 
       const node: NodeView = {
         scenario,
@@ -360,14 +352,16 @@ export class SupplyChainScene extends Phaser.Scene {
         card,
         status,
         label,
-        active,
+        active: true,
         completed: false
       };
 
       container.on("pointerover", () => {
-        if (this.finished || node.completed || !node.active) return;
-        card.setStrokeStyle(2, accentColor, 1);
-        container.setScale(1.025);
+        if (!node.active) return;
+        if (!this.finished && !node.completed) {
+          card.setStrokeStyle(2, accentColor, 1);
+          container.setScale(1.025);
+        }
         this.game.events.emit("node-focus", scenario);
       });
 
@@ -378,6 +372,7 @@ export class SupplyChainScene extends Phaser.Scene {
       });
 
       container.on("pointerdown", () => {
+        this.game.events.emit("node-focus", scenario);
         if (node.active && !node.completed) this.openChallenge(node);
       });
 
@@ -424,7 +419,7 @@ export class SupplyChainScene extends Phaser.Scene {
 
   private createPrompt(): void {
     this.promptText = this.add
-      .text(480, 570, "Click a node, or move near one and press E.", {
+      .text(480, 570, "Click any visible node, or move near one and press E.", {
         fontFamily: "Arial, sans-serif",
         fontSize: "12px",
         color: "#dcecff",
@@ -474,7 +469,7 @@ export class SupplyChainScene extends Phaser.Scene {
       return;
     }
 
-    this.promptText.setText("Click a node, or move near one and press E.");
+    this.promptText.setText("Click any visible node, or move near one and press E.");
   }
 
   private getNearestAvailableNode():
@@ -512,7 +507,6 @@ export class SupplyChainScene extends Phaser.Scene {
     this.challengeOpen = true;
     node.card.setFillStyle(0x35212a, 1).setStrokeStyle(2, 0xff7d88, 1);
     node.status.setText("ACTIVE DISRUPTION").setColor("#ff9ca5");
-    node.container.disableInteractive();
 
     const transitions = this.logisticsLayer.applyScenarioDisruption(node.scenario.logisticsEffects);
     this.game.events.emit("node-focus", node.scenario);
@@ -566,7 +560,6 @@ export class SupplyChainScene extends Phaser.Scene {
 
     node.completed = true;
     node.container.setScale(1);
-    node.container.disableInteractive();
 
     this.completed += 1;
     this.challengeOpen = false;
@@ -645,6 +638,34 @@ export class SupplyChainScene extends Phaser.Scene {
       level,
       text: `${label}: ${this.describeTransitions(transitions)}`
     });
+  }
+
+  private layoutActiveNodes(scenarios: Scenario[]): Map<string, { x: number; y: number }> {
+    const placed: Array<{ x: number; y: number }> = [];
+    const result = new Map<string, { x: number; y: number }>();
+    const offsets = [
+      { x: 0, y: 0 }, { x: 0, y: 112 }, { x: 0, y: -112 },
+      { x: -180, y: 0 }, { x: 180, y: 0 }, { x: -165, y: 106 },
+      { x: 165, y: 106 }, { x: -165, y: -106 }, { x: 165, y: -106 }
+    ];
+
+    scenarios.forEach((scenario) => {
+      const base = { x: scenario.x, y: scenario.y + 30 };
+      const position = offsets
+        .map((offset) => ({
+          x: Phaser.Math.Clamp(base.x + offset.x, 92, 868),
+          y: Phaser.Math.Clamp(base.y + offset.y, 155, 520)
+        }))
+        .find((candidate) =>
+          placed.every((other) =>
+            Math.abs(candidate.x - other.x) >= 178 || Math.abs(candidate.y - other.y) >= 108
+          )
+        ) ?? base;
+      placed.push(position);
+      result.set(scenario.id, position);
+    });
+
+    return result;
   }
 
   private startAmbientEvent(event: ScheduledAmbientEvent): void {

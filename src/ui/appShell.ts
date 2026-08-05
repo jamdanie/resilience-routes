@@ -125,7 +125,6 @@ export function renderApplicationShell(): string {
               <h2 id="exercise-heading">Regional supply network</h2>
             </div>
             <div class="section-actions">
-              <button id="map-detail-button" class="secondary-button" type="button" aria-pressed="false" disabled>Show Terrain</button>
               <button id="guide-button" class="secondary-button" type="button">Quick Reference</button>
               <button id="glossary-button-secondary" class="secondary-button" type="button">Definitions</button>
             </div>
@@ -151,6 +150,10 @@ export function renderApplicationShell(): string {
 
           <div class="exercise-grid">
             <div class="map-column">
+              <div class="map-toolbar">
+                <div><b>Interactive map</b><span>Click any visible node, vehicle, weather cell, or temporary inject.</span></div>
+                <button id="map-detail-button" class="secondary-button compact" type="button" aria-pressed="true" disabled>Terrain: On</button>
+              </div>
               <div id="game-canvas" class="game-canvas" aria-label="Interactive supply-chain network"></div>
               <p class="canvas-disclaimer">The network, locations, incidents, and scores are fictional and intended only for education.</p>
             </div>

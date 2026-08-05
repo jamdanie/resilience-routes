@@ -128,6 +128,7 @@ export class WeatherSystemLayer {
       new Phaser.Geom.Rectangle(-140, -78, 280, 190),
       Phaser.Geom.Rectangle.Contains
     );
+    if (this.stormContainer.input) this.stormContainer.input.cursor = "pointer";
     this.stormContainer.on("pointerover", () => this.stormContainer.setAlpha(1));
     this.stormContainer.on("pointerout", () => this.stormContainer.setAlpha(0.88));
     this.stormContainer.on("pointerdown", () => {

@@ -172,8 +172,8 @@ export function bootstrapApplication(): void {
     missionSeedInput.disabled = false;
     newSeedButton.disabled = false;
     mapDetailButton.disabled = true;
-    mapDetailButton.textContent = "Show Terrain";
-    mapDetailButton.setAttribute("aria-pressed", "false");
+    mapDetailButton.textContent = "Terrain: On";
+    mapDetailButton.setAttribute("aria-pressed", "true");
   };
 
   const restartExercise = (): void => {
@@ -300,6 +300,8 @@ export function bootstrapApplication(): void {
     missionSeedInput.disabled = true;
     newSeedButton.disabled = true;
     mapDetailButton.disabled = false;
+    mapDetailButton.textContent = "Terrain: On";
+    mapDetailButton.setAttribute("aria-pressed", "true");
     gameStatus.textContent = "Scenario loading. Investigate a node to begin.";
     missionLog.replaceChildren();
 
@@ -342,7 +344,7 @@ export function bootstrapApplication(): void {
       focusTerms.innerHTML = `<b>Temporary network condition</b><span>Expected duration: ${event.durationSeconds} exercise seconds. The movement board shows the affected asset.</span>`;
     });
     game.events.on("map-detail-state", (visible: boolean) => {
-      mapDetailButton.textContent = visible ? "Hide Terrain" : "Show Terrain";
+      mapDetailButton.textContent = visible ? "Terrain: On" : "Terrain: Off";
       mapDetailButton.setAttribute("aria-pressed", String(visible));
     });
     game.events.on("mission-started", (runPlan: MissionRunPlan) => {
@@ -354,7 +356,7 @@ export function bootstrapApplication(): void {
     });
     game.events.on("mission-log", (entry: MissionLogEntry) => appendLog(entry));
     game.events.on("game-ready", () => {
-      gameStatus.textContent = "Scenario active. Click a node, or move nearby and press E.";
+      gameStatus.textContent = "Scenario active. Every visible node can be clicked, or you can move nearby and press E.";
     });
     game.events.on("game-complete", (report: GameReport) => reportModal.show(report));
 

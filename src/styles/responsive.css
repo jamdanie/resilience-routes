@@ -25,14 +25,24 @@
 
 @media (max-width: 920px) {
   .topbar {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 14px;
+    padding: 9px 16px;
   }
 
   .topbar nav {
     grid-column: 1 / -1;
+    grid-row: 2;
     justify-content: flex-start;
+    gap: 18px;
     overflow-x: auto;
-    padding-bottom: 4px;
+    padding: 7px 0 3px;
+    border-top: 1px solid rgba(72, 105, 134, 0.2);
+  }
+
+  .topbar-actions {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .exercise-grid {
@@ -105,12 +115,18 @@
     padding-inline: 15px;
   }
 
+  .topbar .brand {
+    order: 1;
+  }
+
   .topbar nav {
+    order: 3;
     width: 100%;
     flex-wrap: nowrap;
   }
 
   .topbar-actions {
+    order: 2;
     margin-left: auto;
   }
 
@@ -188,6 +204,15 @@
 
   .run-identity b {
     text-align: left;
+  }
+
+  .map-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .map-toolbar button {
+    width: 100%;
   }
 }
 

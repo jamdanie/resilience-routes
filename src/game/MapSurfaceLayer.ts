@@ -4,7 +4,7 @@ export class MapSurfaceLayer {
   private readonly scene: Phaser.Scene;
   private readonly missionId: string;
   private container!: Phaser.GameObjects.Container;
-  private visible = false;
+  private visible = true;
 
   constructor(scene: Phaser.Scene, missionId: string) {
     this.scene = scene;
@@ -12,7 +12,7 @@ export class MapSurfaceLayer {
   }
 
   create(): void {
-    this.container = this.scene.add.container(0, 0).setDepth(0.15).setVisible(false);
+    this.container = this.scene.add.container(0, 0).setDepth(0.15).setVisible(true);
     if (this.missionId === "gulf-coast") this.drawGulfCoast();
     else this.drawPacificNorthwest();
   }
