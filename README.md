@@ -44,7 +44,7 @@ http://localhost:5173/resilience-routes/
 ## Project structure
  
 ```text
-src/
+src/   
 ├── main.ts
 ├── style.css
 ├── app/
