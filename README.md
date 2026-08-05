@@ -30,7 +30,7 @@ No previous supply-chain or emergency-management experience is assumed.
 ## Run locally
 
 ```powershell
-npm ci
+npm ci 
 npm run build
 npm run dev
 ```
