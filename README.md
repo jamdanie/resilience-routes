@@ -20,7 +20,7 @@ The difference is that each file now has one clear job. `main.ts` is intentional
 Every disruption follows the same sequence:
  
 1. **Define** unfamiliar terms in everyday language. 
-2. **Explain** why the infrastructure matters.
+2. **Explain** why the infrastructure matters.  
 3. **Trace** how, when, and where the disruption spreads.
 4. **Decide** between realistic response options.
 5. **Review** why the selected option helped or increased risk.          
