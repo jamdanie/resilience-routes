@@ -23,7 +23,7 @@ Every disruption follows the same sequence:
 2. **Explain** why the infrastructure matters.
 3. **Trace** how, when, and where the disruption spreads.
 4. **Decide** between realistic response options.
-5. **Review** why the selected option helped or increased risk.
+5. **Review** why the selected option helped or increased risk.          
 
 No previous supply-chain or emergency-management experience is assumed.
 
