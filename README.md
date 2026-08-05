@@ -34,7 +34,7 @@ npm ci
 npm run build
 npm run dev
 ```
- 
+  
 Vite will display a local address similar to:
 
 ```text 
