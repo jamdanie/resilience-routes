@@ -16,7 +16,7 @@ The project keeps the familiar entry points and names:
 The difference is that each file now has one clear job. `main.ts` is intentionally only four lines and starts the application. The interface, game engine, scenario data, glossary, decision workflow, report, and styling live in separate modules.
 
 ## Learning approach
-
+ 
 Every disruption follows the same sequence:
  
 1. **Define** unfamiliar terms in everyday language. 
