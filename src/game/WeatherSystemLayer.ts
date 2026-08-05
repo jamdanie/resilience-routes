@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import type { WeatherPhase, WeatherUpdate } from "./types";
+import type { MissionWeather, WeatherPhase, WeatherRunPlan, WeatherUpdate } from "./types";
 
 const CYCLE_SECONDS = 60;
 
@@ -33,37 +33,50 @@ const WEATHER_DETAILS: Record<WeatherPhase, Omit<WeatherUpdate, "phase">> = {
 export class WeatherSystemLayer {
   private readonly scene: Phaser.Scene;
   private readonly onPhaseChange: (phase: WeatherPhase) => void;
+  private readonly weather: MissionWeather | null;
+  private readonly runPlan: WeatherRunPlan | null;
   private stormContainer!: Phaser.GameObjects.Container;
   private rainLayer!: Phaser.GameObjects.Graphics;
   private phaseLabel!: Phaser.GameObjects.Text;
   private elapsedSeconds = 0;
   private lastPhase: WeatherPhase | null = null;
 
-  constructor(scene: Phaser.Scene, onPhaseChange: (phase: WeatherPhase) => void) {
+  constructor(
+    scene: Phaser.Scene,
+    onPhaseChange: (phase: WeatherPhase) => void,
+    weather: MissionWeather | null = null,
+    runPlan: WeatherRunPlan | null = null
+  ) {
     this.scene = scene;
     this.onPhaseChange = onPhaseChange;
+    this.weather = weather;
+    this.runPlan = runPlan;
   }
 
   create(): void {
+    this.elapsedSeconds = this.runPlan?.cycleOffsetSeconds ?? 0;
     this.createStormGraphic();
-    this.updatePhase("approaching");
+    this.updatePhase(this.phaseForTime(this.elapsedSeconds));
   }
 
   update(delta: number): void {
-    this.elapsedSeconds = (this.elapsedSeconds + delta / 1000) % CYCLE_SECONDS;
-    const cycleProgress = this.elapsedSeconds / CYCLE_SECONDS;
+    const cycleSeconds = this.weather?.cycleSeconds ?? CYCLE_SECONDS;
+    this.elapsedSeconds = (this.elapsedSeconds + delta / 1000) % cycleSeconds;
+    const cycleProgress = this.elapsedSeconds / cycleSeconds;
     const phase = this.phaseForTime(this.elapsedSeconds);
 
     if (phase !== this.lastPhase) this.updatePhase(phase);
 
-    const x = Phaser.Math.Linear(-145, 1090, cycleProgress);
-    const y = 270 + Math.sin(cycleProgress * Math.PI * 2) * 62;
+    const x = Phaser.Math.Linear(this.runPlan?.startX ?? -145, this.runPlan?.endX ?? 1090, cycleProgress);
+    const y = (this.runPlan?.trackY ?? 270) + Math.sin(cycleProgress * Math.PI * 2) * 42;
     this.stormContainer.setPosition(x, y);
     this.drawRain(cycleProgress);
   }
 
   private createStormGraphic(): void {
-    this.stormContainer = this.scene.add.container(-145, 270).setDepth(0.6);
+    this.stormContainer = this.scene.add
+      .container(this.runPlan?.startX ?? -145, this.runPlan?.trackY ?? 270)
+      .setDepth(0.6);
 
     const influence = this.scene.add
       .ellipse(0, 18, 270, 170, 0x294663, 0.12)
@@ -136,8 +149,9 @@ export class WeatherSystemLayer {
   }
 
   private phaseForTime(seconds: number): WeatherPhase {
-    if (seconds < 12) return "approaching";
-    if (seconds < 42) return "warning";
+    const cycleSeconds = this.weather?.cycleSeconds ?? CYCLE_SECONDS;
+    if (seconds < cycleSeconds * 0.2) return "approaching";
+    if (seconds < cycleSeconds * 0.7) return "warning";
     return "clearing";
   }
 
@@ -166,6 +180,13 @@ export class WeatherSystemLayer {
   }
 
   private weatherPayload(phase: WeatherPhase): WeatherUpdate {
-    return { phase, ...WEATHER_DETAILS[phase] };
+    const configured = this.weather?.phases[phase];
+    if (!configured) return { phase, ...WEATHER_DETAILS[phase] };
+    const { assetEffects: _assetEffects, ...details } = configured;
+    return {
+      phase,
+      ...details,
+      timing: `${details.timing} · localized effect on ${this.runPlan?.affectedAssetIds.length ?? "regional"} assets`
+    };
   }
 }

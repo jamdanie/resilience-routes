@@ -1,10 +1,11 @@
 import Phaser from "phaser";
 import { SupplyChainScene } from "./SupplyChainScene";
-import type { Difficulty } from "./types";
+import type { Difficulty, MissionRunPlan } from "./types";
 
 export function createSupplyChainGame(
   parent: HTMLElement,
-  difficulty: Difficulty
+  difficulty: Difficulty,
+  runPlan: MissionRunPlan
 ): Phaser.Game {
   return new Phaser.Game({
     type: Phaser.AUTO,
@@ -12,7 +13,7 @@ export function createSupplyChainGame(
     width: 960,
     height: 600,
     backgroundColor: "#08111f",
-    scene: [new SupplyChainScene(difficulty)],
+    scene: [new SupplyChainScene(difficulty, runPlan)],
     scale: {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,

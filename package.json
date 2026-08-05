@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run validate:scenarios && tsc --noEmit && vite build",
+    "build": "npm run validate:scenarios && npm run test:missions && tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "validate:scenarios": "node scripts/validate-scenarios.mjs"
+    "validate:scenarios": "node scripts/validate-scenarios.mjs",
+    "test:missions": "node scripts/test-mission-randomization.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0"

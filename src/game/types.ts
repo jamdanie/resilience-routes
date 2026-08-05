@@ -17,6 +17,140 @@ export interface ScenarioLogisticsEffect {
   incorrectReason: string;
 }
 
+export type MapPoint = [number, number];
+
+export interface MissionRoute {
+  from: MapPoint;
+  to: MapPoint;
+  color: string;
+}
+
+export interface MissionAssetDefinition {
+  id: string;
+  name: string;
+  mode: LogisticsMode;
+  route: string;
+  alternateRoute: string;
+  cargo: string;
+  meaning: string;
+  color: string;
+  speed: number;
+  startProgress: number;
+  path: MapPoint[];
+  alternatePath: MapPoint[];
+}
+
+export interface WeatherAssetEffect {
+  assetId: string;
+  status: LogisticsStatus;
+  reason: string;
+}
+
+export interface MissionWeatherPhase {
+  title: string;
+  severity: string;
+  summary: string;
+  wind: string;
+  affectedArea: string;
+  timing: string;
+  assetEffects: WeatherAssetEffect[];
+}
+
+export interface MissionWeather {
+  cycleSeconds: number;
+  phases: Record<WeatherPhase, MissionWeatherPhase>;
+}
+
+export type AmbientEventKind = "weather" | "economic" | "security" | "operations";
+
+export interface AmbientEventEffect {
+  assetId: string;
+  status: LogisticsStatus;
+  reason: string;
+}
+
+export interface AmbientEventDefinition {
+  id: string;
+  kind: AmbientEventKind;
+  title: string;
+  summary: string;
+  location: MapPoint;
+  radius: number;
+  durationSeconds: number;
+  effects: AmbientEventEffect[];
+}
+
+export interface ScheduledAmbientEvent extends AmbientEventDefinition {
+  triggerSeconds: number;
+}
+
+export interface AmbientEventRecord {
+  id: string;
+  kind: AmbientEventKind;
+  title: string;
+  summary: string;
+  triggerSeconds: number;
+  durationSeconds: number;
+}
+
+export interface AssetRunPlan {
+  assetId: string;
+  startProgress: number;
+  speedMultiplier: number;
+  reverseDirection: boolean;
+  initialRoute: "planned" | "alternate";
+}
+
+export interface WeatherRunPlan {
+  startX: number;
+  endX: number;
+  trackY: number;
+  cycleOffsetSeconds: number;
+  affectedAssetIds: string[];
+}
+
+export interface OperatingCondition {
+  id: string;
+  title: string;
+  summary: string;
+  disruptionMultiplier: number;
+  recoveryAdjustment: number;
+  wrongAnswerAdjustment: number;
+  startingResilienceAdjustment: number;
+}
+
+export interface MissionDefinition {
+  id: string;
+  name: string;
+  region: string;
+  mapTitle: string;
+  mapSubtitle: string;
+  description: string;
+  commandIntent: string;
+  target: number;
+  playerStart: MapPoint;
+  routes: MissionRoute[];
+  assets: MissionAssetDefinition[];
+  weather: MissionWeather;
+  ambientEvents: AmbientEventDefinition[];
+  operatingConditions: OperatingCondition[];
+}
+
+export interface MissionPack extends MissionDefinition {
+  scenarios: Scenario[];
+}
+
+export interface MissionRunPlan {
+  seed: string;
+  mission: MissionPack;
+  condition: OperatingCondition;
+  scenarios: Scenario[];
+  activeScenarioIds: string[];
+  assetPlans: AssetRunPlan[];
+  weatherPlan: WeatherRunPlan;
+  ambientEvents: ScheduledAmbientEvent[];
+}
+
 export interface Scenario {
   id: string;
   title: string;
@@ -58,12 +192,37 @@ export interface DecisionRecord {
 }
 
 export interface GameReport {
+  missionId: string;
+  missionName: string;
+  region: string;
+  seed: string;
+  condition: OperatingCondition;
   difficulty: Difficulty;
+  target: number;
   completed: number;
   resilience: number;
   outcome: "completed" | "network-failed" | "time-expired";
   elapsedSeconds: number;
+  ambientEvents: AmbientEventRecord[];
   decisions: DecisionRecord[];
+}
+
+export interface StoredRunSummary {
+  id: string;
+  completedAt: string;
+  missionId: string;
+  missionName: string;
+  region: string;
+  seed: string;
+  conditionTitle: string;
+  difficulty: Difficulty;
+  outcome: GameReport["outcome"];
+  resilience: number;
+  completed: number;
+  target: number;
+  accuracy: number;
+  elapsedSeconds: number;
+  ambientEventCount: number;
 }
 
 export interface HudUpdate {

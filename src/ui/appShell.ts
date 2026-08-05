@@ -1,22 +1,34 @@
-import scenariosJson from "../data/scenarios.json";
-import type { Scenario } from "../game/types";
+import { missionPacks } from "../data/missions";
 import { glossaryTerms } from "./glossary";
 import { renderMissionBriefing } from "./missionBriefing";
 
-const scenarios = scenariosJson as Scenario[];
-
 function renderScenarioLibrary(): string {
-  return scenarios
-    .map(
-      (scenario) => `
-        <article class="scenario-card" style="--scenario-accent:${scenario.color}">
-          <span>${scenario.nodeType}</span>
-          <h3>${scenario.title}</h3>
-          <p>${scenario.event}</p>
-          <small>${scenario.keyTerms.length} defined terms</small>
-        </article>
-      `
-    )
+  return missionPacks
+    .map((mission) => `
+      <section class="scenario-mission-group">
+        <div><span>${mission.region}</span><h3>${mission.name}</h3><p>${mission.description}</p></div>
+        <div class="scenario-grid">
+          ${mission.scenarios
+            .map(
+              (scenario) => `
+                <article class="scenario-card" style="--scenario-accent:${scenario.color}">
+                  <span>${scenario.nodeType}</span>
+                  <h3>${scenario.title}</h3>
+                  <p>${scenario.event}</p>
+                  <small>${scenario.keyTerms.length} defined terms</small>
+                </article>
+              `
+            )
+            .join("")}
+        </div>
+      </section>
+    `)
+    .join("");
+}
+
+function renderMissionOptions(): string {
+  return missionPacks
+    .map((mission) => `<option value="${mission.id}">${mission.name}</option>`)
     .join("");
 }
 
@@ -48,6 +60,7 @@ export function renderApplicationShell(): string {
           <a href="#exercise">Exercise</a>
           <a href="#learning">Learning</a>
           <a href="#scenarios">Scenarios</a>
+          <a href="#history">History</a>
           <a href="#project">Project</a>
         </nav>
         <div class="topbar-actions">
@@ -69,12 +82,20 @@ export function renderApplicationShell(): string {
 
             <div class="mission-actions-card">
               <div>
+                <label for="mission-pack">Regional mission</label>
+                <select id="mission-pack">${renderMissionOptions()}</select>
+              </div>
+              <div>
                 <label for="difficulty">Exercise difficulty</label>
                 <select id="difficulty">
                   <option value="easy">Easy — recommended option shown, no timer</option>
                   <option value="medium" selected>Medium — standard impacts, 4-minute timer</option>
                   <option value="hard">Hard — stronger cascades, 3-minute timer</option>
                 </select>
+              </div>
+              <div class="seed-control">
+                <label for="mission-seed">Mission seed <small>Leave blank for a new random run</small></label>
+                <div><input id="mission-seed" maxlength="32" autocomplete="off" placeholder="Random seed"><button id="new-seed" class="secondary-button compact" type="button">New random seed</button></div>
               </div>
               <div class="mission-action-buttons">
                 <button id="start-game" class="primary-button" type="button">Launch Regional Scenario</button>
@@ -104,6 +125,7 @@ export function renderApplicationShell(): string {
               <h2 id="exercise-heading">Regional supply network</h2>
             </div>
             <div class="section-actions">
+              <button id="map-detail-button" class="secondary-button" type="button" aria-pressed="false" disabled>Show Terrain</button>
               <button id="guide-button" class="secondary-button" type="button">Quick Reference</button>
               <button id="glossary-button-secondary" class="secondary-button" type="button">Definitions</button>
             </div>
@@ -122,6 +144,9 @@ export function renderApplicationShell(): string {
 
           <div id="game-status" class="notice" role="status">
             Select a difficulty and launch the regional scenario.
+          </div>
+          <div id="run-identity" class="run-identity" aria-live="polite">
+            <span>Mission not launched</span><b>Seed will appear here</b>
           </div>
 
           <div class="exercise-grid">
@@ -211,7 +236,16 @@ export function renderApplicationShell(): string {
             <div><p class="eyebrow">Scenario library</p><h2>Connected physical and digital disruptions</h2></div>
             <p>Scenario content is stored in structured JSON, so new incidents can be added without rewriting the game engine.</p>
           </div>
-          <div class="scenario-grid">${renderScenarioLibrary()}</div>
+          <div class="scenario-library">${renderScenarioLibrary()}</div>
+        </section>
+
+        <section id="history" class="section history-section">
+          <div class="section-heading split-heading">
+            <div><p class="eyebrow">Local run history</p><h2>Compare decisions across different missions.</h2></div>
+            <button id="clear-history" class="secondary-button" type="button">Clear history</button>
+          </div>
+          <p class="history-intro">Completed runs are stored only in this browser. Seeds let you repeat the same disruption set and option order.</p>
+          <div id="run-history" class="run-history"><p class="history-empty">Complete a mission to begin the comparison history.</p></div>
         </section>
 
         <section id="project" class="section project-section">

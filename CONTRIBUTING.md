@@ -16,7 +16,7 @@ Use this route when you are comfortable editing JSON and GitHub files.
 
 1. Create a branch from the latest `main`.
 2. Copy `docs/examples/pnw-scenario-example.json`.
-3. Add the copied object inside the array in `src/data/scenarios.json`.
+3. Add the copied object to the matching regional array: `src/data/scenarios.json` for Pacific Northwest or `src/data/gulf-coast-scenarios.json` for Gulf Coast / Texas.
 4. Change every field for the new scenario and give it a unique `id`.
 5. Run `npm ci` once, then run `npm run validate:scenarios` and `npm run build`.
 6. Open a focused pull request and complete the checklist.
@@ -30,13 +30,16 @@ The validator reports missing fields, invalid choices, unsupported asset IDs, in
 - the three response choices and rationales
 - the correct response and scoring penalty
 - the node label, color, and coordinates on the current map
-- how existing Pacific Northwest transportation assets react
+- how existing transportation assets in the selected region react
 
-## What requires a separate feature
+## Regional mission packs
 
-JSON does not create a new regional map, transportation network, set of routes, artwork, or mission selector. Those changes require TypeScript/CSS work and design review.
+The application currently includes two independent packs:
 
-The current mission remains a **Pacific Northwest continuity exercise**. Pacific Northwest scenarios may be proposed for the current mission. Gulf Coast, Texas, or other regional scenarios are welcome, but should be labeled as a **proposed mission set** so regional assets and risks can be designed together instead of being mixed into the Pacific Northwest map.
+- **Pacific Northwest:** `src/data/scenarios.json`
+- **Gulf Coast / Texas:** `src/data/gulf-coast-scenarios.json`
+
+Scenario JSON can add an incident to either existing regional pool. A completely new region also needs a mission definition containing its map, routes, assets, weather phases, operating conditions, and mission framing. That is still a focused data contribution, but it should be proposed as a new mission pack so the region remains internally consistent.
 
 ## Current Pacific Northwest transportation assets
 
@@ -48,6 +51,15 @@ Use only these IDs in `logisticsEffects`:
 - `roadlink-14` — truck
 
 Allowed statuses are `In transit`, `Delayed`, `Holding`, and `Rerouted`.
+
+## Current Gulf Coast / Texas transportation assets
+
+Use only these IDs for Gulf Coast / Texas scenarios:
+
+- `gulf-vessel-9` — cargo vessel
+- `gulf-air-5` — cargo aircraft
+- `gulf-freight-12` — freight train
+- `gulf-road-22` — truck
 
 ## Branch names
 

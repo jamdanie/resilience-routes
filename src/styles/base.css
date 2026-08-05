@@ -25,13 +25,15 @@ body.drawer-open {
 }
 
 button,
-select {
+select,
+input {
   font: inherit;
 }
 
 button,
 a,
 select,
+input,
 summary {
   -webkit-tap-highlight-color: transparent;
 }
@@ -43,13 +45,15 @@ button {
 button:not(:disabled),
 summary,
 a,
-select {
+select,
+input {
   cursor: pointer;
 }
 
 button:focus-visible,
 a:focus-visible,
 select:focus-visible,
+input:focus-visible,
 summary:focus-visible {
   outline: 3px solid rgba(89, 181, 244, 0.42);
   outline-offset: 3px;

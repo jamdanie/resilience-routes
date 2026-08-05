@@ -1,11 +1,17 @@
 import Phaser from "phaser";
 import type {
+  AmbientEventEffect,
+  AssetRunPlan,
   LogisticsAssetInfo,
+  MissionAssetDefinition,
+  MissionWeather,
   LogisticsMode,
+  ScenarioLogisticsEffect,
   LogisticsSnapshot,
   LogisticsStatus,
   LogisticsTransition,
   WeatherPhase
+  ,WeatherRunPlan
 } from "./types";
 
 interface LogisticsAssetDefinition extends Omit<LogisticsAssetInfo, "status" | "operationalNote" | "routeState"> {
@@ -15,6 +21,7 @@ interface LogisticsAssetDefinition extends Omit<LogisticsAssetInfo, "status" | "
   startProgress: number;
   path: Array<[number, number]>;
   alternatePath: Array<[number, number]>;
+  initialRoute?: "planned" | "alternate";
 }
 
 interface RouteMetrics {
@@ -38,6 +45,8 @@ interface LogisticsAssetView extends RouteMetrics {
   scenarioNote: string | null;
   weatherStatus: LogisticsStatus | null;
   weatherNote: string | null;
+  ambientEffects: Map<string, { status: LogisticsStatus; note: string }>;
+  baselineAlternate: boolean;
   missionComplete: boolean;
   operationalNote: string;
 }
@@ -239,16 +248,44 @@ const SCENARIO_EFFECTS: Record<string, ScenarioAssetEffect[]> = {
 
 export class LiveLogisticsLayer {
   private readonly scene: Phaser.Scene;
+  private readonly definitions: LogisticsAssetDefinition[];
+  private readonly weather: MissionWeather | null;
+  private readonly weatherPlan: WeatherRunPlan | null;
   private readonly assets = new Map<string, LogisticsAssetView>();
   private selectedAssetId: string | null = null;
 
-  constructor(scene: Phaser.Scene) {
+  constructor(
+    scene: Phaser.Scene,
+    definitions: MissionAssetDefinition[] = [],
+    weather: MissionWeather | null = null,
+    assetPlans: AssetRunPlan[] = [],
+    weatherPlan: WeatherRunPlan | null = null
+  ) {
     this.scene = scene;
+    this.weather = weather;
+    this.weatherPlan = weatherPlan;
+    const plans = new Map(assetPlans.map((plan) => [plan.assetId, plan]));
+    this.definitions = definitions.length > 0
+      ? definitions.map((definition) => {
+          const plan = plans.get(definition.id);
+          const route = (points: Array<[number, number]>) =>
+            plan?.reverseDirection ? [...points].reverse() : points;
+          return {
+            ...definition,
+            color: Phaser.Display.Color.HexStringToColor(definition.color).color,
+            speed: definition.speed * (plan?.speedMultiplier ?? 1),
+            startProgress: plan?.startProgress ?? definition.startProgress,
+            path: route(definition.path),
+            alternatePath: route(definition.alternatePath),
+            initialRoute: plan?.initialRoute ?? "planned"
+          };
+        })
+      : ASSETS.map((asset) => ({ ...asset, initialRoute: "planned" as const }));
   }
 
   create(): void {
     this.drawLayerLabel();
-    ASSETS.forEach((definition) => this.createAsset(definition));
+    this.definitions.forEach((definition) => this.createAsset(definition));
     this.emitSnapshot();
     this.scene.time.delayedCall(0, () => this.emitSnapshot());
   }
@@ -270,7 +307,7 @@ export class LiveLogisticsLayer {
     });
   }
 
-  applyScenarioDisruption(scenario: string | ScenarioAssetEffect[]): LogisticsTransition[] {
+  applyScenarioDisruption(scenario: string | ScenarioLogisticsEffect[]): LogisticsTransition[] {
     const effects = typeof scenario === "string" ? SCENARIO_EFFECTS[scenario] ?? [] : scenario;
     const transitions = effects.map((effect) =>
       this.setScenarioStatus(effect.assetId, effect.activeStatus, effect.activeReason)
@@ -279,7 +316,7 @@ export class LiveLogisticsLayer {
     return transitions;
   }
 
-  resolveScenario(scenario: string | ScenarioAssetEffect[], correct: boolean): LogisticsTransition[] {
+  resolveScenario(scenario: string | ScenarioLogisticsEffect[], correct: boolean): LogisticsTransition[] {
     const effects = typeof scenario === "string" ? SCENARIO_EFFECTS[scenario] ?? [] : scenario;
     const transitions = effects.map((effect) =>
       this.setScenarioStatus(
@@ -310,7 +347,17 @@ export class LiveLogisticsLayer {
       }
     };
 
-    const activeEffects = weatherEffects[phase];
+    const configuredEffects = this.weather?.phases[phase].assetEffects.filter((effect) =>
+      !this.weatherPlan || this.weatherPlan.affectedAssetIds.includes(effect.assetId)
+    );
+    const activeEffects = configuredEffects
+      ? Object.fromEntries(
+          configuredEffects.map((effect) => [
+            effect.assetId,
+            { status: effect.status, reason: effect.reason }
+          ])
+        )
+      : weatherEffects[phase];
     const transitions: LogisticsTransition[] = [];
     this.assets.forEach((asset) => {
       const effect = activeEffects[asset.definition.id];
@@ -321,6 +368,34 @@ export class LiveLogisticsLayer {
       if (effect) {
         transitions.push(this.transitionFor(asset, previousStatus, effect.reason));
       }
+    });
+    this.emitSnapshot();
+    return transitions;
+  }
+
+  applyAmbientEvent(eventId: string, effects: AmbientEventEffect[]): LogisticsTransition[] {
+    const transitions = effects
+      .map((effect) => {
+        const asset = this.assets.get(effect.assetId);
+        if (!asset) return null;
+        const previousStatus = asset.status;
+        asset.ambientEffects.set(eventId, { status: effect.status, note: effect.reason });
+        this.applyEffectiveStatus(asset);
+        return this.transitionFor(asset, previousStatus, effect.reason);
+      })
+      .filter((transition): transition is LogisticsTransition => transition !== null);
+    this.emitSnapshot();
+    return transitions;
+  }
+
+  clearAmbientEvent(eventId: string): LogisticsTransition[] {
+    const transitions: LogisticsTransition[] = [];
+    this.assets.forEach((asset) => {
+      if (!asset.ambientEffects.has(eventId)) return;
+      const previousStatus = asset.status;
+      asset.ambientEffects.delete(eventId);
+      this.applyEffectiveStatus(asset);
+      transitions.push(this.transitionFor(asset, previousStatus, "The temporary inject ended and current route conditions were recalculated."));
     });
     this.emitSnapshot();
     return transitions;
@@ -351,7 +426,8 @@ export class LiveLogisticsLayer {
   }
 
   private createAsset(definition: LogisticsAssetDefinition): void {
-    const metrics = this.buildRouteMetrics(definition.path);
+    const baselineAlternate = definition.initialRoute === "alternate";
+    const metrics = this.buildRouteMetrics(baselineAlternate ? definition.alternatePath : definition.path);
     const routeTrace = this.scene.add.graphics().setDepth(0.8);
     const container = this.scene.add.container(0, 0).setDepth(1);
     const halo = this.scene.add.circle(0, 0, 18, definition.color, 0.08)
@@ -383,16 +459,22 @@ export class LiveLogisticsLayer {
       routeTrace,
       ...metrics,
       progress: definition.startProgress,
-      status: "In transit",
-      routeState: "Planned route",
+      status: baselineAlternate ? "Rerouted" : "In transit",
+      routeState: baselineAlternate ? "Alternate route" : "Planned route",
       scenarioStatus: null,
       scenarioNote: null,
       weatherStatus: null,
       weatherNote: null,
+      ambientEffects: new Map(),
+      baselineAlternate,
       missionComplete: false,
-      operationalNote: DEFAULT_NOTE["In transit"]
+      operationalNote: baselineAlternate
+        ? "The seeded operating plan began on a verified alternate route."
+        : DEFAULT_NOTE["In transit"]
     };
     this.assets.set(definition.id, view);
+    if (baselineAlternate) this.drawRouteTrace(view);
+    this.applyEffectiveStatus(view);
 
     container.on("pointerover", () => {
       halo.setFillStyle(definition.color, 0.24);
@@ -507,17 +589,24 @@ export class LiveLogisticsLayer {
   private applyEffectiveStatus(asset: LogisticsAssetView): void {
     const candidates = [
       asset.scenarioStatus ? { status: asset.scenarioStatus, note: asset.scenarioNote } : null,
-      asset.weatherStatus ? { status: asset.weatherStatus, note: asset.weatherNote } : null
+      asset.weatherStatus ? { status: asset.weatherStatus, note: asset.weatherNote } : null,
+      ...asset.ambientEffects.values()
     ].filter((candidate): candidate is { status: LogisticsStatus; note: string | null } => candidate !== null);
 
     const effective = asset.missionComplete
       ? { status: "Mission complete" as LogisticsStatus, note: DEFAULT_NOTE["Mission complete"] }
       : candidates.sort((a, b) => STATUS_PRIORITY[b.status] - STATUS_PRIORITY[a.status])[0] ??
-        { status: "In transit" as LogisticsStatus, note: DEFAULT_NOTE["In transit"] };
+        (asset.baselineAlternate
+          ? { status: "Rerouted" as LogisticsStatus, note: "The seeded operating plan began on a verified alternate route." }
+          : { status: "In transit" as LogisticsStatus, note: DEFAULT_NOTE["In transit"] });
 
     asset.status = effective.status;
     asset.operationalNote = effective.note ?? DEFAULT_NOTE[effective.status];
-    const shouldUseAlternateRoute = asset.scenarioStatus === "Rerouted" || asset.weatherStatus === "Rerouted";
+    const shouldUseAlternateRoute =
+      asset.baselineAlternate ||
+      asset.scenarioStatus === "Rerouted" ||
+      asset.weatherStatus === "Rerouted" ||
+      [...asset.ambientEffects.values()].some((effect) => effect.status === "Rerouted");
     this.activateRoute(asset, shouldUseAlternateRoute);
 
     asset.statusDot.setFillStyle(STATUS_COLORS[asset.status], 1);

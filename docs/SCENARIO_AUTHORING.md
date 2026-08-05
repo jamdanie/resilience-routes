@@ -4,7 +4,7 @@ A strong inject teaches a clear operational concept while giving the player thre
 
 ## Regional scope
 
-The playable map is currently a fictional Pacific Northwest network. New Pacific Northwest incidents can join the existing mission after review. Gulf Coast, Texas, and other regional ideas should be submitted as separate proposed mission sets because they need their own map, routes, transportation assets, hazards, and mission framing.
+The simulator includes fictional Pacific Northwest and Gulf Coast / Texas mission packs. Add an incident only to the region whose infrastructure, hazards, asset IDs, and mission framing match it. Other regional ideas should be proposed as separate mission packs rather than being mixed into an existing map.
 
 ## Scenario fields
 
@@ -29,12 +29,19 @@ The playable map is currently a fictional Pacific Northwest network. New Pacific
 
 Each `logisticsEffects` entry names an existing asset and defines its state when the disruption starts, after the recommended choice, and after another choice.
 
-Current asset IDs:
+Pacific Northwest asset IDs (`src/data/scenarios.json`):
 
 - `vessel-cascade`
 - `airlift-27`
 - `freight-6`
 - `roadlink-14`
+
+Gulf Coast / Texas asset IDs (`src/data/gulf-coast-scenarios.json`):
+
+- `gulf-vessel-9`
+- `gulf-air-5`
+- `gulf-freight-12`
+- `gulf-road-22`
 
 Allowed statuses:
 
@@ -59,7 +66,8 @@ Every state needs a short operational reason. The status describes what the play
 
 ```powershell
 npm run validate:scenarios
+npm run test:missions
 npm run build
 ```
 
-The first command checks the scenario structure. The second repeats that validation, type-checks the application, and creates the production build. GitHub runs the same build automatically on pull requests.
+The first command checks both mission packs, their weather and asset references, and all scenario content. The second verifies reproducible seeded runs and meaningful variation. The final command repeats both checks, type-checks the application, and creates the production build. GitHub runs the same build automatically on pull requests.
