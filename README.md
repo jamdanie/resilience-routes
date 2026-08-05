@@ -18,7 +18,7 @@ The difference is that each file now has one clear job. `main.ts` is intentional
 ## Learning approach
 
 Every disruption follows the same sequence:
-
+ 
 1. **Define** unfamiliar terms in everyday language.
 2. **Explain** why the infrastructure matters.
 3. **Trace** how, when, and where the disruption spreads.
