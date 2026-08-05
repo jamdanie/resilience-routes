@@ -7,7 +7,7 @@ Resilience Routes is a portfolio-ready educational simulator about supply-chain 
 The project keeps the familiar entry points and names: 
 
 - `src/main.ts`
-- `src/style.css`
+- `src/style.css`     
 - `src/game/SupplyChainScene.ts`      
 - `src/game/types.ts`
 - `src/ui/landing.ts` 
