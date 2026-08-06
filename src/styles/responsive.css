@@ -57,6 +57,10 @@
     grid-column: 1 / -1;
   }
 
+  .mission-pulse {
+    min-height: 54px;
+  }
+
   .exercise-grid {
     grid-template-columns: 1fr;
   }
@@ -173,8 +177,18 @@
     border-left: 0;
   }
 
+  .mission-pulse {
+    padding: 12px 0 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
   .command-strip-actions {
     grid-column: auto;
+  }
+
+  .command-palette-trigger kbd {
+    display: none;
   }
 
   .command-strip-actions > * {

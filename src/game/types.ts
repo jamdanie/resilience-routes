@@ -294,6 +294,7 @@ export interface HudUpdate {
   resilience: number;
   completed: number;
   target: number;
+  elapsedSeconds: number;
   remainingSeconds: number | null;
 }
 

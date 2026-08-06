@@ -26,6 +26,7 @@ import {
   createChallengeModalController,
   type ChallengeRequest
 } from "../ui/challengeModal";
+import { createCommandPaletteController, type CommandId } from "../ui/commandPalette";
 import { formatSeconds, requiredElement } from "../ui/dom";
 import { createGlossaryPanelController } from "../ui/glossaryPanel";
 import { createGuidePanelController } from "../ui/guidePanel";
@@ -64,6 +65,11 @@ export function bootstrapApplication(): void {
   const startGameButton = requiredElement<HTMLButtonElement>("#start-game");
   const mapDetailButton = requiredElement<HTMLButtonElement>("#map-detail-button");
   const nodeLabelButton = requiredElement<HTMLButtonElement>("#node-label-button");
+  const zoomOutButton = requiredElement<HTMLButtonElement>("#zoom-out-button");
+  const zoomResetButton = requiredElement<HTMLButtonElement>("#zoom-reset-button");
+  const zoomInButton = requiredElement<HTMLButtonElement>("#zoom-in-button");
+  const mapFocusButton = requiredElement<HTMLButtonElement>("#map-focus-button");
+  const commandPaletteButton = requiredElement<HTMLButtonElement>("#command-palette-button");
   const investigateFocusButton = requiredElement<HTMLButtonElement>("#investigate-focus-button");
   const difficultySelect = requiredElement<HTMLSelectElement>("#difficulty");
   const missionSelect = requiredElement<HTMLSelectElement>("#mission-pack");
@@ -106,6 +112,9 @@ export function bootstrapApplication(): void {
   const weatherCursorCondition = requiredElement<HTMLElement>("#weather-cursor-condition");
   const presenceIndicator = requiredElement<HTMLElement>("#presence-indicator");
   const presenceCount = requiredElement<HTMLElement>("#presence-count");
+  const missionPulse = requiredElement<HTMLElement>("#mission-pulse");
+  const missionPulseTitle = requiredElement<HTMLElement>("#mission-pulse-title");
+  const missionPulseCountdown = requiredElement<HTMLElement>("#mission-pulse-countdown");
 
   const guide = createGuidePanelController();
   const glossary = createGlossaryPanelController();
@@ -121,6 +130,40 @@ export function bootstrapApplication(): void {
   let logCounter = 0;
   let currentRunPlan: MissionRunPlan | null = null;
   let missionPaused = false;
+  let mapFocusActive = false;
+
+  const setMapFocus = (active: boolean): void => {
+    if (!game && active) return;
+    mapFocusActive = active;
+    platformShell.classList.toggle("map-focus-mode", active);
+    document.body.classList.toggle("map-focus-active", active);
+    mapFocusButton.setAttribute("aria-pressed", String(active));
+    mapFocusButton.setAttribute("aria-label", active ? "Exit tactical map focus mode" : "Enter tactical map focus mode");
+    mapFocusButton.textContent = active ? "Exit focus" : "Focus map";
+    window.requestAnimationFrame(() => game?.scale.refresh());
+  };
+
+  const updateMissionPulse = (elapsedSeconds: number): void => {
+    if (!currentRunPlan) return;
+    const events = [...currentRunPlan.ambientEvents].sort((a, b) => a.triggerSeconds - b.triggerSeconds);
+    const active = events.find((event) => elapsedSeconds >= event.triggerSeconds && elapsedSeconds < event.triggerSeconds + event.durationSeconds);
+    const next = events.find((event) => event.triggerSeconds > elapsedSeconds);
+
+    if (active) {
+      const remaining = Math.max(0, Math.ceil(active.triggerSeconds + active.durationSeconds - elapsedSeconds));
+      missionPulse.dataset.kind = active.kind;
+      missionPulseTitle.textContent = active.title;
+      missionPulseCountdown.textContent = `Active inject · ${remaining}s remaining`;
+    } else if (next) {
+      missionPulse.dataset.kind = next.kind;
+      missionPulseTitle.textContent = next.title;
+      missionPulseCountdown.textContent = `Next ${next.kind} inject · T−${Math.max(0, Math.ceil(next.triggerSeconds - elapsedSeconds))}s`;
+    } else {
+      missionPulse.dataset.kind = "clear";
+      missionPulseTitle.textContent = "Scheduled injects complete";
+      missionPulseCountdown.textContent = "Continue stabilizing decision nodes";
+    }
+  };
 
   const setPaused = (paused: boolean): void => {
     if (!game) return;
@@ -222,6 +265,9 @@ export function bootstrapApplication(): void {
     weatherCursorValue.textContent = "0";
     weatherCursorZone.textContent = "Move across the map";
     weatherCursorCondition.textContent = "Localized exposure will appear here.";
+    missionPulse.dataset.kind = "standby";
+    missionPulseTitle.textContent = "Inject schedule offline";
+    missionPulseCountdown.textContent = "Launch a mission to begin";
     operatorCallsign.textContent = "Response Lead · Standby";
     commandState.textContent = "Launch a scenario to connect mission controls.";
     pauseGameButton.disabled = true;
@@ -229,6 +275,7 @@ export function bootstrapApplication(): void {
     pauseGameButton.setAttribute("aria-pressed", "false");
     pauseOverlay.classList.add("hidden");
     missionPaused = false;
+    setMapFocus(false);
     runIdentity.innerHTML = `<span>${mission.name}</span><b>New random seed will be generated at launch</b>`;
     currentRunPlan = null;
     logCounter = 0;
@@ -251,9 +298,12 @@ export function bootstrapApplication(): void {
     nodeLabelButton.disabled = true;
     nodeLabelButton.textContent = "Labels: Compact";
     nodeLabelButton.dataset.mode = "compact";
+    [zoomOutButton, zoomResetButton, zoomInButton, mapFocusButton].forEach((button) => { button.disabled = true; });
+    zoomResetButton.textContent = "100%";
     pauseGameButton.disabled = true;
     pauseOverlay.classList.add("hidden");
     missionPaused = false;
+    setMapFocus(false);
   };
 
   const restartExercise = (): void => {
@@ -343,6 +393,10 @@ export function bootstrapApplication(): void {
   pauseGameButton.addEventListener("click", () => setPaused(!missionPaused));
   mapDetailButton.addEventListener("click", () => game?.events.emit("cycle-map-mode"));
   nodeLabelButton.addEventListener("click", () => game?.events.emit("cycle-node-display"));
+  zoomOutButton.addEventListener("click", () => game?.events.emit("map-zoom-step", -0.1));
+  zoomResetButton.addEventListener("click", () => game?.events.emit("map-zoom-reset"));
+  zoomInButton.addEventListener("click", () => game?.events.emit("map-zoom-step", 0.1));
+  mapFocusButton.addEventListener("click", () => setMapFocus(!mapFocusActive));
   investigateFocusButton.addEventListener("click", () => {
     const scenarioId = investigateFocusButton.dataset.scenarioId;
     if (scenarioId) game?.events.emit("investigate-node", scenarioId);
@@ -393,6 +447,9 @@ export function bootstrapApplication(): void {
     nodeLabelButton.disabled = false;
     nodeLabelButton.textContent = "Labels: Compact";
     nodeLabelButton.dataset.mode = "compact";
+    [zoomOutButton, zoomResetButton, zoomInButton, mapFocusButton].forEach((button) => { button.disabled = false; });
+    zoomOutButton.disabled = true;
+    zoomResetButton.textContent = "100%";
     pauseGameButton.disabled = false;
     pauseGameButton.textContent = "Pause mission";
     pauseGameButton.setAttribute("aria-pressed", "false");
@@ -405,7 +462,10 @@ export function bootstrapApplication(): void {
 
     game.events.on("toggle-guide", guide.toggle);
     game.events.on("show-challenge", (request: ChallengeRequest) => challengeModal.show(request));
-    game.events.on("hud-update", (update: HudUpdate) => updateHud(update));
+    game.events.on("hud-update", (update: HudUpdate) => {
+      updateHud(update);
+      updateMissionPulse(update.elapsedSeconds);
+    });
     game.events.on("node-focus", (scenario: Scenario, available = true) => {
       focusType.textContent = scenario.nodeType;
       focusTitle.textContent = scenario.title;
@@ -463,6 +523,11 @@ export function bootstrapApplication(): void {
       mapDetailButton.dataset.mode = mode;
       mapDetailButton.setAttribute("aria-label", `Current map layer: ${label}. Activate to change layer.`);
     });
+    game.events.on("map-zoom-update", (zoom: number) => {
+      zoomResetButton.textContent = `${Math.round(zoom * 100)}%`;
+      zoomOutButton.disabled = zoom <= 1;
+      zoomInButton.disabled = zoom >= 1.6;
+    });
     game.events.on("mission-started", (runPlan: MissionRunPlan) => {
       runIdentity.innerHTML = `<span>${runPlan.mission.region} · ${runPlan.condition.title}</span><b>Seed ${runPlan.seed} · ${runPlan.activeScenarioIds.length} decision injects · ${runPlan.ambientEvents.length} temporary injects</b>`;
       operatorCallsign.textContent = `Response Lead · ${runPlan.mission.region}`;
@@ -484,11 +549,64 @@ export function bootstrapApplication(): void {
       pauseGameButton.disabled = true;
       pauseOverlay.classList.add("hidden");
       commandState.textContent = "Mission complete · after-action review ready";
+      setMapFocus(false);
       presence.setMission(null);
       reportModal.show(report);
     });
 
     document.querySelector("#exercise")?.scrollIntoView({ behavior: "smooth" });
+  });
+
+  const runCommand = (command: CommandId): void => {
+    const commands: Record<CommandId, () => void> = {
+      pause: () => { if (!pauseGameButton.disabled) setPaused(!missionPaused); },
+      focus: () => { if (!mapFocusButton.disabled) setMapFocus(!mapFocusActive); },
+      map: () => { if (!mapDetailButton.disabled) game?.events.emit("cycle-map-mode"); },
+      labels: () => { if (!nodeLabelButton.disabled) game?.events.emit("cycle-node-display"); },
+      "zoom-in": () => { if (!zoomInButton.disabled) game?.events.emit("map-zoom-step", 0.1); },
+      "zoom-out": () => { if (!zoomOutButton.disabled) game?.events.emit("map-zoom-step", -0.1); },
+      "zoom-reset": () => { if (!zoomResetButton.disabled) game?.events.emit("map-zoom-reset"); },
+      reference: guide.open,
+      glossary: glossary.open
+    };
+    commands[command]();
+  };
+
+  const commandPalette = createCommandPaletteController(runCommand);
+  commandPaletteButton.addEventListener("click", commandPalette.open);
+  window.addEventListener("keydown", (event) => {
+    const target = event.target as HTMLElement | null;
+    const editing = target?.matches("input, textarea, select") || target?.isContentEditable;
+    if (platformShell.classList.contains("hidden")) return;
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault();
+      commandPalette.toggle();
+      return;
+    }
+    if (editing || commandPalette.isOpen()) return;
+    if (document.querySelector(".modal-backdrop:not(.hidden), .briefing-overlay:not(.hidden)")) return;
+    if (event.key === "Escape" && mapFocusActive) {
+      event.preventDefault();
+      setMapFocus(false);
+      return;
+    }
+    const shortcuts: Record<string, CommandId> = {
+      p: "pause",
+      f: "focus",
+      l: "map",
+      n: "labels",
+      "+": "zoom-in",
+      "=": "zoom-in",
+      "-": "zoom-out",
+      "0": "zoom-reset",
+      m: "reference",
+      g: "glossary"
+    };
+    const command = shortcuts[event.key.toLowerCase()];
+    if (command) {
+      event.preventDefault();
+      runCommand(command);
+    }
   });
 
   missionPacks.forEach((mission) => {

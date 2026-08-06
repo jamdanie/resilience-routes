@@ -67,6 +67,7 @@ export function renderApplicationShell(): string {
           <div id="presence-indicator" class="presence-indicator" data-connected="true" title="This indicator only shows a global count when a presence service is configured.">
             <i aria-hidden="true"></i><span id="presence-count">Live session</span>
           </div>
+          <button id="command-palette-button" class="secondary-button compact command-palette-trigger" type="button" aria-keyshortcuts="Control+K">Commands <kbd>Ctrl K</kbd></button>
           <button id="glossary-button" class="text-button" type="button">Glossary</button>
           <button id="return-home" class="secondary-button compact" type="button">Exit Mission</button>
         </div>
@@ -176,6 +177,10 @@ export function renderApplicationShell(): string {
               <div id="weather-cursor-gauge" class="weather-cursor-gauge" style="--weather-level:0%"><span id="weather-cursor-value">0</span><small>%</small></div>
               <div><span>Weather at cursor</span><b id="weather-cursor-zone">Move across the map</b><small id="weather-cursor-condition">Localized exposure will appear here.</small></div>
             </div>
+            <div id="mission-pulse" class="mission-pulse" data-kind="standby" aria-live="polite">
+              <i aria-hidden="true"></i>
+              <div><span>Mission pulse</span><b id="mission-pulse-title">Inject schedule offline</b><small id="mission-pulse-countdown">Launch a mission to begin</small></div>
+            </div>
             <div class="command-strip-actions">
               <button id="ops-reference-button" class="secondary-button compact" type="button">Quick reference</button>
               <button id="pause-game-button" class="primary-button compact" type="button" disabled aria-pressed="false">Pause mission</button>
@@ -189,6 +194,12 @@ export function renderApplicationShell(): string {
                 <div class="map-toolbar-actions">
                   <button id="node-label-button" class="secondary-button compact" type="button" aria-label="Change decision-node label density" disabled>Labels: Compact</button>
                   <button id="map-detail-button" class="secondary-button compact map-mode-button" type="button" aria-label="Change operational map layer" disabled>Map: Infrastructure</button>
+                  <div class="map-zoom-controls" role="group" aria-label="Tactical map zoom">
+                    <button id="zoom-out-button" class="secondary-button compact" type="button" aria-label="Zoom map out" disabled>−</button>
+                    <button id="zoom-reset-button" class="secondary-button compact" type="button" aria-label="Reset map zoom" disabled>100%</button>
+                    <button id="zoom-in-button" class="secondary-button compact" type="button" aria-label="Zoom map in" disabled>+</button>
+                  </div>
+                  <button id="map-focus-button" class="secondary-button compact" type="button" aria-label="Enter tactical map focus mode" aria-pressed="false" disabled>Focus map</button>
                 </div>
               </div>
               <div class="game-stage">
@@ -346,6 +357,7 @@ export function renderApplicationShell(): string {
         <li><b>Continue the mission.</b><span>Later options depend on what remains. Stabilize three nodes and review resource use in the final report.</span></li>
       </ol>
       <div class="drawer-callout"><b>Keyboard controls</b><span>Move: WASD or arrows · Investigate: E · Quick reference: M</span></div>
+      <div class="drawer-callout"><b>Command shortcuts</b><span>Commands: Ctrl K · Pause: P · Map focus: F · Zoom: + / − / 0 · Close: Esc</span></div>
     </aside>
 
     <aside id="glossary-panel" class="drawer glossary-drawer" aria-hidden="true" aria-labelledby="glossary-title">
@@ -355,6 +367,30 @@ export function renderApplicationShell(): string {
       <p class="drawer-intro">Each definition includes an example and the reason the term matters during a disruption.</p>
       <div class="glossary-list">${renderGlossaryEntries()}</div>
     </aside>
+
+    <div id="command-palette" class="command-palette-backdrop hidden" role="presentation">
+      <section class="command-palette" role="dialog" aria-modal="true" aria-labelledby="command-palette-title">
+        <div class="command-palette-heading">
+          <div><p class="eyebrow">Adaptive command</p><h2 id="command-palette-title">Run a command</h2></div>
+          <button id="close-command-palette" class="close-button" type="button" aria-label="Close command palette">×</button>
+        </div>
+        <label class="command-search-label" for="command-search">Search commands</label>
+        <input id="command-search" class="command-search" autocomplete="off" placeholder="Type pause, map, layers, reference…">
+        <div id="command-list" class="command-list" role="listbox" aria-label="Available commands">
+          <button type="button" data-command="pause"><span>Pause or resume mission</span><kbd>P</kbd></button>
+          <button type="button" data-command="focus"><span>Toggle tactical map focus</span><kbd>F</kbd></button>
+          <button type="button" data-command="map"><span>Cycle operational map layer</span><kbd>L</kbd></button>
+          <button type="button" data-command="labels"><span>Change node label density</span><kbd>N</kbd></button>
+          <button type="button" data-command="zoom-in"><span>Zoom tactical map in</span><kbd>+</kbd></button>
+          <button type="button" data-command="zoom-out"><span>Zoom tactical map out</span><kbd>−</kbd></button>
+          <button type="button" data-command="zoom-reset"><span>Reset tactical map zoom</span><kbd>0</kbd></button>
+          <button type="button" data-command="reference"><span>Open quick reference</span><kbd>M</kbd></button>
+          <button type="button" data-command="glossary"><span>Open supply-chain glossary</span><kbd>G</kbd></button>
+        </div>
+        <p id="command-empty" class="command-empty hidden">No command matches that search.</p>
+        <small class="command-palette-help">Use ↑ ↓ to move · Enter to run · Esc to close</small>
+      </section>
+    </div>
 
     <div id="modal-backdrop" class="modal-backdrop hidden" role="presentation">
       <section id="challenge-modal" class="modal challenge-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
