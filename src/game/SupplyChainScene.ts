@@ -69,6 +69,7 @@ export class SupplyChainScene extends Phaser.Scene {
   private nodes: NodeView[] = [];
   private focusedNode: NodeView | null = null;
   private nodeDisplayMode: "compact" | "detail" = "compact";
+  private mapZoom = 1;
   private promptText!: Phaser.GameObjects.Text;
   private challengeOpen = false;
   private resilience = 0;
@@ -122,6 +123,7 @@ export class SupplyChainScene extends Phaser.Scene {
     this.timerAccumulatorMs = 0;
     this.finished = false;
     this.pendingConsequence = null;
+    this.mapZoom = 1;
     this.strategicResources = new StrategicResourceSystem(this.difficulty);
 
     this.drawWorld();
@@ -165,6 +167,10 @@ export class SupplyChainScene extends Phaser.Scene {
       this.nodes.forEach((node) => this.applyNodePresentation(node, this.nodeDisplayMode === "detail"));
       this.game.events.emit("node-display-mode", this.nodeDisplayMode);
     });
+    this.game.events.on("map-zoom-step", (step: number) => {
+      this.setMapZoom(this.mapZoom + step);
+    });
+    this.game.events.on("map-zoom-reset", () => this.setMapZoom(1));
     this.game.events.on("investigate-node", (scenarioId: string) => {
       const node = this.nodes.find(({ scenario }) => scenario.id === scenarioId);
       if (node) this.openChallenge(node);
@@ -181,10 +187,10 @@ export class SupplyChainScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
+    if (this.finished || this.challengeOpen) return;
     this.weatherLayer.update(delta);
     this.logisticsLayer.update(delta);
     this.ambientEvents.update(delta);
-    if (this.finished || this.challengeOpen) return;
 
     this.updateMovement(delta);
     this.updateNearbyPrompt();
@@ -833,9 +839,16 @@ export class SupplyChainScene extends Phaser.Scene {
       resilience: this.resilience,
       completed: this.completed,
       target: this.runPlan.mission.target,
+      elapsedSeconds: this.elapsedSeconds,
       remainingSeconds: this.remainingSeconds
     };
     this.game.events.emit("hud-update", update);
+  }
+
+  private setMapZoom(value: number): void {
+    this.mapZoom = Phaser.Math.Clamp(Math.round(value * 10) / 10, 1, 1.6);
+    this.cameras.main.setZoom(this.mapZoom).centerOn(480, 300);
+    this.game.events.emit("map-zoom-update", this.mapZoom);
   }
 
   private emitTransportationUpdate(

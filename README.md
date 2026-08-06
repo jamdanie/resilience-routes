@@ -76,6 +76,7 @@ src/
 ├── ui/
 │   ├── appShell.ts
 │   ├── challengeModal.ts
+│   ├── commandPalette.ts
 │   ├── dom.ts
 │   ├── drawer.ts
 │   ├── glossary.ts
@@ -132,6 +133,12 @@ The current content library contains 16 complete decision injects and 10 tempora
 The map remains fictional and does not load commercial map tiles. Players can cycle among Infrastructure, Terrain, and Minimal modes. The Infrastructure mode adds recognizable coastlines, ports and berths, roads, rail corridors, runways, cargo aprons, distribution buildings, rivers, wetlands, and labeled operating zones without an API key or external tracking.
 
 Completed runs are stored only in the current browser. The history panel compares region, difficulty, score, accuracy, operating condition, elapsed time, and seed without collecting personal information or using a server.
+
+## Adaptive command workspace
+
+The exercise interface includes a live mission pulse for active and upcoming temporary injects, tactical map zoom from 100% to 160%, and a distraction-free map focus mode. A searchable command palette gives mouse, touch, and keyboard users the same controls without hunting through the interface.
+
+Open the command palette with `Ctrl K` (or `Command K` on macOS). During an active mission, use `P` to pause, `F` to focus the map, `L` to cycle map layers, `N` to change node labels, `+` / `-` / `0` to control zoom, `M` for quick reference, and `G` for the glossary. The decision window pauses the mission clock, weather, assets, and temporary inject schedule together so the displayed timeline remains accurate.
 
 ## Community content SDK
 
