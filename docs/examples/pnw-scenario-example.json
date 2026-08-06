@@ -61,5 +61,18 @@
     "Trucks stop or move toward longer alternate roads.",
     "Detour capacity, driver hours, and fuel availability become constrained.",
     "Clinics, stores, farms, and inland communities receive late deliveries."
+  ],
+  "resourceCosts": [
+    {
+      "transport": 2,
+      "fuel": 2
+    },
+    {
+      "crews": 1,
+      "transport": 2,
+      "fuel": 1,
+      "intelligence": 1
+    },
+    {}
   ]
 }

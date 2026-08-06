@@ -1,0 +1,86 @@
+{
+  "id": "gulf-energy-outage",
+  "title": "Energy Transfer Center",
+  "nodeType": "Energy terminal",
+  "x": 420,
+  "y": 120,
+  "color": "#f0a65a",
+  "event": "A regional power failure stops pumps, loading equipment, and monitoring systems at a fuel-transfer terminal.",
+  "why": "Fuel terminals receive, store, and transfer products between pipelines, tanks, rail cars, vessels, and trucks. Power is needed for pumps, controls, communications, and safe loading.",
+  "how": "Loading stops, trucks and rail cars queue, inventory cannot move to customers, and emergency generators begin consuming the same limited fuel that communities need.",
+  "when": "The risk increases during extreme heat, storms, grid damage, generator maintenance, or when backup fuel and manual procedures have not been tested.",
+  "where": "Effects begin at the terminal and spread to fuel stations, hospitals, utility restoration fleets, airports, farms, and emergency operations.",
+  "keyTerms": [
+    {
+      "term": "Transfer terminal",
+      "definition": "A facility that receives, stores, and moves fuel or another bulk product between transportation systems.",
+      "example": "Fuel moves from a storage tank into trucks that deliver it to local stations.",
+      "whyItMatters": "Inventory may physically exist at the terminal but remain unusable when pumps and controls fail."
+    },
+    {
+      "term": "Black-start capability",
+      "definition": "The ability to restart an essential system without relying on the normal electric grid.",
+      "example": "A tested generator restarts a limited set of terminal pumps after a grid outage.",
+      "whyItMatters": "Limited independent power can restore priority operations before full grid service returns."
+    },
+    {
+      "term": "Allocation",
+      "definition": "A rule for dividing a limited resource among competing needs.",
+      "example": "Available fuel is assigned first to hospitals, emergency vehicles, and utility repair crews.",
+      "whyItMatters": "Without clear allocation, scarce fuel can be consumed by lower-priority demand."
+    }
+  ],
+  "question": "What is the strongest continuity response while normal power is unavailable?",
+  "options": [
+    "Use tested backup power for limited loading and allocate fuel to essential services",
+    "Attempt to restart every terminal process at the same time",
+    "Release fuel without inventory, safety, or destination verification"
+  ],
+  "optionRationales": [
+    "This response matches limited backup power to essential operations and directs scarce fuel toward the highest-consequence needs.",
+    "Restarting everything may exceed generator capacity and cause another shutdown or unsafe operation.",
+    "Unverified releases create inventory, safety, and delivery errors during an already constrained period."
+  ],
+  "correctIndex": 0,
+  "takeaway": "Backup power is most useful when it is tested and assigned to a clearly prioritized set of operations.",
+  "responsePrinciple": "Restore a limited safe process, verify inventory, and allocate scarce fuel by consequence.",
+  "basePenalty": 12,
+  "logisticsEffects": [
+    {
+      "assetId": "gulf-road-22",
+      "activeStatus": "Holding",
+      "activeReason": "Fuel loading is unavailable while terminal pumps and controls are offline.",
+      "correctStatus": "In transit",
+      "correctReason": "Tested backup power restored a verified priority loading lane.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "The terminal could not safely verify or load the truck."
+    },
+    {
+      "assetId": "gulf-air-5",
+      "activeStatus": "Delayed",
+      "activeReason": "Aviation and generator fuel availability is being verified during the outage.",
+      "correctStatus": "In transit",
+      "correctReason": "Essential aviation support received a confirmed allocation.",
+      "incorrectStatus": "Delayed",
+      "incorrectReason": "No verified priority fuel allocation reached the air-cargo operation."
+    }
+  ],
+  "cascadeSteps": [
+    "Grid power fails at the fuel-transfer terminal.",
+    "Pumps, loading racks, communications, and monitoring stop.",
+    "Fuel trucks and rail cars queue while usable inventory declines elsewhere.",
+    "Hospitals, utilities, airports, farms, and emergency fleets face shortages."
+  ],
+  "resourceCosts": [
+    {
+      "crews": 1,
+      "fuel": 2,
+      "inventory": 1
+    },
+    {
+      "crews": 1,
+      "fuel": 2
+    },
+    {}
+  ]
+}

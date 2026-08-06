@@ -1,0 +1,16 @@
+{
+  "json.schemas": [
+    {
+      "fileMatch": ["/src/content/packs/*/manifest.json"],
+      "url": "./schemas/manifest.schema.json"
+    },
+    {
+      "fileMatch": ["/src/content/packs/*/mission.json"],
+      "url": "./schemas/mission.schema.json"
+    },
+    {
+      "fileMatch": ["/src/content/packs/*/scenarios/*.json", "/docs/examples/*.json"],
+      "url": "./schemas/scenario.schema.json"
+    }
+  ]
+}

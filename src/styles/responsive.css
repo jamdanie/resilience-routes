@@ -21,6 +21,10 @@
   .report-summary {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  .report-resource-summary {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 920px) {
@@ -55,6 +59,19 @@
 
   .hud-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .resource-command-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .briefing-resource-note {
+    grid-template-columns: 1fr;
+  }
+
+  .resource-pool,
+  .modal-resource-context {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .contributors-grid {
@@ -163,6 +180,15 @@
     flex-direction: column;
   }
 
+  .option-button .option-meta {
+    justify-content: flex-start;
+  }
+
+  .resource-pool,
+  .modal-resource-context {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .cascade-chain {
     grid-template-columns: 1fr;
   }
@@ -181,6 +207,10 @@
 
   .report-decision {
     grid-template-columns: 1fr;
+  }
+
+  .report-resource-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .report-ambient-events {

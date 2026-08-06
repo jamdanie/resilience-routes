@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import { discoverContentPacks } from "./content-packs.mjs";
 
 function hashSeed(seed) {
   let value = 2166136261;
@@ -36,16 +35,24 @@ function plan(mission, scenarios, seed) {
   const randomizedScenarios = scenarios.map((scenario) => {
     const originalCorrect = scenario.options[scenario.correctIndex];
     const pairs = shuffled(
-      scenario.options.map((option, index) => ({ option, rationale: scenario.optionRationales[index] })),
+      scenario.options.map((option, index) => ({
+        option,
+        rationale: scenario.optionRationales[index],
+        resourceCost: scenario.resourceCosts[index],
+      })),
       random,
     );
     return {
       id: scenario.id,
       options: pairs.map(({ option }) => option),
       rationales: pairs.map(({ rationale }) => rationale),
+      resourceCosts: pairs.map(({ resourceCost }) => resourceCost),
       correctIndex: pairs.findIndex(({ option }) => option === originalCorrect),
       originalCorrect,
-      originalPairs: new Map(scenario.options.map((option, index) => [option, scenario.optionRationales[index]])),
+      originalPairs: new Map(scenario.options.map((option, index) => [option, {
+        rationale: scenario.optionRationales[index],
+        resourceCost: scenario.resourceCosts[index],
+      }])),
     };
   });
   const active = shuffled(randomizedScenarios.map(({ id }) => id), random).slice(0, mission.target);
@@ -78,14 +85,11 @@ function plan(mission, scenarios, seed) {
   return { randomizedScenarios, active, condition, assetPlans, weatherPlan, ambientEvents };
 }
 
-const packs = [
-  ["../src/data/missions/pacific-northwest.json", "../src/data/scenarios.json"],
-  ["../src/data/missions/gulf-coast.json", "../src/data/gulf-coast-scenarios.json"],
-];
+const packs = await discoverContentPacks();
 
-for (const [missionFile, scenariosFile] of packs) {
-  const mission = JSON.parse(await readFile(fileURLToPath(new URL(missionFile, import.meta.url)), "utf8"));
-  const scenarios = JSON.parse(await readFile(fileURLToPath(new URL(scenariosFile, import.meta.url)), "utf8"));
+for (const pack of packs) {
+  const mission = pack.mission;
+  const scenarios = pack.scenarios.map(({ data }) => data);
   const baseline = plan(mission, scenarios, "REPEATABLE-42");
   assert.deepEqual(plan(mission, scenarios, "REPEATABLE-42"), baseline, `${mission.id}: identical seeds must reproduce a run`);
   assert.equal(baseline.active.length, mission.target, `${mission.id}: run must select exactly the mission target`);
@@ -99,7 +103,8 @@ for (const [missionFile, scenariosFile] of packs) {
   baseline.randomizedScenarios.forEach((scenario) => {
     assert.equal(scenario.options[scenario.correctIndex], scenario.originalCorrect, `${mission.id}/${scenario.id}: correct answer must survive shuffling`);
     scenario.options.forEach((option, index) => {
-      assert.equal(scenario.rationales[index], scenario.originalPairs.get(option), `${mission.id}/${scenario.id}: rationale must remain paired to its option`);
+      assert.equal(scenario.rationales[index], scenario.originalPairs.get(option).rationale, `${mission.id}/${scenario.id}: rationale must remain paired to its option`);
+      assert.deepEqual(scenario.resourceCosts[index], scenario.originalPairs.get(option).resourceCost, `${mission.id}/${scenario.id}: resource cost must remain paired to its option`);
     });
   });
 
@@ -112,4 +117,4 @@ for (const [missionFile, scenariosFile] of packs) {
   assert.ok(distinctRuns.size >= 12, `${mission.id}: seed variation should produce meaningfully different runs`);
 }
 
-console.log(`Verified deterministic replay and varied mission generation for ${packs.length} mission packs.`);
+console.log(`Verified deterministic replay and varied mission generation for ${packs.length} auto-discovered mission packs.`);

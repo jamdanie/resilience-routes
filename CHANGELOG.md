@@ -1,5 +1,20 @@
 # Changelog
 
+## 7.0.0
+
+- Added six limited strategic resources: funds, field crews, transportation capacity, fuel, intelligence, and emergency inventory
+- Added data-defined costs for all 48 response options across 16 decision injects
+- Added a live resource bar with low and depleted reserve states
+- Added decision-level affordability checks and clearly disabled unavailable responses
+- Kept one zero-cost fallback in every scenario so resource exhaustion cannot stop mission progress
+- Added persistent opportunity cost because committed resources remain unavailable for later decisions
+- Added downstream resilience consequences when a response leaves a dependency unstable
+- Added map-level resource-deployment feedback and mission-log entries
+- Added resource stewardship, per-decision costs, and consequences to the after-action report
+- Added resource reserve percentage to local run history
+- Extended scenario validation and randomization tests to cover resource costs and option pairing
+- Added a dedicated resource-economy test covering every current scenario
+
 ## 6.2.0
 
 - Replaced the abstract terrain background with a cartographic operational basemap

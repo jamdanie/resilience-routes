@@ -141,6 +141,21 @@ export function renderApplicationShell(): string {
             <article><span>Difficulty</span><strong id="hud-difficulty">—</strong><small>Response conditions</small></article>
           </div>
 
+          <section class="resource-command-bar" aria-label="Available mission resources" aria-live="polite">
+            <div class="resource-command-heading">
+              <span>Strategic resources</span>
+              <small>Every commitment reduces what remains for later disruptions.</small>
+            </div>
+            <div id="resource-pool" class="resource-pool">
+              <article data-resource="funds"><span>Funds</span><strong id="resource-funds">—</strong></article>
+              <article data-resource="crews"><span>Field crews</span><strong id="resource-crews">—</strong></article>
+              <article data-resource="transport"><span>Transport</span><strong id="resource-transport">—</strong></article>
+              <article data-resource="fuel"><span>Fuel</span><strong id="resource-fuel">—</strong></article>
+              <article data-resource="intelligence"><span>Intel</span><strong id="resource-intelligence">—</strong></article>
+              <article data-resource="inventory"><span>Reserves</span><strong id="resource-inventory">—</strong></article>
+            </div>
+          </section>
+
           <div id="game-status" class="notice" role="status">
             Select a difficulty and launch the regional scenario.
           </div>
@@ -258,8 +273,8 @@ export function renderApplicationShell(): string {
           </div>
           <div class="architecture-grid">
             <article><span>Application</span><h3>Bootstrap and session control</h3><p>Starts the platform, wires events, and manages a clean restart without mixing game logic into the page markup.</p></article>
-            <article><span>Game</span><h3>Phaser simulation engine</h3><p>Handles movement, network nodes, mission timing, scoring, and completion conditions.</p></article>
-            <article><span>Content</span><h3>Structured scenario data</h3><p>Defines incidents, terminology, response choices, rationales, and learning takeaways in JSON.</p></article>
+            <article><span>Game</span><h3>Phaser simulation engine</h3><p>Handles movement, network nodes, resource commitments, downstream consequences, mission timing, scoring, and completion conditions.</p></article>
+            <article><span>Content</span><h3>Structured scenario data</h3><p>Defines incidents, terminology, response choices, resource costs, rationales, and learning takeaways in JSON.</p></article>
             <article><span>Interface</span><h3>Reusable UI controllers</h3><p>Manages the landing screen, glossary, quick reference, challenge workflow, HUD, and report.</p></article>
           </div>
 
@@ -293,8 +308,9 @@ export function renderApplicationShell(): string {
         <li><b>Launch the scenario.</b><span>The regional network appears in the exercise panel.</span></li>
         <li><b>Investigate a node.</b><span>Click it, tap it, or move nearby and press E.</span></li>
         <li><b>Read the definitions.</b><span>Open the term cards before comparing the response options.</span></li>
-        <li><b>Choose a response.</b><span>The simulator explains why that option helps or increases risk.</span></li>
-        <li><b>Continue the mission.</b><span>Stabilize three nodes and review the final report.</span></li>
+        <li><b>Check the resource cost.</b><span>Funds, crews, transportation, fuel, intelligence, and reserves are limited for the entire run.</span></li>
+        <li><b>Choose a response.</b><span>The simulator explains why that option helps or increases risk and removes committed resources from the mission pool.</span></li>
+        <li><b>Continue the mission.</b><span>Later options depend on what remains. Stabilize three nodes and review resource use in the final report.</span></li>
       </ol>
       <div class="drawer-callout"><b>Keyboard controls</b><span>Move: WASD or arrows · Investigate: E · Quick reference: M</span></div>
     </aside>
@@ -334,6 +350,7 @@ export function renderApplicationShell(): string {
         <section class="decision-section">
           <p class="eyebrow">Command decision</p>
           <h3 id="modal-question"></h3>
+          <div id="modal-resource-context" class="modal-resource-context"></div>
           <div id="modal-options" class="option-list"></div>
           <div id="decision-feedback" class="decision-feedback hidden" role="status"></div>
         </section>

@@ -71,6 +71,17 @@
       "Containers, cranes, chassis, rail slots, and truck appointments fall out of sequence.",
       "Warehouses and factories receive late or incomplete deliveries.",
       "Stores, repair operations, and essential services face shortages or higher costs."
+    ],
+    "resourceCosts": [
+      {},
+      {
+        "funds": 1,
+        "transport": 2,
+        "fuel": 1
+      },
+      {
+        "funds": 1
+      }
     ]
   },
   {
@@ -145,6 +156,18 @@
       "Trains wait or divert, while nearby yards begin to fill.",
       "Freight shifts toward roads and alternate rail lines with less capacity.",
       "Food, fuel, industrial materials, and community deliveries arrive late."
+    ],
+    "resourceCosts": [
+      {
+        "crews": 1,
+        "transport": 2,
+        "fuel": 1
+      },
+      {
+        "transport": 2,
+        "fuel": 2
+      },
+      {}
     ]
   },
   {
@@ -219,6 +242,18 @@
       "Flights, ramp work, and nearby truck movement slow or pause.",
       "Urgent cargo must compete for space at safer alternate airports.",
       "Hospitals, repair teams, manufacturers, and customers wait longer for time-sensitive goods."
+    ],
+    "resourceCosts": [
+      {},
+      {
+        "funds": 1,
+        "transport": 1
+      },
+      {
+        "funds": 1,
+        "transport": 2,
+        "intelligence": 1
+      }
     ]
   },
   {
@@ -293,6 +328,16 @@
       "Gate appointments, routing instructions, and cargo records become unreliable.",
       "Trucks queue, containers are misplaced, and partners stop accepting automated directions.",
       "Physical cargo movement slows across ports, carriers, warehouses, suppliers, and customers."
+    ],
+    "resourceCosts": [
+      {
+        "crews": 1,
+        "intelligence": 2
+      },
+      {
+        "crews": 1
+      },
+      {}
     ]
   },
   {
@@ -358,6 +403,18 @@
       "Carriers prioritize some routes and delay lightly loaded or lower-priority trips.",
       "Warehouses accumulate inventory that cannot move to its destination.",
       "Hospitals, stores, farms, utilities, and emergency operations receive fewer or later deliveries."
+    ],
+    "resourceCosts": [
+      {
+        "transport": 1,
+        "fuel": 1,
+        "intelligence": 1
+      },
+      {
+        "transport": 1,
+        "fuel": 2
+      },
+      {}
     ]
   },
   {
@@ -417,6 +474,16 @@
       "Purchasing and customs teams pause the release while they confirm the charge.",
       "Production and inventory plans become uncertain while the component is delayed.",
       "The organization may face higher prices, reduced availability, or an avoidable shortage."
+    ],
+    "resourceCosts": [
+      {
+        "funds": 1,
+        "intelligence": 2
+      },
+      {
+        "funds": 1
+      },
+      {}
     ]
   },
   {
@@ -476,6 +543,17 @@
       "The supplier misses its planned export loading window.",
       "Regional manufacturers receive fewer parts than expected.",
       "Production, customer orders, and repair activity are delayed unless inventory is prioritized."
+    ],
+    "resourceCosts": [
+      {
+        "funds": 1,
+        "intelligence": 1,
+        "inventory": 2
+      },
+      {},
+      {
+        "funds": 2
+      }
     ]
   },
   {
@@ -535,6 +613,16 @@
       "Wrong items are loaded onto a priority delivery.",
       "The destination rejects the shipment and requests the correct order.",
       "Vehicles, workers, and inventory are used twice while the actual need remains unmet."
+    ],
+    "resourceCosts": [
+      {
+        "crews": 2,
+        "intelligence": 1
+      },
+      {
+        "crews": 1
+      },
+      {}
     ]
   }
 ]

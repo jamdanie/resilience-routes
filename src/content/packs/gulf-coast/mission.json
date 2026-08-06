@@ -1,0 +1,510 @@
+{
+  "id": "gulf-coast",
+  "name": "Gulf Coast Energy and Freight Exercise",
+  "region": "Gulf Coast / Texas",
+  "mapTitle": "Coastal energy and freight network",
+  "mapSubtitle": "Gulf Coast continuity",
+  "description": "Manage hurricane, energy, port, rail, highway, and digital disruptions across a fictional Gulf Coast network.",
+  "commandIntent": "Protect life-safety shipments, fuel distribution, port access, and inland freight while coastal conditions change.",
+  "target": 3,
+  "playerStart": [
+    480,
+    325
+  ],
+  "routes": [
+    {
+      "from": [
+        155,
+        210
+      ],
+      "to": [
+        420,
+        150
+      ],
+      "color": "#4fc3d7"
+    },
+    {
+      "from": [
+        420,
+        150
+      ],
+      "to": [
+        760,
+        205
+      ],
+      "color": "#f0a65a"
+    },
+    {
+      "from": [
+        760,
+        205
+      ],
+      "to": [
+        730,
+        455
+      ],
+      "color": "#e06c75"
+    },
+    {
+      "from": [
+        730,
+        455
+      ],
+      "to": [
+        285,
+        455
+      ],
+      "color": "#a68aef"
+    },
+    {
+      "from": [
+        285,
+        455
+      ],
+      "to": [
+        155,
+        210
+      ],
+      "color": "#72c78c"
+    },
+    {
+      "from": [
+        420,
+        150
+      ],
+      "to": [
+        285,
+        455
+      ],
+      "color": "#6484a3"
+    }
+  ],
+  "assets": [
+    {
+      "id": "gulf-vessel-9",
+      "name": "MV Bluebonnet",
+      "mode": "Vessel",
+      "route": "Gulf approach → Bayline Ship Channel → Harbor Exchange",
+      "alternateRoute": "Offshore holding area → western channel → Harbor Exchange",
+      "cargo": "Containerized goods, food, machinery, and emergency supplies",
+      "meaning": "A cargo vessel depends on safe channel depth, navigation, pilots, and available terminal space.",
+      "color": "#4fc3d7",
+      "speed": 34,
+      "startProgress": 0.12,
+      "path": [
+        [
+          80,
+          330
+        ],
+        [
+          155,
+          210
+        ],
+        [
+          420,
+          150
+        ],
+        [
+          80,
+          330
+        ]
+      ],
+      "alternatePath": [
+        [
+          80,
+          330
+        ],
+        [
+          110,
+          520
+        ],
+        [
+          285,
+          510
+        ],
+        [
+          420,
+          150
+        ],
+        [
+          80,
+          330
+        ]
+      ]
+    },
+    {
+      "id": "gulf-air-5",
+      "name": "MedLift Gulf 5",
+      "mode": "Aircraft",
+      "route": "Coastal Air Cargo → Inland Response Hub",
+      "alternateRoute": "Coastal airspace → northern diversion → Inland Response Hub",
+      "cargo": "Medicine, repair parts, communications equipment, and laboratory supplies",
+      "meaning": "Air cargo protects urgent movement when roads or ports are constrained.",
+      "color": "#f0a65a",
+      "speed": 68,
+      "startProgress": 0.37,
+      "path": [
+        [
+          760,
+          205
+        ],
+        [
+          730,
+          455
+        ],
+        [
+          285,
+          455
+        ],
+        [
+          760,
+          205
+        ]
+      ],
+      "alternatePath": [
+        [
+          760,
+          205
+        ],
+        [
+          890,
+          120
+        ],
+        [
+          900,
+          390
+        ],
+        [
+          730,
+          455
+        ],
+        [
+          285,
+          455
+        ],
+        [
+          760,
+          205
+        ]
+      ]
+    },
+    {
+      "id": "gulf-freight-12",
+      "name": "Lone Star Freight 12",
+      "mode": "Freight train",
+      "route": "Bayline Interchange → Inland Response Hub",
+      "alternateRoute": "Northern rail bypass → Prairie Junction → Inland Response Hub",
+      "cargo": "Fuel components, grain, construction material, and recovery equipment",
+      "meaning": "Freight rail moves heavy cargo inland but depends on track, signal, bridge, and yard capacity.",
+      "color": "#72c78c",
+      "speed": 43,
+      "startProgress": 0.61,
+      "path": [
+        [
+          420,
+          150
+        ],
+        [
+          285,
+          455
+        ],
+        [
+          155,
+          210
+        ],
+        [
+          420,
+          150
+        ]
+      ],
+      "alternatePath": [
+        [
+          420,
+          150
+        ],
+        [
+          575,
+          315
+        ],
+        [
+          500,
+          520
+        ],
+        [
+          285,
+          455
+        ],
+        [
+          155,
+          210
+        ],
+        [
+          420,
+          150
+        ]
+      ]
+    },
+    {
+      "id": "gulf-road-22",
+      "name": "Gulf RoadLink 22",
+      "mode": "Truck",
+      "route": "Inland Response Hub → Energy Transfer Center → Coastal Air Cargo",
+      "alternateRoute": "Inland Response Hub → northern beltway → Coastal Air Cargo",
+      "cargo": "Generator fuel, groceries, water, medicine, and restoration equipment",
+      "meaning": "Trucks provide flexible final delivery but depend on drivers, fuel, road access, and safe operating windows.",
+      "color": "#a68aef",
+      "speed": 51,
+      "startProgress": 0.79,
+      "path": [
+        [
+          285,
+          455
+        ],
+        [
+          730,
+          455
+        ],
+        [
+          760,
+          205
+        ],
+        [
+          285,
+          455
+        ]
+      ],
+      "alternatePath": [
+        [
+          285,
+          455
+        ],
+        [
+          440,
+          330
+        ],
+        [
+          760,
+          205
+        ],
+        [
+          730,
+          455
+        ],
+        [
+          285,
+          455
+        ]
+      ]
+    }
+  ],
+  "weather": {
+    "cycleSeconds": 66,
+    "phases": {
+      "approaching": {
+        "title": "Tropical system approaching",
+        "severity": "Hurricane watch",
+        "summary": "A strengthening tropical system is moving toward the fictional coastal network.",
+        "wind": "Tropical-storm-force winds possible within the exercise window",
+        "affectedArea": "Ship channel, coastal terminals, airfield, and low-lying roads",
+        "timing": "Protective actions underway",
+        "assetEffects": [
+          {
+            "assetId": "gulf-vessel-9",
+            "status": "Delayed",
+            "reason": "The vessel is slowing while port authorities establish the storm operating window."
+          },
+          {
+            "assetId": "gulf-air-5",
+            "status": "Delayed",
+            "reason": "The aircraft is operating with additional weather routing and ground-time limits."
+          }
+        ]
+      },
+      "warning": {
+        "title": "Hurricane warning active",
+        "severity": "Major operational disruption",
+        "summary": "Coastal operations have stopped while surge, wind, and flooding affect connected routes.",
+        "wind": "Damaging winds and dangerous coastal conditions",
+        "affectedArea": "Coastal port, energy terminals, rail approaches, and evacuation routes",
+        "timing": "Highest exercise impacts occurring",
+        "assetEffects": [
+          {
+            "assetId": "gulf-vessel-9",
+            "status": "Holding",
+            "reason": "The ship channel is closed to inbound movement during dangerous conditions."
+          },
+          {
+            "assetId": "gulf-air-5",
+            "status": "Rerouted",
+            "reason": "Urgent cargo is diverting to an inland airport outside the warning area."
+          },
+          {
+            "assetId": "gulf-freight-12",
+            "status": "Delayed",
+            "reason": "Rail crews are inspecting low crossings and bridges before releasing trains."
+          },
+          {
+            "assetId": "gulf-road-22",
+            "status": "Holding",
+            "reason": "The truck is staged outside flooded and evacuation-controlled roads."
+          }
+        ]
+      },
+      "clearing": {
+        "title": "System moving inland",
+        "severity": "Damage assessment and recovery",
+        "summary": "Coastal winds are decreasing, but inspections, debris, outages, and cargo backlogs remain.",
+        "wind": "Winds decreasing; flooding remains in low areas",
+        "affectedArea": "Damaged coastal routes and inland recovery corridors",
+        "timing": "Limited operations resuming",
+        "assetEffects": [
+          {
+            "assetId": "gulf-vessel-9",
+            "status": "Holding",
+            "reason": "The vessel is waiting for channel and terminal inspections to finish."
+          },
+          {
+            "assetId": "gulf-road-22",
+            "status": "Rerouted",
+            "reason": "The truck is using a verified recovery corridor around flooded roads."
+          }
+        ]
+      }
+    }
+  },
+  "ambientEvents": [
+    {
+      "id": "localized-coastal-thunderstorm",
+      "kind": "weather",
+      "title": "Localized coastal thunderstorm",
+      "summary": "Lightning and heavy rain have temporarily closed one ramp while nearby corridors remain usable.",
+      "location": [
+        735,
+        265
+      ],
+      "radius": 94,
+      "durationSeconds": 20,
+      "effects": [
+        {
+          "assetId": "gulf-air-5",
+          "status": "Rerouted",
+          "reason": "The aircraft is using an inland arrival around a localized thunderstorm cell."
+        }
+      ]
+    },
+    {
+      "id": "fuel-price-spike",
+      "kind": "economic",
+      "title": "Short-notice fuel price spike",
+      "summary": "A temporary wholesale price increase is forcing dispatchers to consolidate lower-priority deliveries.",
+      "location": [
+        700,
+        430
+      ],
+      "radius": 78,
+      "durationSeconds": 24,
+      "effects": [
+        {
+          "assetId": "gulf-road-22",
+          "status": "Delayed",
+          "reason": "The truck is delayed while loads are consolidated to control fuel cost."
+        }
+      ]
+    },
+    {
+      "id": "yard-switch-error",
+      "kind": "operations",
+      "title": "Rail yard switch assignment error",
+      "summary": "A human scheduling error placed priority cars in the wrong outbound block.",
+      "location": [
+        430,
+        190
+      ],
+      "radius": 70,
+      "durationSeconds": 18,
+      "effects": [
+        {
+          "assetId": "gulf-freight-12",
+          "status": "Rerouted",
+          "reason": "The train is using a secondary yard lead while priority cars are reassembled."
+        }
+      ]
+    },
+    {
+      "id": "cargo-release-fraud",
+      "kind": "security",
+      "title": "Fraudulent cargo-release message",
+      "summary": "A criminal message is attempting to redirect a high-value load using copied carrier details.",
+      "location": [
+        215,
+        245
+      ],
+      "radius": 66,
+      "durationSeconds": 22,
+      "effects": [
+        {
+          "assetId": "gulf-vessel-9",
+          "status": "Holding",
+          "reason": "The container release is held until the instruction is verified with the shipper."
+        }
+      ]
+    },
+    {
+      "id": "tariff-document-review",
+      "kind": "economic",
+      "title": "Tariff classification review",
+      "summary": "A recent tariff change has triggered a manual classification review for one shipment.",
+      "location": [
+        160,
+        205
+      ],
+      "radius": 80,
+      "durationSeconds": 26,
+      "effects": [
+        {
+          "assetId": "gulf-vessel-9",
+          "status": "Delayed",
+          "reason": "The cargo remains delayed while customs classification and tariff treatment are confirmed."
+        }
+      ]
+    }
+  ],
+  "operatingConditions": [
+    {
+      "id": "hurricane-readiness",
+      "title": "Hurricane readiness activated",
+      "summary": "Partners have staged some supplies, but coastal operating windows are narrowing.",
+      "disruptionMultiplier": 1,
+      "recoveryAdjustment": 1,
+      "wrongAnswerAdjustment": 0,
+      "startingResilienceAdjustment": 1
+    },
+    {
+      "id": "refinery-maintenance",
+      "title": "Energy capacity already reduced",
+      "summary": "Planned maintenance has reduced available fuel-production and transfer capacity.",
+      "disruptionMultiplier": 1.1,
+      "recoveryAdjustment": -1,
+      "wrongAnswerAdjustment": 1,
+      "startingResilienceAdjustment": -3
+    },
+    {
+      "id": "evacuation-demand",
+      "title": "Evacuation traffic increasing",
+      "summary": "Public movement and emergency activity are competing with normal freight on major roads.",
+      "disruptionMultiplier": 1.05,
+      "recoveryAdjustment": 0,
+      "wrongAnswerAdjustment": 2,
+      "startingResilienceAdjustment": -2
+    },
+    {
+      "id": "mutual-aid-gulf",
+      "title": "Interstate mutual aid staged",
+      "summary": "Utility crews, emergency logistics teams, and limited transport capacity are pre-positioned inland.",
+      "disruptionMultiplier": 0.95,
+      "recoveryAdjustment": 1,
+      "wrongAnswerAdjustment": 0,
+      "startingResilienceAdjustment": 2
+    }
+  ]
+}

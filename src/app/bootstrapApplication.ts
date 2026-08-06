@@ -3,6 +3,10 @@ import { defaultMission, getMissionPack, missionPacks } from "../data/missions";
 import { createSupplyChainGame } from "../game/createSupplyChainGame";
 import { createMissionRunPlan, createMissionSeed } from "../game/randomization";
 import { clearRunHistory, loadRunHistory, saveRunReport } from "../game/runHistory";
+import {
+  STRATEGIC_RESOURCE_KEYS,
+  STRATEGIC_RESOURCE_LABELS
+} from "../game/StrategicResourceSystem";
 import type {
   Difficulty,
   GameReport,
@@ -11,6 +15,7 @@ import type {
   LogisticsSnapshot,
   MissionRunPlan,
   Scenario,
+  StrategicResourceUpdate,
   StoredRunSummary,
   WeatherUpdate
 } from "../game/types";
@@ -86,6 +91,7 @@ export function bootstrapApplication(): void {
   const weatherWind = requiredElement<HTMLElement>("#weather-wind");
   const weatherArea = requiredElement<HTMLElement>("#weather-area");
   const weatherTiming = requiredElement<HTMLElement>("#weather-timing");
+  const resourcePool = requiredElement<HTMLElement>("#resource-pool");
 
   const guide = createGuidePanelController();
   const glossary = createGlossaryPanelController();
@@ -96,6 +102,27 @@ export function bootstrapApplication(): void {
   let game: Phaser.Game | null = null;
   let logCounter = 0;
   let currentRunPlan: MissionRunPlan | null = null;
+
+  const resetResourceUi = (): void => {
+    STRATEGIC_RESOURCE_KEYS.forEach((key) => {
+      requiredElement<HTMLElement>(`#resource-${key}`).textContent = "—";
+      resourcePool.querySelector<HTMLElement>(`[data-resource="${key}"]`)?.removeAttribute("data-level");
+    });
+  };
+
+  const renderResources = (update: StrategicResourceUpdate): void => {
+    STRATEGIC_RESOURCE_KEYS.forEach((key) => {
+      const remaining = update.remaining[key];
+      const initial = update.initial[key];
+      const element = requiredElement<HTMLElement>(`#resource-${key}`);
+      const card = resourcePool.querySelector<HTMLElement>(`[data-resource="${key}"]`);
+      element.textContent = `${remaining}/${initial}`;
+      if (card) {
+        card.dataset.level = remaining === 0 ? "depleted" : remaining <= Math.max(1, Math.floor(initial * 0.34)) ? "low" : "ready";
+        card.title = `${STRATEGIC_RESOURCE_LABELS[key]}: ${remaining} of ${initial} remaining`;
+      }
+    });
+  };
 
   const selectedMission = () => getMissionPack(missionSelect.value);
 
@@ -118,7 +145,7 @@ export function bootstrapApplication(): void {
       .map((run) => `
         <article class="history-row">
           <div><span>${run.region}</span><b>${run.missionName}</b><small>${new Date(run.completedAt).toLocaleString()}</small></div>
-          <div><span>Result</span><b>${run.resilience} resilience · ${run.accuracy}% accuracy</b><small>${run.completed}/${run.target} addressed · ${run.ambientEventCount ?? 0} temporary injects · ${formatSeconds(run.elapsedSeconds)} · ${run.difficulty}</small></div>
+          <div><span>Result</span><b>${run.resilience} resilience · ${run.accuracy}% accuracy</b><small>${run.completed}/${run.target} addressed · ${run.resourceReservePercent ?? "—"}% resources remaining · ${run.ambientEventCount ?? 0} temporary injects · ${formatSeconds(run.elapsedSeconds)} · ${run.difficulty}</small></div>
           <div><span>Operating condition</span><b>${run.conditionTitle}</b><small>Seed ${run.seed}</small></div>
           <button class="secondary-button compact" type="button" data-replay-seed="${run.seed}" data-replay-mission="${run.missionId}">Load this run</button>
         </article>
@@ -159,6 +186,7 @@ export function bootstrapApplication(): void {
     runIdentity.innerHTML = `<span>${mission.name}</span><b>New random seed will be generated at launch</b>`;
     currentRunPlan = null;
     logCounter = 0;
+    resetResourceUi();
   };
 
   const destroyGame = (): void => {
@@ -328,6 +356,9 @@ export function bootstrapApplication(): void {
     game.events.on("logistics-snapshot", (snapshot: LogisticsSnapshot) => {
       renderLogisticsSnapshot(snapshot);
     });
+    game.events.on("resources-update", (update: StrategicResourceUpdate) => {
+      renderResources(update);
+    });
     game.events.on("weather-update", (weather: WeatherUpdate) => {
       weatherPanel.dataset.phase = weather.phase;
       weatherSeverity.textContent = weather.severity;
@@ -355,6 +386,9 @@ export function bootstrapApplication(): void {
     game.events.on("decision-result", (result: DecisionResult) => {
       const direction = result.resilienceChange >= 0 ? "+" : "";
       gameStatus.textContent = `${result.correct ? "Effective response." : "Response increased risk."} Resilience ${direction}${result.resilienceChange}; current score ${result.resilience}. ${result.takeaway}`;
+    });
+    game.events.on("decision-consequence", (result: { penalty: number; resilience: number; text: string }) => {
+      gameStatus.textContent = `${result.text} Resilience −${result.penalty}; current score ${result.resilience}.`;
     });
     game.events.on("mission-log", (entry: MissionLogEntry) => appendLog(entry));
     game.events.on("game-ready", () => {

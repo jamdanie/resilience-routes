@@ -1,4 +1,9 @@
 import type { GameReport } from "../game/types";
+import {
+  formatResourceCost,
+  STRATEGIC_RESOURCE_KEYS,
+  STRATEGIC_RESOURCE_LABELS
+} from "../game/StrategicResourceSystem";
 import { formatSeconds, requiredElement } from "./dom";
 
 export interface ReportModalController {
@@ -53,6 +58,8 @@ export function createReportModalController(
     const accuracy = report.decisions.length
       ? Math.round((correctCount / report.decisions.length) * 100)
       : 0;
+    const initialResourceTotal = STRATEGIC_RESOURCE_KEYS.reduce((total, key) => total + report.initialResources[key], 0);
+    const remainingResourceTotal = STRATEGIC_RESOURCE_KEYS.reduce((total, key) => total + report.remainingResources[key], 0);
 
     reportTitle.textContent = `${report.missionName} results`;
     summary.innerHTML = `
@@ -62,13 +69,23 @@ export function createReportModalController(
       <article><span>Decision accuracy</span><strong>${accuracy}%</strong><small>${correctCount} effective response${correctCount === 1 ? "" : "s"}</small></article>
       <article><span>Elapsed time</span><strong>${formatSeconds(report.elapsedSeconds)}</strong><small>${report.difficulty} difficulty</small></article>
       <article><span>Run identity</span><strong>${report.seed}</strong><small>${report.condition.title} · ${report.region}</small></article>
+      <article><span>Resources remaining</span><strong>${remainingResourceTotal} / ${initialResourceTotal}</strong><small>Across six strategic reserves</small></article>
+    `;
+
+    const resourceReview = `
+      <section class="report-resource-summary">
+        <div><span>Resource stewardship</span><h3>What remained after the mission</h3><p>Resources committed to one disruption were unavailable for later decisions.</p></div>
+        <div class="report-resource-grid">
+          ${STRATEGIC_RESOURCE_KEYS.map((key) => `<article><span>${STRATEGIC_RESOURCE_LABELS[key]}</span><strong>${report.remainingResources[key]} / ${report.initialResources[key]}</strong></article>`).join("")}
+        </div>
+      </section>
     `;
 
     const ambientReview = report.ambientEvents.length
       ? `<section class="report-ambient-events"><div><span>Temporary injects encountered</span><h3>${report.ambientEvents.length} changing conditions occurred during this run</h3></div>${report.ambientEvents.map((event) => `<article><b>${event.title}</b><span>${event.kind} · began at ${formatSeconds(event.triggerSeconds)} · ${event.durationSeconds}s duration</span><p>${event.summary}</p></article>`).join("")}</section>`
       : "";
 
-    decisions.innerHTML = ambientReview + (report.decisions.length
+    decisions.innerHTML = resourceReview + ambientReview + (report.decisions.length
       ? report.decisions
           .map(
             (decision, index) => `
@@ -79,6 +96,8 @@ export function createReportModalController(
                   <h3>${decision.selectedOption}</h3>
                   <p><b>Result:</b> ${decision.correct ? "Effective response" : "Response increased risk"} · Resilience ${decision.resilienceChange >= 0 ? "+" : ""}${decision.resilienceChange}</p>
                   <p><b>Reason:</b> ${decision.rationale}</p>
+                  <p><b>Resources committed:</b> ${formatResourceCost(decision.resourcesSpent)}</p>
+                  <p><b>Operational consequence:</b> ${decision.operationalConsequence}</p>
                   <div class="report-calculation">
                     <span>Score calculation</span>
                     <code>${decision.calculation}</code>

@@ -8,6 +8,9 @@ export function summarizeReport(report: GameReport): StoredRunSummary {
   const accuracy = report.decisions.length
     ? Math.round((correct / report.decisions.length) * 100)
     : 0;
+  const resourceKeys = Object.keys(report.initialResources) as Array<keyof typeof report.initialResources>;
+  const initialResourceTotal = resourceKeys.reduce((total, key) => total + report.initialResources[key], 0);
+  const remainingResourceTotal = resourceKeys.reduce((total, key) => total + report.remainingResources[key], 0);
 
   return {
     id: `${report.missionId}:${report.seed}:${Date.now()}`,
@@ -24,7 +27,10 @@ export function summarizeReport(report: GameReport): StoredRunSummary {
     target: report.target,
     accuracy,
     elapsedSeconds: report.elapsedSeconds,
-    ambientEventCount: report.ambientEvents.length
+    ambientEventCount: report.ambientEvents.length,
+    resourceReservePercent: initialResourceTotal
+      ? Math.round((remainingResourceTotal / initialResourceTotal) * 100)
+      : 0
   };
 }
 

@@ -108,7 +108,7 @@ export function renderMissionBriefing(): string {
             <div class="briefing-page-heading">
               <span class="briefing-kicker">Step 3 of 3</span>
               <h3>Choose the level that matches how you want to learn.</h3>
-              <p>Difficulty changes the starting score, timer, hints, and strength of disruption penalties. Each seed also controls the active decision set, answer order, vehicle starting routes, movement direction, weather track, affected assets, and temporary inject schedule.</p>
+              <p>Difficulty changes the starting score, timer, hints, disruption penalties, and available strategic resources. Each seed also controls the active decision set, answer order, vehicle starting routes, movement direction, weather track, affected assets, and temporary inject schedule.</p>
             </div>
 
             <fieldset class="difficulty-card-grid">
@@ -117,21 +117,26 @@ export function renderMissionBriefing(): string {
                 <input type="radio" name="briefing-difficulty" value="easy">
                 <span class="difficulty-label"><b>Easy</b><small>Guided learning</small></span>
                 <strong>90 starting resilience</strong>
-                <ul><li>No mission timer</li><li>Recommended response is identified</li><li>Smaller disruption penalties</li></ul>
+                <ul><li>No mission timer</li><li>Recommended response is identified</li><li>Larger resource reserves</li><li>Smaller disruption penalties</li></ul>
               </label>
               <label class="difficulty-card selected">
                 <input type="radio" name="briefing-difficulty" value="medium" checked>
                 <span class="difficulty-label"><b>Medium</b><small>Standard exercise</small></span>
                 <strong>82 starting resilience</strong>
-                <ul><li>4-minute mission timer</li><li>No answer hint</li><li>Standard disruption effects</li></ul>
+                <ul><li>4-minute mission timer</li><li>No answer hint</li><li>Balanced resource reserves</li><li>Standard disruption effects</li></ul>
               </label>
               <label class="difficulty-card">
                 <input type="radio" name="briefing-difficulty" value="hard">
                 <span class="difficulty-label"><b>Hard</b><small>Decision pressure</small></span>
                 <strong>74 starting resilience</strong>
-                <ul><li>3-minute mission timer</li><li>Stronger penalties</li><li>Smaller recovery gains</li></ul>
+                <ul><li>3-minute mission timer</li><li>Scarce resource reserves</li><li>Stronger penalties</li><li>Smaller recovery gains</li></ul>
               </label>
             </fieldset>
+
+            <div class="briefing-resource-note">
+              <div><p class="eyebrow">New strategic layer</p><h4>Resources spent now cannot be used later.</h4></div>
+              <p>Response options can require funds, field crews, transportation capacity, fuel, intelligence, or emergency inventory. A response becomes unavailable when the mission no longer has enough of the required resource.</p>
+            </div>
 
             <div class="briefing-readiness-card">
               <div><span class="status-dot"></span><p><b>Ready for Mission Control</b><small>You can review the briefing or change difficulty again before launching the live scenario.</small></p></div>

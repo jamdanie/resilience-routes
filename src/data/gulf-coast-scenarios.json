@@ -71,6 +71,18 @@
       "Inbound and outbound vessels lose access to several terminals.",
       "Terminal storage, rail appointments, and truck transfers fall out of sequence.",
       "Energy, manufacturing, retail, and emergency deliveries are delayed inland."
+    ],
+    "resourceCosts": [
+      {
+        "transport": 1,
+        "fuel": 1
+      },
+      {
+        "funds": 1,
+        "transport": 2,
+        "intelligence": 1
+      },
+      {}
     ]
   },
   {
@@ -145,6 +157,18 @@
       "Pumps, loading racks, communications, and monitoring stop.",
       "Fuel trucks and rail cars queue while usable inventory declines elsewhere.",
       "Hospitals, utilities, airports, farms, and emergency fleets face shortages."
+    ],
+    "resourceCosts": [
+      {
+        "crews": 1,
+        "fuel": 2,
+        "inventory": 1
+      },
+      {
+        "crews": 1,
+        "fuel": 2
+      },
+      {}
     ]
   },
   {
@@ -219,6 +243,18 @@
       "Trains stop while yards, crews, and equipment lose access.",
       "Cargo shifts toward inland bypasses and roads with limited capacity.",
       "Energy, agriculture, construction, and retail deliveries arrive late."
+    ],
+    "resourceCosts": [
+      {
+        "crews": 1,
+        "transport": 2,
+        "intelligence": 1
+      },
+      {
+        "transport": 2,
+        "fuel": 2
+      },
+      {}
     ]
   },
   {
@@ -293,6 +329,16 @@
       "Pipeline nominations, terminal appointments, and truck releases slow.",
       "Partners receive conflicting information and duplicate priority requests.",
       "Fuel availability becomes uncertain for airports, utilities, hospitals, and emergency fleets."
+    ],
+    "resourceCosts": [
+      {
+        "crews": 1,
+        "intelligence": 2
+      },
+      {
+        "crews": 1
+      },
+      {}
     ]
   },
   {
@@ -367,6 +413,18 @@
       "Freight vehicles miss loading and delivery appointments.",
       "Drivers, fuel, staging space, and destination access become constrained.",
       "Shelters, hospitals, stores, and utility crews wait longer for essential supplies."
+    ],
+    "resourceCosts": [
+      {
+        "crews": 1,
+        "transport": 2,
+        "fuel": 1
+      },
+      {
+        "transport": 1,
+        "fuel": 2
+      },
+      {}
     ]
   },
   {
@@ -426,6 +484,18 @@
       "Planned deliveries require more money than the original budget allowed.",
       "Carriers and warehouses reduce or postpone lower-priority movement.",
       "Essential sites may receive less supply unless demand is ranked and loads are consolidated."
+    ],
+    "resourceCosts": [
+      {
+        "funds": 2,
+        "transport": 1,
+        "inventory": 1
+      },
+      {},
+      {
+        "transport": 1,
+        "fuel": 1
+      }
     ]
   },
   {
@@ -494,6 +564,16 @@
       "The terminal cannot release the equipment to its planned truck.",
       "The truck misses its appointment and utility staging inventory remains incomplete.",
       "Restoration work takes longer while communities wait for repaired service."
+    ],
+    "resourceCosts": [
+      {
+        "funds": 1,
+        "intelligence": 2
+      },
+      {
+        "transport": 1
+      },
+      {}
     ]
   },
   {
@@ -553,6 +633,14 @@
       "Dispatch treats the message as trusted and changes the truck route.",
       "The shipment leaves the verified chain of custody.",
       "The intended site receives nothing while the organization faces cargo loss and recovery costs."
+    ],
+    "resourceCosts": [
+      {
+        "crews": 1,
+        "intelligence": 2
+      },
+      {},
+      {}
     ]
   }
 ]

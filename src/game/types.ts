@@ -1,5 +1,22 @@
 export type Difficulty = "easy" | "medium" | "hard";
 
+export type StrategicResourceKey =
+  | "funds"
+  | "crews"
+  | "transport"
+  | "fuel"
+  | "intelligence"
+  | "inventory";
+
+export type StrategicResourcePool = Record<StrategicResourceKey, number>;
+export type StrategicResourceCost = Partial<StrategicResourcePool>;
+
+export interface StrategicResourceUpdate {
+  initial: StrategicResourcePool;
+  remaining: StrategicResourcePool;
+  spent: StrategicResourcePool;
+}
+
 export interface GlossaryTerm {
   term: string;
   definition: string;
@@ -136,6 +153,23 @@ export interface MissionDefinition {
   operatingConditions: OperatingCondition[];
 }
 
+export interface ContentPackManifest {
+  id: string;
+  name: string;
+  version: string;
+  status: "draft" | "playable";
+  description: string;
+  contributors?: string[];
+  license?: string;
+}
+
+export interface ContentAttribution {
+  authors: string[];
+  sources: string[];
+  license: string;
+  notes?: string;
+}
+
 export interface MissionPack extends MissionDefinition {
   scenarios: Scenario[];
 }
@@ -168,11 +202,13 @@ export interface Scenario {
   question: string;
   options: string[];
   optionRationales: string[];
+  resourceCosts: StrategicResourceCost[];
   correctIndex: number;
   takeaway: string;
   responsePrinciple: string;
   basePenalty: number;
   logisticsEffects: ScenarioLogisticsEffect[];
+  contribution?: ContentAttribution;
 }
 
 export interface DecisionRecord {
@@ -189,6 +225,9 @@ export interface DecisionRecord {
   calculation: string;
   rationale: string;
   takeaway: string;
+  resourcesSpent: StrategicResourceCost;
+  resourcesRemaining: StrategicResourcePool;
+  operationalConsequence: string;
 }
 
 export interface GameReport {
@@ -203,6 +242,8 @@ export interface GameReport {
   resilience: number;
   outcome: "completed" | "network-failed" | "time-expired";
   elapsedSeconds: number;
+  initialResources: StrategicResourcePool;
+  remainingResources: StrategicResourcePool;
   ambientEvents: AmbientEventRecord[];
   decisions: DecisionRecord[];
 }
@@ -223,6 +264,7 @@ export interface StoredRunSummary {
   accuracy: number;
   elapsedSeconds: number;
   ambientEventCount: number;
+  resourceReservePercent?: number;
 }
 
 export interface HudUpdate {

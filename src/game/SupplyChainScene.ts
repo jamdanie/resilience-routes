@@ -3,6 +3,7 @@ import { difficultySettings } from "./config";
 import { AmbientEventSystem } from "./AmbientEventSystem";
 import { LiveLogisticsLayer } from "./LiveLogisticsLayer";
 import { MapSurfaceLayer, type MapSurfaceMode } from "./MapSurfaceLayer";
+import { formatResourceCost, StrategicResourceSystem } from "./StrategicResourceSystem";
 import { WeatherSystemLayer } from "./WeatherSystemLayer";
 import type {
   DecisionRecord,
@@ -28,6 +29,7 @@ interface NodeView {
 interface ChallengeRequest {
   scenario: Scenario;
   showHint: boolean;
+  resources: ReturnType<StrategicResourceSystem["snapshot"]>;
   scoring: {
     currentResilience: number;
     basePenalty: number;
@@ -65,6 +67,8 @@ export class SupplyChainScene extends Phaser.Scene {
   private weatherLayer!: WeatherSystemLayer;
   private ambientEvents!: AmbientEventSystem;
   private surfaceLayer!: MapSurfaceLayer;
+  private strategicResources!: StrategicResourceSystem;
+  private pendingConsequence: { source: string; penalty: number; text: string } | null = null;
 
   constructor(difficulty: Difficulty, runPlan: MissionRunPlan) {
     super("SupplyChainScene");
@@ -101,6 +105,8 @@ export class SupplyChainScene extends Phaser.Scene {
     this.ambientEventRecords = [];
     this.timerAccumulatorMs = 0;
     this.finished = false;
+    this.pendingConsequence = null;
+    this.strategicResources = new StrategicResourceSystem(this.difficulty);
 
     this.drawWorld();
     this.logisticsLayer = new LiveLogisticsLayer(
@@ -136,6 +142,7 @@ export class SupplyChainScene extends Phaser.Scene {
       this.game.events.emit("map-surface-mode", selected);
     });
     this.emitHud();
+    this.game.events.emit("resources-update", this.strategicResources.snapshot());
 
     this.game.events.emit("mission-log", {
       level: "info",
@@ -508,6 +515,9 @@ export class SupplyChainScene extends Phaser.Scene {
   private openChallenge(node: NodeView): void {
     if (this.challengeOpen || this.finished || node.completed || !node.active) return;
 
+    this.applyPendingConsequence();
+    if (this.finished || this.resilience <= 0) return;
+
     this.challengeOpen = true;
     node.card.setFillStyle(0x35212a, 1).setStrokeStyle(2, 0xff7d88, 1);
     node.status.setText("ACTIVE DISRUPTION").setColor("#ff9ca5");
@@ -526,6 +536,7 @@ export class SupplyChainScene extends Phaser.Scene {
     const request: ChallengeRequest = {
       scenario: node.scenario,
       showHint: this.settings.showHints,
+      resources: this.strategicResources.snapshot(),
       scoring: {
         currentResilience: this.resilience,
         basePenalty: node.scenario.basePenalty,
@@ -545,7 +556,18 @@ export class SupplyChainScene extends Phaser.Scene {
 
     const scenario = node.scenario;
     const safeIndex = Phaser.Math.Clamp(selectedIndex, 0, scenario.options.length - 1);
+    const resourceCost = scenario.resourceCosts[safeIndex] ?? {};
+    const resourceUpdate = this.strategicResources.spend(resourceCost);
+    if (!resourceUpdate) {
+      this.game.events.emit("mission-log", {
+        level: "critical",
+        text: `${scenario.title}: the selected response cannot be committed because required resources are no longer available.`
+      });
+      return;
+    }
+    this.game.events.emit("resources-update", resourceUpdate);
     const correct = safeIndex === scenario.correctIndex;
+    this.showResourceDeployment(node, resourceCost, correct);
     const disruptionLoss = Math.round(
       scenario.basePenalty * this.settings.disruptionMultiplier
     );
@@ -579,6 +601,11 @@ export class SupplyChainScene extends Phaser.Scene {
       node.status.setText("DEGRADED").setColor("#f0bd62");
     }
 
+    const resourceCommitment = formatResourceCost(resourceCost);
+    const operationalConsequence = correct
+      ? `${resourceCommitment} committed. The response stabilized the immediate dependency, but those resources are no longer available for later disruptions.`
+      : `${resourceCommitment} committed without stabilizing the dependency. A downstream two-point resilience loss will occur before the next decision or final report.`;
+
     this.decisions.push({
       scenarioId: scenario.id,
       title: scenario.title,
@@ -596,8 +623,19 @@ export class SupplyChainScene extends Phaser.Scene {
           : `${resilienceBefore} + ${this.settings.correctAnswerRecovery} - ${disruptionLoss} = ${this.resilience}`
         : `${resilienceBefore} - ${disruptionLoss} - ${this.settings.wrongAnswerPenalty} = ${this.resilience}`,
       rationale: scenario.optionRationales[safeIndex] ?? scenario.takeaway,
-      takeaway: scenario.takeaway
+      takeaway: scenario.takeaway,
+      resourcesSpent: { ...resourceCost },
+      resourcesRemaining: { ...resourceUpdate.remaining },
+      operationalConsequence
     });
+
+    if (!correct) {
+      this.pendingConsequence = {
+        source: scenario.title,
+        penalty: 2,
+        text: `Downstream effects from ${scenario.title} reduced resilience because the connected dependency remained unstable.`
+      };
+    }
 
     this.game.events.emit("decision-result", {
       correct,
@@ -607,7 +645,7 @@ export class SupplyChainScene extends Phaser.Scene {
     });
     this.game.events.emit("mission-log", {
       level: correct ? "success" : "critical",
-      text: `${scenario.title} ${correct ? "stabilized" : "remains degraded"}. Resilience ${
+      text: `${scenario.title} ${correct ? "stabilized" : "remains degraded"}. ${resourceCommitment} committed. Resilience ${
         resilienceChange >= 0 ? "+" : ""
       }${resilienceChange}. ${this.describeTransitions(transitions)}`
     });
@@ -617,8 +655,73 @@ export class SupplyChainScene extends Phaser.Scene {
     if (this.resilience <= 0) {
       this.finishGame("network-failed");
     } else if (this.completed >= this.runPlan.mission.target) {
+      this.applyPendingConsequence();
+      if (this.resilience <= 0) {
+        this.finishGame("network-failed");
+        return;
+      }
       this.finishGame("completed");
     }
+  }
+
+  private applyPendingConsequence(): void {
+    if (!this.pendingConsequence || this.finished) return;
+    const consequence = this.pendingConsequence;
+    this.pendingConsequence = null;
+    this.resilience = Phaser.Math.Clamp(this.resilience - consequence.penalty, 0, 100);
+    this.game.events.emit("mission-log", {
+      level: "critical",
+      text: `${consequence.text} Resilience −${consequence.penalty}.`
+    });
+    this.game.events.emit("decision-consequence", {
+      source: consequence.source,
+      penalty: consequence.penalty,
+      resilience: this.resilience,
+      text: consequence.text
+    });
+    this.emitHud();
+    if (this.resilience <= 0) this.finishGame("network-failed");
+  }
+
+  private showResourceDeployment(
+    node: NodeView,
+    resourceCost: Scenario["resourceCosts"][number],
+    effective: boolean
+  ): void {
+    const totalCommitted = Object.values(resourceCost).reduce((total, amount) => total + amount, 0);
+    const color = effective ? 0x70c995 : 0xf0bd62;
+    const pulse = this.add.circle(node.container.x, node.container.y, 55, color, 0.08)
+      .setStrokeStyle(3, color, 0.86)
+      .setDepth(5.5);
+    const message = totalCommitted > 0
+      ? `${totalCommitted} RESOURCE UNIT${totalCommitted === 1 ? "" : "S"} COMMITTED`
+      : "NO RESOURCES COMMITTED";
+    const label = this.add.text(node.container.x, node.container.y - 62, message, {
+      fontFamily: "Arial, sans-serif",
+      fontSize: "8px",
+      color: effective ? "#c9f3dc" : "#ffe1a4",
+      backgroundColor: "#07111fe6",
+      padding: { x: 8, y: 5 },
+      fontStyle: "bold"
+    }).setOrigin(0.5).setDepth(6);
+
+    this.tweens.add({
+      targets: pulse,
+      scale: 1.65,
+      alpha: 0,
+      duration: 1050,
+      ease: "Cubic.Out",
+      onComplete: () => pulse.destroy()
+    });
+    this.tweens.add({
+      targets: label,
+      y: label.y - 18,
+      alpha: 0,
+      delay: 650,
+      duration: 900,
+      ease: "Cubic.Out",
+      onComplete: () => label.destroy()
+    });
   }
 
   private emitHud(): void {
@@ -717,6 +820,7 @@ export class SupplyChainScene extends Phaser.Scene {
         : "Mission ended before the network objective was completed. Transportation activity is frozen for review."
     });
 
+    const resourceSnapshot = this.strategicResources.snapshot();
     const report: GameReport = {
       missionId: this.runPlan.mission.id,
       missionName: this.runPlan.mission.name,
@@ -729,6 +833,8 @@ export class SupplyChainScene extends Phaser.Scene {
       resilience: this.resilience,
       outcome,
       elapsedSeconds: this.elapsedSeconds,
+      initialResources: resourceSnapshot.initial,
+      remainingResources: resourceSnapshot.remaining,
       ambientEvents: this.ambientEventRecords,
       decisions: this.decisions
     };

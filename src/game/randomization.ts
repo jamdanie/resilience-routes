@@ -33,7 +33,8 @@ function shuffleScenarioOptions(scenario: Scenario, random: () => number): Scena
   const originalCorrectOption = scenario.options[scenario.correctIndex];
   const pairedOptions = scenario.options.map((option, index) => ({
     option,
-    rationale: scenario.optionRationales[index]
+    rationale: scenario.optionRationales[index],
+    resourceCost: scenario.resourceCosts[index]
   }));
   const randomized = shuffled(pairedOptions, random);
 
@@ -41,6 +42,7 @@ function shuffleScenarioOptions(scenario: Scenario, random: () => number): Scena
     ...scenario,
     options: randomized.map((entry) => entry.option),
     optionRationales: randomized.map((entry) => entry.rationale),
+    resourceCosts: randomized.map((entry) => entry.resourceCost),
     correctIndex: randomized.findIndex((entry) => entry.option === originalCorrectOption)
   };
 }

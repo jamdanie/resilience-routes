@@ -1,4 +1,14 @@
-import type { Scenario } from "../game/types";
+import {
+  formatResourceCost,
+  STRATEGIC_RESOURCE_KEYS,
+  STRATEGIC_RESOURCE_LABELS
+} from "../game/StrategicResourceSystem";
+import type {
+  Scenario,
+  StrategicResourceCost,
+  StrategicResourcePool,
+  StrategicResourceUpdate
+} from "../game/types";
 import { requiredElement } from "./dom";
 
 export interface ChallengeScoringContext {
@@ -14,6 +24,7 @@ export interface ChallengeRequest {
   scenario: Scenario;
   showHint: boolean;
   scoring: ChallengeScoringContext;
+  resources: StrategicResourceUpdate;
   resolve: (selectedIndex: number) => void;
 }
 
@@ -23,6 +34,17 @@ export interface ChallengeModalController {
 
 function signed(value: number): string {
   return `${value >= 0 ? "+" : ""}${value}`;
+}
+
+function canAfford(remaining: StrategicResourcePool, cost: StrategicResourceCost): boolean {
+  return STRATEGIC_RESOURCE_KEYS.every((key) => (cost[key] ?? 0) <= remaining[key]);
+}
+
+function unavailableReason(remaining: StrategicResourcePool, cost: StrategicResourceCost): string {
+  const missing = STRATEGIC_RESOURCE_KEYS
+    .filter((key) => (cost[key] ?? 0) > remaining[key])
+    .map((key) => `${(cost[key] ?? 0) - remaining[key]} more ${STRATEGIC_RESOURCE_LABELS[key]}`);
+  return missing.length ? `Unavailable: requires ${missing.join(" and ")}.` : "";
 }
 
 function calculateDecision(
@@ -91,6 +113,7 @@ export function createChallengeModalController(): ChallengeModalController {
   const cascade = requiredElement<HTMLElement>("#modal-cascade");
   const terms = requiredElement<HTMLElement>("#modal-terms");
   const question = requiredElement("#modal-question");
+  const resourceContext = requiredElement<HTMLElement>("#modal-resource-context");
   const options = requiredElement<HTMLElement>("#modal-options");
   const feedback = requiredElement<HTMLElement>("#decision-feedback");
 
@@ -100,7 +123,7 @@ export function createChallengeModalController(): ChallengeModalController {
   };
 
   const show = (request: ChallengeRequest): void => {
-    const { scenario, showHint, scoring, resolve } = request;
+    const { scenario, showHint, scoring, resources, resolve } = request;
 
     nodeType.textContent = scenario.nodeType;
     title.textContent = scenario.title;
@@ -138,21 +161,31 @@ export function createChallengeModalController(): ChallengeModalController {
     feedback.className = "decision-feedback hidden";
     feedback.replaceChildren();
 
+    resourceContext.innerHTML = STRATEGIC_RESOURCE_KEYS
+      .map((key) => `<article><span>${STRATEGIC_RESOURCE_LABELS[key]}</span><strong>${resources.remaining[key]} / ${resources.initial[key]}</strong></article>`)
+      .join("");
+
     options.innerHTML = scenario.options
-      .map(
-        (option, index) => `
-          <button class="option-button" type="button" data-option="${index}">
-            <span><i>${String.fromCharCode(65 + index)}</i>${option}</span>
-            ${showHint && index === scenario.correctIndex ? "<small>Recommended</small>" : ""}
+      .map((option, index) => {
+        const cost = scenario.resourceCosts[index] ?? {};
+        const affordable = canAfford(resources.remaining, cost);
+        return `
+          <button class="option-button${affordable ? "" : " unavailable"}" type="button" data-option="${index}" ${affordable ? "" : "disabled"} title="${unavailableReason(resources.remaining, cost)}">
+            <span class="option-copy"><i>${String.fromCharCode(65 + index)}</i><b>${option}</b></span>
+            <span class="option-meta">
+              <small class="option-cost">${affordable ? formatResourceCost(cost) : unavailableReason(resources.remaining, cost)}</small>
+              ${showHint && index === scenario.correctIndex ? "<small class=\"recommendation-tag\">Recommended</small>" : ""}
+            </span>
           </button>
-        `
-      )
+        `;
+      })
       .join("");
 
     options.querySelectorAll<HTMLButtonElement>("[data-option]").forEach((button) => {
       button.addEventListener("click", () => {
         const selectedIndex = Number(button.dataset.option);
         const correct = selectedIndex === scenario.correctIndex;
+        const selectedCost = scenario.resourceCosts[selectedIndex] ?? {};
         const recommendedOption = scenario.options[scenario.correctIndex];
         const recommendedReason = scenario.optionRationales[scenario.correctIndex];
 
@@ -177,6 +210,7 @@ export function createChallengeModalController(): ChallengeModalController {
           }
           <p><b>Decision rule:</b> ${scenario.responsePrinciple}</p>
           <p><b>Remember:</b> ${scenario.takeaway}</p>
+          <div class="resource-decision-note"><b>Resource commitment:</b> ${formatResourceCost(selectedCost)}. Committed resources are unavailable for later disruptions during this mission.</div>
           ${renderCalculation(correct, scoring)}
           <button id="confirm-decision" class="primary-button" type="button">Apply Decision and Continue</button>
         `;

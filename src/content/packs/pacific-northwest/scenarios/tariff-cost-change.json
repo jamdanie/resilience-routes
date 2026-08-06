@@ -1,0 +1,69 @@
+{
+  "id": "tariff-cost-change",
+  "title": "Tariff change raises landed cost",
+  "nodeType": "Trade and cost",
+  "x": 115,
+  "y": 355,
+  "color": "#f0bd62",
+  "event": "A new tariff classification has increased the expected cost of an inbound component shipment while it is already moving toward the region.",
+  "why": "A tariff can change the final cost of imported goods and affect purchasing, inventory, and customer prices even when transportation is still operating.",
+  "how": "The added cost moves from the importer to manufacturers or distributors, then may reach customers through higher prices or reduced availability.",
+  "when": "The risk grows when there is little substitute inventory, contracts do not assign the added cost clearly, or planners react before confirming the classification.",
+  "where": "The first effects appear in customs and purchasing records, followed by inventory plans, production schedules, and retail prices.",
+  "keyTerms": [
+    {
+      "term": "Tariff",
+      "definition": "A tax charged by a government on certain goods entering or leaving a country.",
+      "example": "An imported machine part receives an additional charge based on its product classification.",
+      "whyItMatters": "The charge can change whether a shipment remains affordable and how much the finished product costs."
+    },
+    {
+      "term": "Landed cost",
+      "definition": "The total cost of a product after purchase price, transportation, insurance, duties, and fees are included.",
+      "example": "A part that costs $100 may have a higher landed cost after freight and import charges.",
+      "whyItMatters": "Decisions based only on purchase price can hide the real cost of using an imported item."
+    }
+  ],
+  "question": "What is the strongest first response to the unexpected cost change?",
+  "options": [
+    "Verify the classification and total landed cost, then compare approved substitutes and inventory",
+    "Cancel every inbound shipment immediately",
+    "Pass the estimated increase to customers before confirming it"
+  ],
+  "optionRationales": [
+    "Verification prevents an incorrect classification from driving the response and gives planners evidence for comparing inventory, suppliers, and customer impacts.",
+    "Immediate cancellation can create a production shortage and additional fees before the organization understands the actual cost or alternatives.",
+    "Changing prices from an estimate can spread inaccurate information and damage trust before the charge is confirmed."
+  ],
+  "correctIndex": 0,
+  "takeaway": "Cost disruptions should be verified and compared with inventory and substitute options before transportation or pricing decisions are changed.",
+  "responsePrinciple": "Confirm the rule, calculate the full cost, and compare realistic alternatives before acting.",
+  "basePenalty": 8,
+  "logisticsEffects": [
+    {
+      "assetId": "vessel-cascade",
+      "activeStatus": "Delayed",
+      "activeReason": "The shipment is delayed while its tariff classification and release cost are reviewed.",
+      "correctStatus": "In transit",
+      "correctReason": "The classification and cost were verified and the approved shipment was released.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "An unverified response left the shipment without an approved release decision."
+    }
+  ],
+  "cascadeSteps": [
+    "A tariff classification changes the expected cost of an inbound component.",
+    "Purchasing and customs teams pause the release while they confirm the charge.",
+    "Production and inventory plans become uncertain while the component is delayed.",
+    "The organization may face higher prices, reduced availability, or an avoidable shortage."
+  ],
+  "resourceCosts": [
+    {
+      "funds": 1,
+      "intelligence": 2
+    },
+    {
+      "funds": 1
+    },
+    {}
+  ]
+}

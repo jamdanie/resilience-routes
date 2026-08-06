@@ -1,0 +1,86 @@
+{
+  "id": "gulf-evacuation-freight",
+  "title": "Inland Response Hub",
+  "nodeType": "Warehouse",
+  "x": 285,
+  "y": 425,
+  "color": "#72c78c",
+  "event": "Evacuation traffic and emergency staging reduce highway capacity around the main inland distribution hub.",
+  "why": "The hub receives supplies from several transportation modes and sends them to communities. It cannot support those communities when trucks cannot enter, load, or leave on safe routes.",
+  "how": "Travel times increase, drivers reach hour limits, fuel use rises, loading appointments are missed, and emergency and commercial traffic compete for the same roads.",
+  "when": "The risk grows when evacuation orders expand, contraflow changes road direction, fuel stations lose power, or destination facilities close without updating carriers.",
+  "where": "Effects appear around the hub and highways, then spread to shelters, hospitals, stores, utility crews, and communities outside the immediate coastal hazard area.",
+  "keyTerms": [
+    {
+      "term": "Contraflow",
+      "definition": "Temporarily changing traffic lanes so more vehicles can move away from a hazardous area.",
+      "example": "Inbound highway lanes are converted to outbound evacuation lanes.",
+      "whyItMatters": "Contraflow helps evacuation but can remove normal freight access to coastal destinations."
+    },
+    {
+      "term": "Staging area",
+      "definition": "A controlled location where people, vehicles, or supplies wait until they are assigned and released.",
+      "example": "Water trucks wait inland until a shelter confirms delivery access.",
+      "whyItMatters": "Staging reduces uncontrolled traffic and prevents supplies from being sent to closed or unsafe locations."
+    },
+    {
+      "term": "Delivery window",
+      "definition": "A planned period when a route and destination can safely receive a shipment.",
+      "example": "A hospital accepts a fuel delivery during a two-hour emergency access window.",
+      "whyItMatters": "Coordinated windows keep critical trucks from competing with peak evacuation traffic."
+    }
+  ],
+  "question": "Which action best protects evacuation movement and essential deliveries?",
+  "options": [
+    "Stage trucks inland, confirm destination access, and assign timed delivery windows for priority loads",
+    "Send every truck toward the coast on its normal schedule",
+    "Stop communicating route and destination changes to carriers"
+  ],
+  "optionRationales": [
+    "This response separates staging from active routes, verifies that destinations can receive cargo, and uses limited road space at planned times.",
+    "Normal schedules can place trucks into evacuation traffic or send them toward closed destinations.",
+    "Withholding changes causes failed trips, congestion, and deliveries to locations that cannot receive them."
+  ],
+  "correctIndex": 0,
+  "takeaway": "Emergency staging and verified delivery windows protect both public movement and essential freight.",
+  "responsePrinciple": "Stage before dispatch, verify the destination, and release priority loads during coordinated access windows.",
+  "basePenalty": 10,
+  "logisticsEffects": [
+    {
+      "assetId": "gulf-road-22",
+      "activeStatus": "Holding",
+      "activeReason": "The truck is staged inland while evacuation traffic controls coastal access.",
+      "correctStatus": "Rerouted",
+      "correctReason": "A verified delivery window opened on an alternate emergency route.",
+      "incorrectStatus": "Delayed",
+      "incorrectReason": "The truck entered congested traffic without a confirmed destination window."
+    },
+    {
+      "assetId": "gulf-air-5",
+      "activeStatus": "Delayed",
+      "activeReason": "Ground transportation limits are slowing cargo transfer from the inland airfield.",
+      "correctStatus": "In transit",
+      "correctReason": "Priority air cargo was matched to a verified ground delivery window.",
+      "incorrectStatus": "Delayed",
+      "incorrectReason": "Urgent cargo remains at the airfield without coordinated ground access."
+    }
+  ],
+  "cascadeSteps": [
+    "Evacuation traffic and traffic controls reduce normal highway capacity.",
+    "Freight vehicles miss loading and delivery appointments.",
+    "Drivers, fuel, staging space, and destination access become constrained.",
+    "Shelters, hospitals, stores, and utility crews wait longer for essential supplies."
+  ],
+  "resourceCosts": [
+    {
+      "crews": 1,
+      "transport": 2,
+      "fuel": 1
+    },
+    {
+      "transport": 1,
+      "fuel": 2
+    },
+    {}
+  ]
+}

@@ -6,17 +6,28 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for contributing. Describe the operational idea in plain language. A maintainer can convert an accepted proposal into validated game data.
+        Thanks for contributing. Describe the operational idea in plain language. A maintainer can convert an accepted proposal into one isolated JSON file, or you can use the content scaffold after review.
+
+  - type: dropdown
+    id: delivery
+    attributes:
+      label: Preferred contribution route
+      options:
+        - Proposal only — maintainer creates the JSON
+        - I will submit one scaffolded JSON file in a pull request
+        - I would like a maintainer to pair with me on the first submission
+    validations:
+      required: true
 
   - type: dropdown
     id: region
     attributes:
       label: Region or mission set
-      description: The current playable mission uses a fictional Pacific Northwest network. Other regions will be reviewed as separate mission sets.
+      description: Existing packs accept isolated inject files. A different region should be proposed as a new mission pack.
       options:
         - Pacific Northwest — current mission
         - Gulf Coast / Texas — proposed mission set
-        - Other proposed region
+        - Other — requires a mission-pack proposal
     validations:
       required: true
 

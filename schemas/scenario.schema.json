@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://resilience-routes.local/schemas/scenario.schema.json",
+  "title": "Resilience Routes inject",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id", "title", "nodeType", "x", "y", "color", "event", "why", "how", "when", "where",
+    "keyTerms", "cascadeSteps", "question", "options", "optionRationales", "resourceCosts",
+    "correctIndex", "takeaway", "responsePrinciple", "basePenalty", "logisticsEffects"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "title": { "$ref": "#/$defs/text" },
+    "nodeType": { "$ref": "#/$defs/text" },
+    "x": { "type": "number", "minimum": 70, "maximum": 890 },
+    "y": { "type": "number", "minimum": 100, "maximum": 470 },
+    "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+    "event": { "$ref": "#/$defs/text" },
+    "why": { "$ref": "#/$defs/text" },
+    "how": { "$ref": "#/$defs/text" },
+    "when": { "$ref": "#/$defs/text" },
+    "where": { "$ref": "#/$defs/text" },
+    "keyTerms": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["term", "definition", "example", "whyItMatters"],
+        "properties": {
+          "term": { "$ref": "#/$defs/text" },
+          "definition": { "$ref": "#/$defs/text" },
+          "example": { "$ref": "#/$defs/text" },
+          "whyItMatters": { "$ref": "#/$defs/text" }
+        }
+      }
+    },
+    "cascadeSteps": { "$ref": "#/$defs/threePlusOneTexts" },
+    "question": { "$ref": "#/$defs/text" },
+    "options": { "$ref": "#/$defs/threeTexts" },
+    "optionRationales": { "$ref": "#/$defs/threeTexts" },
+    "resourceCosts": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": { "$ref": "#/$defs/resourceCost" }
+    },
+    "correctIndex": { "type": "integer", "minimum": 0, "maximum": 2 },
+    "takeaway": { "$ref": "#/$defs/text" },
+    "responsePrinciple": { "$ref": "#/$defs/text" },
+    "basePenalty": { "type": "integer", "minimum": 1, "maximum": 30 },
+    "logisticsEffects": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["assetId", "activeStatus", "activeReason", "correctStatus", "correctReason", "incorrectStatus", "incorrectReason"],
+        "properties": {
+          "assetId": { "$ref": "#/$defs/id" },
+          "activeStatus": { "$ref": "#/$defs/status" },
+          "activeReason": { "$ref": "#/$defs/text" },
+          "correctStatus": { "$ref": "#/$defs/status" },
+          "correctReason": { "$ref": "#/$defs/text" },
+          "incorrectStatus": { "$ref": "#/$defs/status" },
+          "incorrectReason": { "$ref": "#/$defs/text" }
+        }
+      }
+    },
+    "contribution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authors", "sources", "license"],
+      "properties": {
+        "authors": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } },
+        "sources": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } },
+        "license": { "$ref": "#/$defs/text" },
+        "notes": { "$ref": "#/$defs/text" }
+      }
+    }
+  },
+  "$defs": {
+    "text": { "type": "string", "minLength": 1, "not": { "pattern": "TODO|REPLACE_ME" } },
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "status": { "enum": ["In transit", "Delayed", "Holding", "Rerouted"] },
+    "threeTexts": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/$defs/text" } },
+    "threePlusOneTexts": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "$ref": "#/$defs/text" } },
+    "resourceCost": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "funds": { "$ref": "#/$defs/cost" },
+        "crews": { "$ref": "#/$defs/cost" },
+        "transport": { "$ref": "#/$defs/cost" },
+        "fuel": { "$ref": "#/$defs/cost" },
+        "intelligence": { "$ref": "#/$defs/cost" },
+        "inventory": { "$ref": "#/$defs/cost" }
+      }
+    },
+    "cost": { "type": "integer", "minimum": 0, "maximum": 3 }
+  }
+}
