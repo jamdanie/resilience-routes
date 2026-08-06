@@ -71,6 +71,17 @@
       "Containers, cranes, chassis, rail slots, and truck appointments fall out of sequence.",
       "Warehouses and factories receive late or incomplete deliveries.",
       "Stores, repair operations, and essential services face shortages or higher costs."
+    ],
+    "resourceCosts": [
+      {},
+      {
+        "funds": 1,
+        "transport": 2,
+        "fuel": 1
+      },
+      {
+        "funds": 1
+      }
     ]
   },
   {
@@ -145,6 +156,18 @@
       "Trains wait or divert, while nearby yards begin to fill.",
       "Freight shifts toward roads and alternate rail lines with less capacity.",
       "Food, fuel, industrial materials, and community deliveries arrive late."
+    ],
+    "resourceCosts": [
+      {
+        "crews": 1,
+        "transport": 2,
+        "fuel": 1
+      },
+      {
+        "transport": 2,
+        "fuel": 2
+      },
+      {}
     ]
   },
   {
@@ -219,6 +242,18 @@
       "Flights, ramp work, and nearby truck movement slow or pause.",
       "Urgent cargo must compete for space at safer alternate airports.",
       "Hospitals, repair teams, manufacturers, and customers wait longer for time-sensitive goods."
+    ],
+    "resourceCosts": [
+      {},
+      {
+        "funds": 1,
+        "transport": 1
+      },
+      {
+        "funds": 1,
+        "transport": 2,
+        "intelligence": 1
+      }
     ]
   },
   {
@@ -293,6 +328,16 @@
       "Gate appointments, routing instructions, and cargo records become unreliable.",
       "Trucks queue, containers are misplaced, and partners stop accepting automated directions.",
       "Physical cargo movement slows across ports, carriers, warehouses, suppliers, and customers."
+    ],
+    "resourceCosts": [
+      {
+        "crews": 1,
+        "intelligence": 2
+      },
+      {
+        "crews": 1
+      },
+      {}
     ]
   },
   {
@@ -358,6 +403,226 @@
       "Carriers prioritize some routes and delay lightly loaded or lower-priority trips.",
       "Warehouses accumulate inventory that cannot move to its destination.",
       "Hospitals, stores, farms, utilities, and emergency operations receive fewer or later deliveries."
+    ],
+    "resourceCosts": [
+      {
+        "transport": 1,
+        "fuel": 1,
+        "intelligence": 1
+      },
+      {
+        "transport": 1,
+        "fuel": 2
+      },
+      {}
+    ]
+  },
+  {
+    "id": "tariff-cost-change",
+    "title": "Tariff change raises landed cost",
+    "nodeType": "Trade and cost",
+    "x": 115,
+    "y": 355,
+    "color": "#f0bd62",
+    "event": "A new tariff classification has increased the expected cost of an inbound component shipment while it is already moving toward the region.",
+    "why": "A tariff can change the final cost of imported goods and affect purchasing, inventory, and customer prices even when transportation is still operating.",
+    "how": "The added cost moves from the importer to manufacturers or distributors, then may reach customers through higher prices or reduced availability.",
+    "when": "The risk grows when there is little substitute inventory, contracts do not assign the added cost clearly, or planners react before confirming the classification.",
+    "where": "The first effects appear in customs and purchasing records, followed by inventory plans, production schedules, and retail prices.",
+    "keyTerms": [
+      {
+        "term": "Tariff",
+        "definition": "A tax charged by a government on certain goods entering or leaving a country.",
+        "example": "An imported machine part receives an additional charge based on its product classification.",
+        "whyItMatters": "The charge can change whether a shipment remains affordable and how much the finished product costs."
+      },
+      {
+        "term": "Landed cost",
+        "definition": "The total cost of a product after purchase price, transportation, insurance, duties, and fees are included.",
+        "example": "A part that costs $100 may have a higher landed cost after freight and import charges.",
+        "whyItMatters": "Decisions based only on purchase price can hide the real cost of using an imported item."
+      }
+    ],
+    "question": "What is the strongest first response to the unexpected cost change?",
+    "options": [
+      "Verify the classification and total landed cost, then compare approved substitutes and inventory",
+      "Cancel every inbound shipment immediately",
+      "Pass the estimated increase to customers before confirming it"
+    ],
+    "optionRationales": [
+      "Verification prevents an incorrect classification from driving the response and gives planners evidence for comparing inventory, suppliers, and customer impacts.",
+      "Immediate cancellation can create a production shortage and additional fees before the organization understands the actual cost or alternatives.",
+      "Changing prices from an estimate can spread inaccurate information and damage trust before the charge is confirmed."
+    ],
+    "correctIndex": 0,
+    "takeaway": "Cost disruptions should be verified and compared with inventory and substitute options before transportation or pricing decisions are changed.",
+    "responsePrinciple": "Confirm the rule, calculate the full cost, and compare realistic alternatives before acting.",
+    "basePenalty": 8,
+    "logisticsEffects": [
+      {
+        "assetId": "vessel-cascade",
+        "activeStatus": "Delayed",
+        "activeReason": "The shipment is delayed while its tariff classification and release cost are reviewed.",
+        "correctStatus": "In transit",
+        "correctReason": "The classification and cost were verified and the approved shipment was released.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "An unverified response left the shipment without an approved release decision."
+      }
+    ],
+    "cascadeSteps": [
+      "A tariff classification changes the expected cost of an inbound component.",
+      "Purchasing and customs teams pause the release while they confirm the charge.",
+      "Production and inventory plans become uncertain while the component is delayed.",
+      "The organization may face higher prices, reduced availability, or an avoidable shortage."
+    ],
+    "resourceCosts": [
+      {
+        "funds": 1,
+        "intelligence": 2
+      },
+      {
+        "funds": 1
+      },
+      {}
+    ]
+  },
+  {
+    "id": "supplier-political-unrest",
+    "title": "Political unrest interrupts an upstream supplier",
+    "nodeType": "Upstream supplier",
+    "x": 850,
+    "y": 135,
+    "color": "#e58975",
+    "event": "A fictional overseas supplier has stopped outbound operations after political unrest restricted access to its local terminal.",
+    "why": "A regional network can be affected by an event far outside its map when it depends on parts or materials from one source.",
+    "how": "The supplier misses its loading window, the vessel schedule changes, and regional manufacturers receive less input inventory.",
+    "when": "The risk grows when the part has one approved supplier, long qualification requirements, or little safety stock.",
+    "where": "The disruption starts at the supplier but appears later at the port, production line, warehouse, and customer order.",
+    "keyTerms": [
+      {
+        "term": "Upstream supplier",
+        "definition": "A business earlier in the supply chain that provides materials, parts, or services used by another organization.",
+        "example": "A component factory supplies a part that a regional manufacturer needs for assembly.",
+        "whyItMatters": "A failure far away can stop local work when there is no qualified replacement."
+      },
+      {
+        "term": "Single-source dependency",
+        "definition": "Reliance on one approved supplier for a needed item.",
+        "example": "Only one factory is qualified to produce a specialized control component.",
+        "whyItMatters": "The organization has fewer recovery choices when that supplier cannot operate."
+      }
+    ],
+    "question": "How should the team respond to the upstream interruption?",
+    "options": [
+      "Confirm current inventory, prioritize essential demand, and begin approved alternate-supplier review",
+      "Assume the supplier will reopen before regional inventory is affected",
+      "Buy from the first unverified seller offering the part"
+    ],
+    "optionRationales": [
+      "This response establishes how long existing inventory can last, protects essential demand, and begins a controlled alternative without ignoring quality requirements.",
+      "Waiting without measuring inventory loses time and can allow a manageable shortage to become a production stoppage.",
+      "An unverified source may introduce counterfeit, unsafe, or incompatible components and create a second disruption."
+    ],
+    "correctIndex": 0,
+    "takeaway": "Upstream political risk is managed through visibility, demand priorities, qualified alternatives, and realistic inventory planning.",
+    "responsePrinciple": "Measure exposure first, protect essential demand, and use verified alternatives.",
+    "basePenalty": 11,
+    "logisticsEffects": [
+      {
+        "assetId": "vessel-cascade",
+        "activeStatus": "Delayed",
+        "activeReason": "Cargo missed its overseas loading window after the supplier stopped outbound operations.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Available inventory and an approved alternate shipment were assigned to priority demand.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "No verified replacement cargo or demand priority was established."
+      }
+    ],
+    "cascadeSteps": [
+      "Political unrest restricts access to a fictional upstream supplier and terminal.",
+      "The supplier misses its planned export loading window.",
+      "Regional manufacturers receive fewer parts than expected.",
+      "Production, customer orders, and repair activity are delayed unless inventory is prioritized."
+    ],
+    "resourceCosts": [
+      {
+        "funds": 1,
+        "intelligence": 1,
+        "inventory": 2
+      },
+      {},
+      {
+        "funds": 2
+      }
+    ]
+  },
+  {
+    "id": "warehouse-picking-error",
+    "title": "Warehouse picking error affects priority orders",
+    "nodeType": "Human error",
+    "x": 555,
+    "y": 440,
+    "color": "#9d8df1",
+    "event": "A rushed shift used an outdated location list and loaded several priority orders with the wrong replacement parts.",
+    "why": "Human error can create a real supply disruption even when buildings, roads, and computer systems are available.",
+    "how": "Incorrect items leave the warehouse, the destination rejects them, and limited vehicles must repeat work while the correct orders wait.",
+    "when": "The risk grows during overtime, rapid volume changes, weak change control, or pressure to skip independent checks.",
+    "where": "The error begins at order picking but affects the loading dock, truck route, receiving site, inventory record, and customer schedule.",
+    "keyTerms": [
+      {
+        "term": "Picking error",
+        "definition": "Selecting the wrong item or quantity while preparing an order in a warehouse.",
+        "example": "A worker selects a similar-looking part from the neighboring storage location.",
+        "whyItMatters": "The order may travel normally but still fail when it reaches the customer."
+      },
+      {
+        "term": "Independent verification",
+        "definition": "A separate check by another person or system before a high-priority action is completed.",
+        "example": "A second scan confirms the part number before the truck leaves.",
+        "whyItMatters": "It catches errors before transportation time and scarce capacity are wasted."
+      }
+    ],
+    "question": "What should the warehouse do first?",
+    "options": [
+      "Pause affected releases, verify priority orders, correct records, and restart with a second check",
+      "Keep shipping at the same speed and correct errors only after delivery",
+      "Delete the incorrect transactions so performance reports remain clean"
+    ],
+    "optionRationales": [
+      "A focused pause contains the problem, identifies which orders are affected, and prevents more incorrect shipments while normal work continues elsewhere.",
+      "Continuing unchanged sends more incorrect material into the network and consumes additional vehicles and receiving labor.",
+      "Deleting records hides evidence needed to recover inventory and understand why the error occurred."
+    ],
+    "correctIndex": 0,
+    "takeaway": "A short, controlled pause with verification is usually less costly than allowing incorrect orders to spread through the network.",
+    "responsePrinciple": "Contain the affected work, preserve records, verify priority orders, and restart with a check.",
+    "basePenalty": 9,
+    "logisticsEffects": [
+      {
+        "assetId": "roadlink-14",
+        "activeStatus": "Holding",
+        "activeReason": "The truck is held while priority loads are checked against the correct item list.",
+        "correctStatus": "In transit",
+        "correctReason": "Verified orders were reloaded and released with corrected inventory records.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "Repeated returns and corrections continue to consume the truck's route capacity."
+      }
+    ],
+    "cascadeSteps": [
+      "An outdated location list causes workers to select incorrect replacement parts.",
+      "Wrong items are loaded onto a priority delivery.",
+      "The destination rejects the shipment and requests the correct order.",
+      "Vehicles, workers, and inventory are used twice while the actual need remains unmet."
+    ],
+    "resourceCosts": [
+      {
+        "crews": 2,
+        "intelligence": 1
+      },
+      {
+        "crews": 1
+      },
+      {}
     ]
   }
 ]

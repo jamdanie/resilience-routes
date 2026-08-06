@@ -7,6 +7,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,5 +27,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Validate scenarios and build
+      - name: Validate auto-discovered content
+        run: npm run validate:content
+
+      - name: Add content inventory to job summary
+        if: always()
+        run: node scripts/content-report.mjs --markdown >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Test and build application
         run: npm run build

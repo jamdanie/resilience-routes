@@ -1,0 +1,84 @@
+{
+  "id": "cyber-logistics",
+  "title": "Northstar Logistics Hub",
+  "nodeType": "Digital logistics",
+  "x": 695,
+  "y": 445,
+  "color": "#9a89ef",
+  "event": "A cyberattack disrupts shipment scheduling, gate appointments, and inventory visibility.",
+  "why": "Physical cargo movement depends on digital systems for schedules, documents, routing, inventory records, and communication. A digital failure can therefore stop physical work.",
+  "how": "When data is unavailable or cannot be trusted, trucks may queue, containers may be misplaced, and partners may stop accepting automated instructions.",
+  "when": "The risk can appear after phishing, weak access controls, vulnerable software, compromised vendors, or poor network separation.",
+  "where": "The initial outage may be local, but connected carriers, ports, warehouses, suppliers, and customers can all lose visibility.",
+  "keyTerms": [
+    {
+      "term": "Manual fallback",
+      "definition": "A tested non-automated procedure used when the normal digital system is unavailable or untrusted.",
+      "example": "Using verified paper gate lists and telephone confirmation while scheduling software is offline.",
+      "whyItMatters": "A fallback keeps essential work moving without reconnecting a potentially compromised system."
+    },
+    {
+      "term": "Isolation",
+      "definition": "Separating an affected device, account, or network area so the problem cannot spread to connected systems.",
+      "example": "Disconnecting the compromised scheduling server from the rest of the logistics network.",
+      "whyItMatters": "Isolation limits damage while investigators determine what happened."
+    },
+    {
+      "term": "Verified restoration",
+      "definition": "Returning systems to service only after confirming that data, software, accounts, and connections can be trusted.",
+      "example": "Restoring clean backups, changing credentials, testing records, and monitoring before normal operations resume.",
+      "whyItMatters": "Fast restoration without verification can reintroduce the attack or spread false information."
+    }
+  ],
+  "question": "Which response best limits operational and cyber risk?",
+  "options": [
+    "Use a tested manual fallback, isolate affected systems, and verify data before restoration",
+    "Reconnect every system immediately without checking the cause",
+    "Post administrator credentials in the team chat so work can continue"
+  ],
+  "optionRationales": [
+    "This response maintains essential operations while containing the incident and protecting the integrity of restored data.",
+    "Immediate reconnection can spread the attack and restore incorrect or malicious data.",
+    "Sharing administrator credentials removes accountability and gives excessive access to anyone who can view the chat."
+  ],
+  "correctIndex": 0,
+  "takeaway": "Resilience includes tested manual procedures, network isolation, verified restoration, and controlled access.",
+  "responsePrinciple": "Contain first, operate through a tested fallback, verify trust, and restore in controlled stages.",
+  "basePenalty": 13,
+  "logisticsEffects": [
+    {
+      "assetId": "roadlink-14",
+      "activeStatus": "Holding",
+      "activeReason": "Untrusted gate and inventory data prevent the truck from receiving a verified load.",
+      "correctStatus": "In transit",
+      "correctReason": "A tested manual fallback produced a verified dispatch instruction.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "The dispatch remains unverified because affected systems were not contained."
+    },
+    {
+      "assetId": "freight-6",
+      "activeStatus": "Delayed",
+      "activeReason": "The train is moving slowly while cargo records are checked manually.",
+      "correctStatus": "In transit",
+      "correctReason": "Verified records restored normal release and routing procedures.",
+      "incorrectStatus": "Delayed",
+      "incorrectReason": "Untrusted cargo records continue to slow train release."
+    }
+  ],
+  "cascadeSteps": [
+    "A cyberattack makes scheduling and inventory data unavailable or untrusted.",
+    "Gate appointments, routing instructions, and cargo records become unreliable.",
+    "Trucks queue, containers are misplaced, and partners stop accepting automated directions.",
+    "Physical cargo movement slows across ports, carriers, warehouses, suppliers, and customers."
+  ],
+  "resourceCosts": [
+    {
+      "crews": 1,
+      "intelligence": 2
+    },
+    {
+      "crews": 1
+    },
+    {}
+  ]
+}

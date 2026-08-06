@@ -1,73 +1,90 @@
 # Contributing to Resilience Routes
 
-Thank you for helping improve the exercise. You do not need to be a programmer to propose a disruption.
+Resilience Routes is designed so a contributor can add an inject or a complete regional level without editing the game engine or a shared JSON array.
 
-## Choose a contribution route
+## Choose the smallest contribution route
 
-### Route 1: Submit a scenario without code
+### Propose content without code
 
-Open a **Scenario proposal** in GitHub Issues and complete the guided form. Include the event, affected infrastructure, four-step consequence chain, three response choices, learning terms, and any sources.
+Open a **Scenario proposal** or **Mission-pack proposal** in GitHub Issues. The forms collect the operational event, consequence chain, choices, learning goals, sources, and safety review. Maintainers can turn an accepted proposal into game data.
 
-A maintainer will review the learning design, choose safe map coordinates and transportation assets, and convert an accepted proposal into game data. This is the best route for subject-matter experts, instructors, students, and first-time contributors.
+### Add one inject with a pull request
 
-### Route 2: Submit validated JSON in a pull request
+1. Create a focused branch from the latest `main`.
+2. Run the scaffold command:
 
-Use this route when you are comfortable editing JSON and GitHub files.
+   ```powershell
+   npm run create:scenario -- --pack pacific-northwest --id bridge-closure
+   ```
 
-1. Create a branch from the latest `main`.
-2. Copy `docs/examples/pnw-scenario-example.json`.
-3. Add the copied object inside the array in `src/data/scenarios.json`.
-4. Change every field for the new scenario and give it a unique `id`.
-5. Run `npm ci` once, then run `npm run validate:scenarios` and `npm run build`.
-6. Open a focused pull request and complete the checklist.
+3. Edit only the new file in `src/content/packs/pacific-northwest/scenarios/`.
+4. Replace every `TODO`. Keep the filename and `id` identical.
+5. Run:
 
-The validator reports missing fields, invalid choices, unsupported asset IDs, incorrect status values, duplicate IDs, and unsafe map coordinates. Pull requests also run the same checks automatically.
+   ```powershell
+   npm run validate:content
+   npm run build
+   ```
 
-## What scenario JSON controls
+6. Open a pull request and complete the content checklist.
 
-- inject-card text and learning explanations
-- glossary terms and cascading-effect steps
-- the three response choices and rationales
-- the correct response and scoring penalty
-- the node label, color, and coordinates on the current map
-- how existing Pacific Northwest transportation assets react
+One inject is one file, so two contributors can work in the same regional pack without editing the same scenario array.
 
-## What requires a separate feature
+### Add a complete regional level
 
-JSON does not create a new regional map, transportation network, set of routes, artwork, or mission selector. Those changes require TypeScript/CSS work and design review.
+Create a draft pack from an existing structural reference:
 
-The current mission remains a **Pacific Northwest continuity exercise**. Pacific Northwest scenarios may be proposed for the current mission. Gulf Coast, Texas, or other regional scenarios are welcome, but should be labeled as a **proposed mission set** so regional assets and risks can be designed together instead of being mixed into the Pacific Northwest map.
+```powershell
+npm run create:level -- --id great-lakes --name "Great Lakes Continuity Exercise"
+```
 
-## Current Pacific Northwest transportation assets
+To start from a different regional structure:
 
-Use only these IDs in `logisticsEffects`:
+```powershell
+npm run create:level -- --id caribbean --name "Caribbean Continuity Exercise" --from gulf-coast
+```
 
-- `vessel-cascade` — cargo vessel
-- `airlift-27` — cargo aircraft
-- `freight-6` — freight train
-- `roadlink-14` — truck
+The command creates:
 
-Allowed statuses are `In transit`, `Delayed`, `Holding`, and `Rerouted`.
+```text
+src/content/packs/great-lakes/
+├── manifest.json
+├── mission.json
+└── scenarios/
+    └── starter-inject.json
+```
+
+Keep the manifest status as `draft` while adapting the mission framing, map geometry, routes, vehicles, weather, temporary events, operating conditions, and inject. Change it to `playable` only after validation and browser testing.
+
+## Automatic discovery
+
+Do not edit `src/data/missions.ts`. The application discovers every playable pack and every inject file under `src/content/packs/` during the build. Pull requests fail with a path-specific message when:
+
+- a filename and JSON `id` differ
+- a pack folder, manifest `id`, and mission `id` differ
+- required learning fields are missing
+- an inject references an asset outside its own pack
+- response costs or statuses are invalid
+- scaffold `TODO` markers remain
+- a mission target exceeds its number of injects
+
+VS Code also applies the JSON schemas in `schemas/` automatically.
+
+## Content ownership and scope
+
+- One pull request should add one inject, one mission pack, or one focused engine change.
+- Put regional content only in its matching pack folder.
+- Cite real-world factual claims or label the exercise content fictional.
+- Do not include credentials, personal data, sensitive facility details, proprietary information, or unlicensed media.
+- Record contributor and source information in the pull request.
+- Avoid editing generated output, dependencies, or unrelated content files.
 
 ## Branch names
 
-Use one of these patterns:
-
+- `content/pnw-bridge-closure`
+- `level/great-lakes`
 - `feature/short-description`
-- `content/short-description`
 - `fix/short-description`
 - `docs/short-description`
 
-## Pull requests
-
-A pull request should:
-
-- address one focused issue
-- explain the player or learning impact
-- include a screenshot for visual changes
-- include sources for real-world claims, or clearly label the content as fictional
-- pass `npm run validate:scenarios` and `npm run build`
-- avoid unrelated formatting changes
-- contain no credentials, personal data, sensitive operational details, or unlicensed media
-
-See `docs/SCENARIO_AUTHORING.md` for the full field guide and review criteria.
+See `docs/CONTENT_SDK.md` for the five-minute workflow and `docs/SCENARIO_AUTHORING.md` for every field and review criterion.

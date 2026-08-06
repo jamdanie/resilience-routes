@@ -1,4 +1,4 @@
-import type { Difficulty } from "../game/types";
+import type { Difficulty, MissionPack } from "../game/types";
 import { requiredElement } from "./dom";
 
 const stepCount = 3;
@@ -10,7 +10,7 @@ export function renderMissionBriefing(): string {
         <header class="briefing-header">
           <div>
             <p class="eyebrow">Mission orientation</p>
-            <h2 id="briefing-title">Pacific Northwest Continuity Exercise</h2>
+            <h2 id="briefing-title">Regional Continuity Exercise</h2>
             <p class="briefing-subtitle">Learn the situation, understand the scoring model, and choose your operating conditions before entering Mission Control.</p>
           </div>
           <button id="close-briefing" class="close-button briefing-close" type="button" aria-label="Close mission briefing">×</button>
@@ -35,12 +35,12 @@ export function renderMissionBriefing(): string {
             <div class="briefing-situation-grid">
               <article class="situation-card primary">
                 <span>Situation</span>
-                <h4>Multiple disruptions are appearing across a connected regional network.</h4>
-                <p>You will investigate ports, rail corridors, airports, warehouses, and digital logistics systems. Each decision can strengthen the network or make the disruption harder to control.</p>
+                <h4 id="briefing-mission-name">Multiple disruptions are appearing across a connected regional network.</h4>
+                <p id="briefing-mission-description">You will investigate connected physical and digital infrastructure. Each decision can strengthen the network or make the disruption harder to control.</p>
               </article>
               <article class="situation-card">
                 <span>Mission objective</span>
-                <h4>Stabilize three infrastructure nodes.</h4>
+                <h4 id="briefing-mission-objective">Address three randomly selected disruptions.</h4>
                 <p>A <b>node</b> is one important place or system in a network, such as a port, rail junction, warehouse, airport, or scheduling platform.</p>
               </article>
               <article class="situation-card">
@@ -108,7 +108,7 @@ export function renderMissionBriefing(): string {
             <div class="briefing-page-heading">
               <span class="briefing-kicker">Step 3 of 3</span>
               <h3>Choose the level that matches how you want to learn.</h3>
-              <p>Difficulty changes the starting score, timer, hints, and strength of disruption penalties. It does not hide definitions or explanations.</p>
+              <p>Difficulty changes the starting score, timer, hints, disruption penalties, and available strategic resources. Each seed also controls the active decision set, answer order, vehicle starting routes, movement direction, weather track, affected assets, and temporary inject schedule.</p>
             </div>
 
             <fieldset class="difficulty-card-grid">
@@ -117,21 +117,26 @@ export function renderMissionBriefing(): string {
                 <input type="radio" name="briefing-difficulty" value="easy">
                 <span class="difficulty-label"><b>Easy</b><small>Guided learning</small></span>
                 <strong>90 starting resilience</strong>
-                <ul><li>No mission timer</li><li>Recommended response is identified</li><li>Smaller disruption penalties</li></ul>
+                <ul><li>No mission timer</li><li>Recommended response is identified</li><li>Larger resource reserves</li><li>Smaller disruption penalties</li></ul>
               </label>
               <label class="difficulty-card selected">
                 <input type="radio" name="briefing-difficulty" value="medium" checked>
                 <span class="difficulty-label"><b>Medium</b><small>Standard exercise</small></span>
                 <strong>82 starting resilience</strong>
-                <ul><li>4-minute mission timer</li><li>No answer hint</li><li>Standard disruption effects</li></ul>
+                <ul><li>4-minute mission timer</li><li>No answer hint</li><li>Balanced resource reserves</li><li>Standard disruption effects</li></ul>
               </label>
               <label class="difficulty-card">
                 <input type="radio" name="briefing-difficulty" value="hard">
                 <span class="difficulty-label"><b>Hard</b><small>Decision pressure</small></span>
                 <strong>74 starting resilience</strong>
-                <ul><li>3-minute mission timer</li><li>Stronger penalties</li><li>Smaller recovery gains</li></ul>
+                <ul><li>3-minute mission timer</li><li>Scarce resource reserves</li><li>Stronger penalties</li><li>Smaller recovery gains</li></ul>
               </label>
             </fieldset>
+
+            <div class="briefing-resource-note">
+              <div><p class="eyebrow">New strategic layer</p><h4>Resources spent now cannot be used later.</h4></div>
+              <p>Response options can require funds, field crews, transportation capacity, fuel, intelligence, or emergency inventory. A response becomes unavailable when the mission no longer has enough of the required resource.</p>
+            </div>
 
             <div class="briefing-readiness-card">
               <div><span class="status-dot"></span><p><b>Ready for Mission Control</b><small>You can review the briefing or change difficulty again before launching the live scenario.</small></p></div>
@@ -151,7 +156,7 @@ export function renderMissionBriefing(): string {
 }
 
 export interface MissionBriefingController {
-  open: (difficulty?: Difficulty) => void;
+  open: (difficulty?: Difficulty, mission?: MissionPack) => void;
   close: () => void;
 }
 
@@ -168,6 +173,10 @@ export function createMissionBriefingController(
   const progressButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-briefing-step-button]"));
   const difficultyInputs = Array.from(document.querySelectorAll<HTMLInputElement>('input[name="briefing-difficulty"]'));
   const difficultyCards = Array.from(document.querySelectorAll<HTMLElement>(".difficulty-card"));
+  const briefingTitle = requiredElement<HTMLElement>("#briefing-title");
+  const missionName = requiredElement<HTMLElement>("#briefing-mission-name");
+  const missionDescription = requiredElement<HTMLElement>("#briefing-mission-description");
+  const missionObjective = requiredElement<HTMLElement>("#briefing-mission-objective");
   let currentStep = 0;
 
   const stepNames = ["Situation", "How scoring works", "Operating conditions"];
@@ -199,7 +208,13 @@ export function createMissionBriefingController(
     syncDifficultyCards();
   };
 
-  const open = (difficulty: Difficulty = "medium"): void => {
+  const open = (difficulty: Difficulty = "medium", mission?: MissionPack): void => {
+    if (mission) {
+      briefingTitle.textContent = mission.name;
+      missionName.textContent = mission.commandIntent;
+      missionDescription.textContent = mission.description;
+      missionObjective.textContent = `Address ${mission.target} randomly selected disruptions.`;
+    }
     setDifficulty(difficulty);
     updateStep(0);
     backdrop.classList.remove("hidden");

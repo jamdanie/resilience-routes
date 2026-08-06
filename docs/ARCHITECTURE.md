@@ -5,12 +5,13 @@
 ```text
 Browser
 ├── Mission interface
+├── Seeded mission generator
 ├── Scenario and decision engine
-├── Network dependency model
-├── Resource and scoring engine
-├── Advisor and fog-of-war layer
-├── Achievement engine
-├── Local autosave
+├── Strategic resource economy
+├── Logistics, weather, and ambient-event layers
+├── Operational basemap
+├── Resilience and consequence engine
+├── Browser-local run history
 └── After-action exporter
 
 GitHub
@@ -24,7 +25,9 @@ No login, database, API key, server credential, or personal-information collecti
 
 ## Core state
 
-The mission engine tracks infrastructure health, resilience, preparedness, resources, decisions, cascading effects, achievements, and mission settings.
+The mission engine tracks resilience, elapsed time, selected disruptions, logistics states, weather, temporary injects, six strategic resources, decision costs, downstream consequences, and mission settings. Scenario content remains separate from the engine in validated JSON.
+
+`StrategicResourceSystem.ts` owns initial reserves, affordability checks, spending, and snapshots. `SupplyChainScene.ts` applies those transactions to decisions and emits updates. The DOM interface renders the resource bar and decision costs, while the report records the final stewardship result.
 
 ## Future backend boundary
 
