@@ -225,6 +225,16 @@ function validateScenario(scenario, index, seenIds, allowedAssetIds, prefix = "s
   if (!Number.isInteger(scenario.correctIndex) || scenario.correctIndex < 0 || scenario.correctIndex > 2) fail(`${location}.correctIndex`, "must be 0, 1, or 2");
   if (!Number.isInteger(scenario.basePenalty) || scenario.basePenalty < 1 || scenario.basePenalty > 30) fail(`${location}.basePenalty`, "must be an integer from 1 through 30");
 
+  if (scenario.intelligence !== undefined) {
+    const intelligenceLocation = `${location}.intelligence`;
+    if (!["low", "moderate", "high"].includes(scenario.intelligence?.confidence)) {
+      fail(`${intelligenceLocation}.confidence`, "must be low, moderate, or high");
+    }
+    ["confirmed", "uncertainty", "verificationFinding", "forecast"].forEach((field) => {
+      if (!isNonEmptyString(scenario.intelligence?.[field])) fail(`${intelligenceLocation}.${field}`, "must be a non-empty string");
+    });
+  }
+
   if (scenario.contribution !== undefined) {
     const contributionLocation = `${location}.contribution`;
     ["authors", "sources"].forEach((field) => {

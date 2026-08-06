@@ -60,6 +60,7 @@ export function createReportModalController(
       : 0;
     const initialResourceTotal = STRATEGIC_RESOURCE_KEYS.reduce((total, key) => total + report.initialResources[key], 0);
     const remainingResourceTotal = STRATEGIC_RESOURCE_KEYS.reduce((total, key) => total + report.remainingResources[key], 0);
+    const verifiedDecisionCount = report.decisions.filter((decision) => decision.intelligenceVerified).length;
 
     reportTitle.textContent = `${report.missionName} results`;
     summary.innerHTML = `
@@ -70,6 +71,7 @@ export function createReportModalController(
       <article><span>Elapsed time</span><strong>${formatSeconds(report.elapsedSeconds)}</strong><small>${report.difficulty} difficulty</small></article>
       <article><span>Run identity</span><strong>${report.seed}</strong><small>${report.condition.title} · ${report.region}</small></article>
       <article><span>Resources remaining</span><strong>${remainingResourceTotal} / ${initialResourceTotal}</strong><small>Across six strategic reserves</small></article>
+      <article><span>Intelligence checks</span><strong>${verifiedDecisionCount} / ${report.decisions.length}</strong><small>Signals verified before commitment</small></article>
     `;
 
     const resourceReview = `
@@ -97,6 +99,7 @@ export function createReportModalController(
                   <p><b>Result:</b> ${decision.correct ? "Effective response" : "Response increased risk"} · Resilience ${decision.resilienceChange >= 0 ? "+" : ""}${decision.resilienceChange}</p>
                   <p><b>Reason:</b> ${decision.rationale}</p>
                   <p><b>Resources committed:</b> ${formatResourceCost(decision.resourcesSpent)}</p>
+                  <p><b>Intelligence posture:</b> ${decision.intelligenceVerified ? `Verified before commitment for ${decision.intelligenceCost} Intel. ${decision.intelligenceFinding}` : decision.intelligenceFinding}</p>
                   <p><b>Operational consequence:</b> ${decision.operationalConsequence}</p>
                   <div class="report-calculation">
                     <span>Score calculation</span>

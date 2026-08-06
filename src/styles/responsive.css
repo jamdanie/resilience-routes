@@ -82,6 +82,10 @@
     grid-template-columns: 1fr;
   }
 
+  .intelligence-grid {
+    grid-template-columns: 1fr;
+  }
+
   .history-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -243,6 +247,11 @@
 
   .map-toolbar button {
     width: 100%;
+  }
+
+  .map-toolbar .map-toolbar-actions {
+    width: 100%;
+    flex-direction: column;
   }
 }
 

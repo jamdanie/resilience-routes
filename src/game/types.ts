@@ -170,6 +170,14 @@ export interface ContentAttribution {
   notes?: string;
 }
 
+export interface ScenarioIntelligenceBrief {
+  confidence: "low" | "moderate" | "high";
+  confirmed: string;
+  uncertainty: string;
+  verificationFinding: string;
+  forecast: string;
+}
+
 export interface MissionPack extends MissionDefinition {
   scenarios: Scenario[];
 }
@@ -208,6 +216,7 @@ export interface Scenario {
   responsePrinciple: string;
   basePenalty: number;
   logisticsEffects: ScenarioLogisticsEffect[];
+  intelligence?: ScenarioIntelligenceBrief;
   contribution?: ContentAttribution;
 }
 
@@ -227,6 +236,9 @@ export interface DecisionRecord {
   takeaway: string;
   resourcesSpent: StrategicResourceCost;
   resourcesRemaining: StrategicResourcePool;
+  intelligenceVerified: boolean;
+  intelligenceCost: number;
+  intelligenceFinding: string;
   operationalConsequence: string;
 }
 

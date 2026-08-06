@@ -167,7 +167,10 @@ export function renderApplicationShell(): string {
             <div class="map-column">
               <div class="map-toolbar">
                 <div><b>Operational map</b><span>Roads, rail, runways, docks, terrain, vehicles, weather, and decision nodes.</span></div>
-                <button id="map-detail-button" class="secondary-button compact map-mode-button" type="button" aria-label="Change operational map layer" disabled>Map: Infrastructure</button>
+                <div class="map-toolbar-actions">
+                  <button id="node-label-button" class="secondary-button compact" type="button" aria-label="Change decision-node label density" disabled>Labels: Compact</button>
+                  <button id="map-detail-button" class="secondary-button compact map-mode-button" type="button" aria-label="Change operational map layer" disabled>Map: Infrastructure</button>
+                </div>
               </div>
               <div id="game-canvas" class="game-canvas" aria-label="Interactive supply-chain network"></div>
               <p class="canvas-disclaimer">The network, locations, incidents, and scores are fictional and intended only for education.</p>
@@ -183,6 +186,7 @@ export function renderApplicationShell(): string {
                   <b>Terms will be defined before the decision.</b>
                   <span>No prior supply-chain experience is required.</span>
                 </div>
+                <button id="investigate-focus-button" class="primary-button compact investigate-focus-button" type="button" disabled>Investigate selected node</button>
               </section>
 
               <section class="asset-panel" aria-live="polite">
@@ -330,6 +334,19 @@ export function renderApplicationShell(): string {
           <span class="modal-step">Investigate → Define → Decide</span>
         </div>
         <p id="modal-event" class="event-callout"></p>
+        <section id="modal-intelligence-panel" class="intelligence-panel" data-state="preliminary" aria-live="polite">
+          <div class="intelligence-heading">
+            <div><p class="eyebrow">Intelligence picture</p><h3>Decide whether to verify before acting</h3></div>
+            <span id="intel-confidence" class="intel-confidence">Preliminary confidence</span>
+          </div>
+          <div class="intelligence-grid">
+            <article><span>Confirmed</span><p id="intel-confirmed"></p></article>
+            <article><span>Still uncertain</span><p id="intel-uncertainty"></p></article>
+            <article id="intel-forecast-card" class="forecast-locked"><span>Consequence forecast</span><p id="intel-forecast">Spend 1 Intel to verify the signal and improve the forecast.</p></article>
+          </div>
+          <button id="verify-intelligence-button" class="secondary-button compact" type="button">Verify signal · 1 Intel</button>
+          <small>Verification reduces uncertainty and the immediate disruption loss by 2 points, but the Intel cannot be used later.</small>
+        </section>
         <div class="four-part-grid">
           <article><h3>Why this matters</h3><p id="modal-why"></p></article>
           <article><h3>How it spreads</h3><p id="modal-how"></p></article>
