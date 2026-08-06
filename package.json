@@ -18,7 +18,7 @@
     "test:intelligence": "node scripts/test-intelligence-economy.mjs"
   },
   "dependencies": {
-    "phaser": "3.90.0"
+    "phaser": "4.2.1"
   },
   "devDependencies": {
     "typescript": "5.9.3",
