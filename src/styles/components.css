@@ -277,6 +277,17 @@ input::placeholder {
   gap: 2px;
 }
 
+.map-toolbar .map-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.map-toolbar-actions .secondary-button {
+  min-width: 118px;
+}
+
 .map-toolbar b {
   color: var(--text);
   font-size: 0.74rem;
@@ -291,6 +302,11 @@ input::placeholder {
   min-width: 154px;
   border-color: rgba(89, 183, 224, 0.52);
   background: linear-gradient(180deg, rgba(21, 58, 82, 0.96), rgba(12, 34, 53, 0.96));
+}
+
+.investigate-focus-button {
+  width: 100%;
+  margin-top: 14px;
 }
 
 .map-mode-button[data-mode="terrain"] {
