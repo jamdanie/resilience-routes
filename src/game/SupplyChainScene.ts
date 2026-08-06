@@ -149,6 +149,9 @@ export class SupplyChainScene extends Phaser.Scene {
     this.createPlayer();
     this.createControls();
     this.createPrompt();
+    this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
+      this.weatherLayer.inspectAt(pointer.worldX, pointer.worldY);
+    });
     this.game.events.on("cycle-map-mode", () => {
       const mode = this.surfaceLayer.cycleMode();
       this.game.events.emit("map-surface-mode", mode);

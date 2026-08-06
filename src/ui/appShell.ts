@@ -64,6 +64,9 @@ export function renderApplicationShell(): string {
           <a href="#project">Project</a>
         </nav>
         <div class="topbar-actions">
+          <div id="presence-indicator" class="presence-indicator" data-connected="true" title="This indicator only shows a global count when a presence service is configured.">
+            <i aria-hidden="true"></i><span id="presence-count">Live session</span>
+          </div>
           <button id="glossary-button" class="text-button" type="button">Glossary</button>
           <button id="return-home" class="secondary-button compact" type="button">Exit Mission</button>
         </div>
@@ -163,6 +166,22 @@ export function renderApplicationShell(): string {
             <span>Mission not launched</span><b>Seed will appear here</b>
           </div>
 
+          <section class="mission-command-strip" aria-label="Mission controls and local weather telemetry">
+            <div class="command-strip-identity">
+              <span>Response station</span>
+              <b id="operator-callsign">Response Lead · Standby</b>
+              <small id="command-state">Launch a scenario to connect mission controls.</small>
+            </div>
+            <div class="cursor-weather" aria-live="polite">
+              <div id="weather-cursor-gauge" class="weather-cursor-gauge" style="--weather-level:0%"><span id="weather-cursor-value">0</span><small>%</small></div>
+              <div><span>Weather at cursor</span><b id="weather-cursor-zone">Move across the map</b><small id="weather-cursor-condition">Localized exposure will appear here.</small></div>
+            </div>
+            <div class="command-strip-actions">
+              <button id="ops-reference-button" class="secondary-button compact" type="button">Quick reference</button>
+              <button id="pause-game-button" class="primary-button compact" type="button" disabled aria-pressed="false">Pause mission</button>
+            </div>
+          </section>
+
           <div class="exercise-grid">
             <div class="map-column">
               <div class="map-toolbar">
@@ -172,7 +191,10 @@ export function renderApplicationShell(): string {
                   <button id="map-detail-button" class="secondary-button compact map-mode-button" type="button" aria-label="Change operational map layer" disabled>Map: Infrastructure</button>
                 </div>
               </div>
-              <div id="game-canvas" class="game-canvas" aria-label="Interactive supply-chain network"></div>
+              <div class="game-stage">
+                <div id="game-canvas" class="game-canvas" aria-label="Interactive supply-chain network"></div>
+                <div id="pause-overlay" class="pause-overlay hidden" role="status"><span>Mission paused</span><b>The clock, weather, assets, and injects are holding.</b></div>
+              </div>
               <p class="canvas-disclaimer">The network, locations, incidents, and scores are fictional and intended only for education.</p>
             </div>
 
@@ -189,8 +211,9 @@ export function renderApplicationShell(): string {
                 <button id="investigate-focus-button" class="primary-button compact investigate-focus-button" type="button" disabled>Investigate selected node</button>
               </section>
 
-              <section class="asset-panel" aria-live="polite">
-                <div class="panel-title"><span>Live movements</span><i id="asset-status-dot" class="asset-status-dot"></i></div>
+              <details class="asset-panel operations-disclosure" aria-live="polite" open>
+                <summary class="panel-title"><span>Live movements</span><i id="asset-status-dot" class="asset-status-dot"></i></summary>
+                <div class="operations-disclosure-body">
                 <span id="asset-mode" class="intel-type">Asset tracking</span>
                 <h3 id="asset-name">Select a moving asset</h3>
                 <p id="asset-status" class="asset-status">Ships, aircraft, trains, and trucks continue moving behind the network nodes.</p>
@@ -209,10 +232,12 @@ export function renderApplicationShell(): string {
                 <div id="asset-status-board" class="asset-status-board">
                   <p class="asset-board-empty">Launch the scenario to connect the live movement board.</p>
                 </div>
-              </section>
+                </div>
+              </details>
 
-              <section id="weather-panel" class="weather-panel" data-phase="idle" aria-live="polite">
-                <div class="panel-title"><span>Weather disruption</span><i class="weather-pulse"></i></div>
+              <details id="weather-panel" class="weather-panel operations-disclosure" data-phase="idle" aria-live="polite" open>
+                <summary class="panel-title"><span>Weather disruption</span><i class="weather-pulse"></i></summary>
+                <div class="operations-disclosure-body">
                 <span id="weather-severity" class="intel-type">Forecast monitoring</span>
                 <h3 id="weather-title">High-wind system expected</h3>
                 <p id="weather-summary">Launch the scenario to track the storm across the regional network.</p>
@@ -221,14 +246,18 @@ export function renderApplicationShell(): string {
                   <div><dt>Area</dt><dd id="weather-area">Coastal and inland routes</dd></div>
                   <div><dt>Timing</dt><dd id="weather-timing">Awaiting launch</dd></div>
                 </dl>
-              </section>
+                </div>
+              </details>
 
-              <section class="incident-panel">
-                <div class="panel-title"><span>Mission log</span><button id="clear-log" type="button">Clear</button></div>
+              <details class="incident-panel operations-disclosure" open>
+                <summary class="panel-title"><span>Mission log</span><i class="disclosure-chevron" aria-hidden="true"></i></summary>
+                <div class="operations-disclosure-body">
+                <div class="panel-inline-actions"><span>Newest activity first</span><button id="clear-log" type="button">Clear</button></div>
                 <div id="mission-log" class="mission-log" aria-live="polite">
                   <article class="log-item info"><time>READY</time><p>Launch the scenario to initialize the operating picture.</p></article>
                 </div>
-              </section>
+                </div>
+              </details>
             </aside>
           </div>
         </section>

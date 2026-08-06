@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import type { MissionWeather, WeatherPhase, WeatherRunPlan, WeatherUpdate } from "./types";
+import type { MissionWeather, WeatherCursorUpdate, WeatherPhase, WeatherRunPlan, WeatherUpdate } from "./types";
 
 const CYCLE_SECONDS = 60;
 
@@ -40,6 +40,7 @@ export class WeatherSystemLayer {
   private phaseLabel!: Phaser.GameObjects.Text;
   private elapsedSeconds = 0;
   private lastPhase: WeatherPhase | null = null;
+  private lastCursorEmit = 0;
 
   constructor(
     scene: Phaser.Scene,
@@ -71,6 +72,29 @@ export class WeatherSystemLayer {
     const y = (this.runPlan?.trackY ?? 270) + Math.sin(cycleProgress * Math.PI * 2) * 42;
     this.stormContainer.setPosition(x, y);
     this.drawRain(cycleProgress);
+  }
+
+  inspectAt(x: number, y: number): void {
+    const now = performance.now();
+    if (now - this.lastCursorEmit < 80) return;
+    this.lastCursorEmit = now;
+
+    const distance = Phaser.Math.Distance.Between(x, y, this.stormContainer.x, this.stormContainer.y);
+    const intensity = Phaser.Math.Clamp(Math.round((1 - distance / 430) * 100), 0, 100);
+    const phase = this.lastPhase ?? "approaching";
+    const zone = x < 250 ? "Pacific approach" : x < 520 ? "Port and inland valley" : x < 760 ? "Cascade corridor" : "Airport and eastern routes";
+    const condition = intensity >= 75 ? "Severe exposure" : intensity >= 45 ? "Operational caution" : intensity >= 20 ? "Monitor conditions" : "Outside primary cell";
+    const proximity = distance < 150 ? "Inside storm influence" : distance < 300 ? "Near storm boundary" : "Clear of primary cell";
+    const update: WeatherCursorUpdate = {
+      x: Math.round(x),
+      y: Math.round(y),
+      zone,
+      intensity,
+      condition,
+      wind: this.weatherPayload(phase).wind,
+      proximity
+    };
+    this.scene.game.events.emit("weather-cursor", update);
   }
 
   private createStormGraphic(): void {
