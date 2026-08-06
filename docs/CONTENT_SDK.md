@@ -49,6 +49,8 @@ The folder name, manifest `id`, and mission `id` must be identical lowercase keb
 
 New injects also include a `contribution` block for authors, sources, and license. This metadata stays with the content even after a pull request is merged or files are reused in another mission.
 
+The scaffold includes an `intelligence` block. Contributors can define what is confirmed, what remains uncertain, what a verification check discovers, and the consequence forecast shown after the player spends Intel.
+
 ## Draft and playable status
 
 `draft` packs are validated but excluded from the in-game mission menu. This lets contributors submit work-in-progress structure without accidentally publishing it as a finished level. A maintainer changes the manifest to `playable` after content, accessibility, map, and gameplay review.

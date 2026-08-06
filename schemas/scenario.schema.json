@@ -68,6 +68,18 @@
         }
       }
     },
+    "intelligence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confidence", "confirmed", "uncertainty", "verificationFinding", "forecast"],
+      "properties": {
+        "confidence": { "enum": ["low", "moderate", "high"] },
+        "confirmed": { "$ref": "#/$defs/text" },
+        "uncertainty": { "$ref": "#/$defs/text" },
+        "verificationFinding": { "$ref": "#/$defs/text" },
+        "forecast": { "$ref": "#/$defs/text" }
+      }
+    },
     "contribution": {
       "type": "object",
       "additionalProperties": false,

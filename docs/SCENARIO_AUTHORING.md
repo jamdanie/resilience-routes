@@ -25,6 +25,7 @@ The simulator includes fictional Pacific Northwest and Gulf Coast / Texas missio
 | `responsePrinciple` | Reusable operational principle behind the recommended response |
 | `basePenalty` | Whole-number disruption severity from 1 through 30 |
 | `logisticsEffects` | Visible effects on current-region transportation assets |
+| `intelligence` | Optional authored confirmed signal, uncertainty, verification finding, and downstream forecast |
 
 ## Logistics effects
 
@@ -52,6 +53,10 @@ Allowed statuses:
 - `Rerouted`
 
 Every state needs a short operational reason. The status describes what the player sees; the reason teaches why it happened.
+
+## Intelligence picture
+
+When `intelligence` is present, the challenge uses the authored operating picture. `confirmed` states what is known, `uncertainty` states what remains incomplete or conflicting, `verificationFinding` is revealed after the player spends one Intel, and `forecast` describes the most likely downstream consequence. If the field is omitted, the game builds a compatible brief from the existing event, timing, location, and cascade steps.
 
 ## Resource costs
 

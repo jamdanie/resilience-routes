@@ -34,6 +34,16 @@ interface ChallengeRequest {
   scenario: Scenario;
   showHint: boolean;
   resources: ReturnType<StrategicResourceSystem["snapshot"]>;
+  intelligence: {
+    confidence: "low" | "moderate" | "high";
+    confirmed: string;
+    uncertainty: string;
+    verificationFinding: string;
+    forecast: string;
+    cost: number;
+    disruptionReduction: number;
+  };
+  verifyIntelligence: () => ReturnType<StrategicResourceSystem["snapshot"]> | null;
   scoring: {
     currentResilience: number;
     basePenalty: number;
@@ -42,7 +52,7 @@ interface ChallengeRequest {
     responseRecovery: number;
     wrongAnswerPenalty: number;
   };
-  resolve: (selectedIndex: number) => void;
+  resolve: (selectedIndex: number, intelligenceVerified: boolean) => void;
 }
 
 export class SupplyChainScene extends Phaser.Scene {
@@ -582,11 +592,23 @@ export class SupplyChainScene extends Phaser.Scene {
     const disruptionLoss = Math.round(
       node.scenario.basePenalty * this.settings.disruptionMultiplier
     );
+    const intelligence = this.intelligenceForScenario(node.scenario);
 
     const request: ChallengeRequest = {
       scenario: node.scenario,
       showHint: this.settings.showHints,
       resources: this.strategicResources.snapshot(),
+      intelligence,
+      verifyIntelligence: () => {
+        const update = this.strategicResources.spend({ intelligence: intelligence.cost });
+        if (!update) return null;
+        this.game.events.emit("resources-update", update);
+        this.game.events.emit("mission-log", {
+          level: "info",
+          text: `${node.scenario.title}: the response team committed ${intelligence.cost} Intel to verify the signal. ${intelligence.verificationFinding}`
+        });
+        return update;
+      },
       scoring: {
         currentResilience: this.resilience,
         basePenalty: node.scenario.basePenalty,
@@ -595,13 +617,14 @@ export class SupplyChainScene extends Phaser.Scene {
         responseRecovery: this.settings.correctAnswerRecovery,
         wrongAnswerPenalty: this.settings.wrongAnswerPenalty
       },
-      resolve: (selectedIndex: number) => this.resolveChallenge(node, selectedIndex)
+      resolve: (selectedIndex: number, intelligenceVerified: boolean) =>
+        this.resolveChallenge(node, selectedIndex, intelligenceVerified)
     };
 
     this.game.events.emit("show-challenge", request);
   }
 
-  private resolveChallenge(node: NodeView, selectedIndex: number): void {
+  private resolveChallenge(node: NodeView, selectedIndex: number, intelligenceVerified: boolean): void {
     if (node.completed || this.finished) return;
 
     const scenario = node.scenario;
@@ -618,9 +641,11 @@ export class SupplyChainScene extends Phaser.Scene {
     this.game.events.emit("resources-update", resourceUpdate);
     const correct = safeIndex === scenario.correctIndex;
     this.showResourceDeployment(node, resourceCost, correct);
-    const disruptionLoss = Math.round(
+    const rawDisruptionLoss = Math.round(
       scenario.basePenalty * this.settings.disruptionMultiplier
     );
+    const intelligenceReduction = intelligenceVerified ? 2 : 0;
+    const disruptionLoss = Math.max(1, rawDisruptionLoss - intelligenceReduction);
 
     const resilienceChange = correct
       ? Math.max(-2, this.settings.correctAnswerRecovery - disruptionLoss)
@@ -652,7 +677,11 @@ export class SupplyChainScene extends Phaser.Scene {
       node.status.setText("DEGRADED").setColor("#f0bd62");
     }
 
-    const resourceCommitment = formatResourceCost(resourceCost);
+    const recordedResourceCost = {
+      ...resourceCost,
+      intelligence: (resourceCost.intelligence ?? 0) + (intelligenceVerified ? 1 : 0)
+    };
+    const resourceCommitment = formatResourceCost(recordedResourceCost);
     const operationalConsequence = correct
       ? `${resourceCommitment} committed. The response stabilized the immediate dependency, but those resources are no longer available for later disruptions.`
       : `${resourceCommitment} committed without stabilizing the dependency. A downstream two-point resilience loss will occur before the next decision or final report.`;
@@ -668,15 +697,22 @@ export class SupplyChainScene extends Phaser.Scene {
       disruptionLoss,
       responseRecovery: correct ? this.settings.correctAnswerRecovery : 0,
       wrongAnswerPenalty: correct ? 0 : this.settings.wrongAnswerPenalty,
-      calculation: correct
-        ? this.settings.correctAnswerRecovery - disruptionLoss < -2
-          ? `${resilienceBefore} + ${this.settings.correctAnswerRecovery} - ${disruptionLoss} = ${resilienceBefore + this.settings.correctAnswerRecovery - disruptionLoss}; apply the −2 safeguard → ${this.resilience}`
-          : `${resilienceBefore} + ${this.settings.correctAnswerRecovery} - ${disruptionLoss} = ${this.resilience}`
-        : `${resilienceBefore} - ${disruptionLoss} - ${this.settings.wrongAnswerPenalty} = ${this.resilience}`,
+      calculation: `${intelligenceVerified ? `Verified loss: ${rawDisruptionLoss} − 2 = ${disruptionLoss}. ` : ""}${
+        correct
+          ? this.settings.correctAnswerRecovery - disruptionLoss < -2
+            ? `${resilienceBefore} + ${this.settings.correctAnswerRecovery} - ${disruptionLoss} = ${resilienceBefore + this.settings.correctAnswerRecovery - disruptionLoss}; apply the −2 safeguard → ${this.resilience}`
+            : `${resilienceBefore} + ${this.settings.correctAnswerRecovery} - ${disruptionLoss} = ${this.resilience}`
+          : `${resilienceBefore} - ${disruptionLoss} - ${this.settings.wrongAnswerPenalty} = ${this.resilience}`
+      }`,
       rationale: scenario.optionRationales[safeIndex] ?? scenario.takeaway,
       takeaway: scenario.takeaway,
-      resourcesSpent: { ...resourceCost },
+      resourcesSpent: recordedResourceCost,
       resourcesRemaining: { ...resourceUpdate.remaining },
+      intelligenceVerified,
+      intelligenceCost: intelligenceVerified ? 1 : 0,
+      intelligenceFinding: intelligenceVerified
+        ? this.intelligenceForScenario(scenario).verificationFinding
+        : "The decision was made from the preliminary operating picture.",
       operationalConsequence
     });
 
@@ -773,6 +809,19 @@ export class SupplyChainScene extends Phaser.Scene {
       ease: "Cubic.Out",
       onComplete: () => label.destroy()
     });
+  }
+
+  private intelligenceForScenario(scenario: Scenario): ChallengeRequest["intelligence"] {
+    const authored = scenario.intelligence;
+    return {
+      confidence: authored?.confidence ?? (scenario.basePenalty >= 18 ? "low" : "moderate"),
+      confirmed: authored?.confirmed ?? scenario.event,
+      uncertainty: authored?.uncertainty ?? `The first report has not confirmed the timing, available alternate capacity, or full downstream reach. ${scenario.how}`,
+      verificationFinding: authored?.verificationFinding ?? `${scenario.when} ${scenario.where}`,
+      forecast: authored?.forecast ?? scenario.cascadeSteps.slice(1).join(" → "),
+      cost: 1,
+      disruptionReduction: 2
+    };
   }
 
   private emitHud(): void {

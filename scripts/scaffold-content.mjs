@@ -66,6 +66,13 @@ async function createScenario() {
     example: "TODO: concrete example",
     whyItMatters: "TODO: operational importance",
   }));
+  scenario.intelligence = {
+    confidence: "low",
+    confirmed: "TODO: state what has been independently confirmed.",
+    uncertainty: "TODO: state what remains incomplete, conflicting, or unverified.",
+    verificationFinding: "TODO: state what the intelligence check confirms.",
+    forecast: "TODO: state the most likely downstream consequence after verification.",
+  };
   scenario.contribution = {
     authors: ["TODO: GitHub username or contributor name"],
     sources: ["Fictional exercise content."],

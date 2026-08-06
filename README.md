@@ -117,6 +117,12 @@ Every mission begins with a limited pool of funds, field crews, transportation c
 
 The after-action report records each commitment, what remained after every decision, downstream effects, and the final reserve percentage. Easy provides larger reserves, Medium uses balanced reserves, and Hard requires stronger prioritization.
 
+## Intelligence and uncertainty
+
+Injects begin with a preliminary operating picture. Before choosing a response, the player can spend one Intel to verify the signal, reveal a downstream consequence forecast, and reduce the immediate disruption loss by two points. The tradeoff is persistent: Intel used now is unavailable during later injects. The after-action report records which decisions were verified and which were made from preliminary information.
+
+Scenario authors can provide a custom intelligence brief in JSON. Existing injects remain compatible because the game can build a fallback brief from their event, timing, location, and cascade fields.
+
 ## Replayable mission generation
 
 Each run combines a regional mission pack with a seed. The seed determines which three disruptions are active, the answer order, operating condition, vehicle starting positions and direction, initial alternate route, weather path and timing, locally affected assets, and temporary inject schedule. Leaving the seed blank creates a new run. Reusing a seed with the same region reproduces the same setup for fair comparison, classroom discussion, and regression testing.
