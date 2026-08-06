@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import { difficultySettings } from "./config";
 import { AmbientEventSystem } from "./AmbientEventSystem";
 import { LiveLogisticsLayer } from "./LiveLogisticsLayer";
-import { MapSurfaceLayer } from "./MapSurfaceLayer";
+import { MapSurfaceLayer, type MapSurfaceMode } from "./MapSurfaceLayer";
 import { WeatherSystemLayer } from "./WeatherSystemLayer";
 import type {
   DecisionRecord,
@@ -127,9 +127,13 @@ export class SupplyChainScene extends Phaser.Scene {
     this.createPlayer();
     this.createControls();
     this.createPrompt();
-    this.game.events.on("toggle-map-detail", () => {
-      const visible = this.surfaceLayer.toggle();
-      this.game.events.emit("map-detail-state", visible);
+    this.game.events.on("cycle-map-mode", () => {
+      const mode = this.surfaceLayer.cycleMode();
+      this.game.events.emit("map-surface-mode", mode);
+    });
+    this.game.events.on("set-map-mode", (mode: MapSurfaceMode) => {
+      const selected = this.surfaceLayer.setMode(mode);
+      this.game.events.emit("map-surface-mode", selected);
     });
     this.emitHud();
 

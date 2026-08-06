@@ -172,8 +172,8 @@ export function bootstrapApplication(): void {
     missionSeedInput.disabled = false;
     newSeedButton.disabled = false;
     mapDetailButton.disabled = true;
-    mapDetailButton.textContent = "Terrain: On";
-    mapDetailButton.setAttribute("aria-pressed", "true");
+    mapDetailButton.textContent = "Map: Infrastructure";
+    mapDetailButton.dataset.mode = "infrastructure";
   };
 
   const restartExercise = (): void => {
@@ -259,7 +259,7 @@ export function bootstrapApplication(): void {
   requiredElement<HTMLButtonElement>("#glossary-button").addEventListener("click", glossary.open);
   requiredElement<HTMLButtonElement>("#glossary-button-secondary").addEventListener("click", glossary.open);
   requiredElement<HTMLButtonElement>("#guide-button").addEventListener("click", guide.open);
-  mapDetailButton.addEventListener("click", () => game?.events.emit("toggle-map-detail"));
+  mapDetailButton.addEventListener("click", () => game?.events.emit("cycle-map-mode"));
   requiredElement<HTMLButtonElement>("#mission-briefing-button").addEventListener("click", () => briefing.open(difficultySelect.value as Difficulty, selectedMission()));
   requiredElement<HTMLButtonElement>("#clear-log").addEventListener("click", () => missionLog.replaceChildren());
   clearHistoryButton.addEventListener("click", () => {
@@ -300,8 +300,8 @@ export function bootstrapApplication(): void {
     missionSeedInput.disabled = true;
     newSeedButton.disabled = true;
     mapDetailButton.disabled = false;
-    mapDetailButton.textContent = "Terrain: On";
-    mapDetailButton.setAttribute("aria-pressed", "true");
+    mapDetailButton.textContent = "Map: Infrastructure";
+    mapDetailButton.dataset.mode = "infrastructure";
     gameStatus.textContent = "Scenario loading. Investigate a node to begin.";
     missionLog.replaceChildren();
 
@@ -343,9 +343,11 @@ export function bootstrapApplication(): void {
       focusEvent.textContent = event.summary;
       focusTerms.innerHTML = `<b>Temporary network condition</b><span>Expected duration: ${event.durationSeconds} exercise seconds. The movement board shows the affected asset.</span>`;
     });
-    game.events.on("map-detail-state", (visible: boolean) => {
-      mapDetailButton.textContent = visible ? "Terrain: On" : "Terrain: Off";
-      mapDetailButton.setAttribute("aria-pressed", String(visible));
+    game.events.on("map-surface-mode", (mode: "infrastructure" | "terrain" | "minimal") => {
+      const label = mode === "infrastructure" ? "Infrastructure" : mode === "terrain" ? "Terrain" : "Minimal";
+      mapDetailButton.textContent = `Map: ${label}`;
+      mapDetailButton.dataset.mode = mode;
+      mapDetailButton.setAttribute("aria-label", `Current map layer: ${label}. Activate to change layer.`);
     });
     game.events.on("mission-started", (runPlan: MissionRunPlan) => {
       runIdentity.innerHTML = `<span>${runPlan.mission.region} · ${runPlan.condition.title}</span><b>Seed ${runPlan.seed} · ${runPlan.activeScenarioIds.length} decision injects · ${runPlan.ambientEvents.length} temporary injects</b>`;

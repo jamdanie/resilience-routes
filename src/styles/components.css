@@ -287,6 +287,23 @@ input::placeholder {
   font-size: 0.66rem;
 }
 
+.map-mode-button {
+  min-width: 154px;
+  border-color: rgba(89, 183, 224, 0.52);
+  background: linear-gradient(180deg, rgba(21, 58, 82, 0.96), rgba(12, 34, 53, 0.96));
+}
+
+.map-mode-button[data-mode="terrain"] {
+  border-color: rgba(123, 181, 126, 0.58);
+  color: #bce0bd;
+}
+
+.map-mode-button[data-mode="minimal"] {
+  border-color: var(--line);
+  color: var(--muted);
+  background: #0b1a2b;
+}
+
 .secondary-button:disabled {
   cursor: not-allowed;
   opacity: 0.52;

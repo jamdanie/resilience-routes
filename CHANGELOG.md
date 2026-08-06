@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.2.0
+
+- Replaced the abstract terrain background with a cartographic operational basemap
+- Added recognizable shorelines, coastal water, rivers or ship channels, wetlands, and terrain contours
+- Added mapped roads, highway shields, parallel rail lines, runways, taxiways, aprons, port basins, berths, warehouses, and industrial facilities
+- Added region-specific infrastructure and corridor labels, a north arrow, scale bar, and not-for-navigation notice
+- Added Infrastructure, Terrain, and Minimal map modes to balance realism and decision-card legibility
+- Kept the basemap self-contained so the simulator works on GitHub Pages without map API keys, billing, tracking, or third-party tile availability
+
 ## 6.1.1
 
 - Removed inactive standby cards from the live map while retaining the full scenario library

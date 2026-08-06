@@ -151,8 +151,8 @@ export function renderApplicationShell(): string {
           <div class="exercise-grid">
             <div class="map-column">
               <div class="map-toolbar">
-                <div><b>Interactive map</b><span>Click any visible node, vehicle, weather cell, or temporary inject.</span></div>
-                <button id="map-detail-button" class="secondary-button compact" type="button" aria-pressed="true" disabled>Terrain: On</button>
+                <div><b>Operational map</b><span>Roads, rail, runways, docks, terrain, vehicles, weather, and decision nodes.</span></div>
+                <button id="map-detail-button" class="secondary-button compact map-mode-button" type="button" aria-label="Change operational map layer" disabled>Map: Infrastructure</button>
               </div>
               <div id="game-canvas" class="game-canvas" aria-label="Interactive supply-chain network"></div>
               <p class="canvas-disclaimer">The network, locations, incidents, and scores are fictional and intended only for education.</p>

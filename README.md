@@ -1,6 +1,6 @@
 # Resilience Routes
 
-Resilience Routes is a portfolio-ready educational simulator about supply-chain interdependence, critical infrastructure, disruption, and recovery decisions. It includes two regional mission packs, seeded procedural runs, changing operating conditions, randomized logistics and localized weather, temporary injects, an optional terrain layer, and browser-local performance history.
+Resilience Routes is a portfolio-ready educational simulator about supply-chain interdependence, critical infrastructure, disruption, and recovery decisions. It includes two regional mission packs, seeded procedural runs, changing operating conditions, randomized logistics and localized weather, temporary injects, a layered operational basemap, and browser-local performance history.
 
 ## What this rebuild changes
 
@@ -111,6 +111,6 @@ Each run combines a regional mission pack with a seed. The seed determines which
 
 The current content library contains 16 complete decision injects and 10 temporary injects. Temporary events can create localized inclement weather, cost pressure, tariff reviews, labor unrest, human errors, and cyber-enabled fraud while the main exercise continues.
 
-The map remains fictional and does not load commercial map tiles. Players can toggle a region-informed terrain layer showing coastlines, water, higher terrain, wetlands, major corridors, and infrastructure zones without an API key or external tracking.
+The map remains fictional and does not load commercial map tiles. Players can cycle among Infrastructure, Terrain, and Minimal modes. The Infrastructure mode adds recognizable coastlines, ports and berths, roads, rail corridors, runways, cargo aprons, distribution buildings, rivers, wetlands, and labeled operating zones without an API key or external tracking.
 
 Completed runs are stored only in the current browser. The history panel compares region, difficulty, score, accuracy, operating condition, elapsed time, and seed without collecting personal information or using a server.
