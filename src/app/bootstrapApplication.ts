@@ -61,6 +61,8 @@ export function bootstrapApplication(): void {
   const returnHomeButton = requiredElement<HTMLButtonElement>("#return-home");
   const startGameButton = requiredElement<HTMLButtonElement>("#start-game");
   const mapDetailButton = requiredElement<HTMLButtonElement>("#map-detail-button");
+  const nodeLabelButton = requiredElement<HTMLButtonElement>("#node-label-button");
+  const investigateFocusButton = requiredElement<HTMLButtonElement>("#investigate-focus-button");
   const difficultySelect = requiredElement<HTMLSelectElement>("#difficulty");
   const missionSelect = requiredElement<HTMLSelectElement>("#mission-pack");
   const missionSeedInput = requiredElement<HTMLInputElement>("#mission-seed");
@@ -166,6 +168,9 @@ export function bootstrapApplication(): void {
     focusTitle.textContent = "Select an infrastructure node";
     focusEvent.textContent = "Hover over, approach, or select a node to preview the disruption located there.";
     focusTerms.innerHTML = `<b>Terms will be defined before the decision.</b><span>No prior supply-chain experience is required.</span>`;
+    investigateFocusButton.disabled = true;
+    investigateFocusButton.textContent = "Investigate selected node";
+    delete investigateFocusButton.dataset.scenarioId;
     missionLog.innerHTML = `<article class="log-item info"><time>READY</time><p>Launch the scenario to initialize the operating picture.</p></article>`;
     assetMode.textContent = "Asset tracking";
     assetName.textContent = "Select a moving asset";
@@ -202,6 +207,9 @@ export function bootstrapApplication(): void {
     mapDetailButton.disabled = true;
     mapDetailButton.textContent = "Map: Infrastructure";
     mapDetailButton.dataset.mode = "infrastructure";
+    nodeLabelButton.disabled = true;
+    nodeLabelButton.textContent = "Labels: Compact";
+    nodeLabelButton.dataset.mode = "compact";
   };
 
   const restartExercise = (): void => {
@@ -288,6 +296,11 @@ export function bootstrapApplication(): void {
   requiredElement<HTMLButtonElement>("#glossary-button-secondary").addEventListener("click", glossary.open);
   requiredElement<HTMLButtonElement>("#guide-button").addEventListener("click", guide.open);
   mapDetailButton.addEventListener("click", () => game?.events.emit("cycle-map-mode"));
+  nodeLabelButton.addEventListener("click", () => game?.events.emit("cycle-node-display"));
+  investigateFocusButton.addEventListener("click", () => {
+    const scenarioId = investigateFocusButton.dataset.scenarioId;
+    if (scenarioId) game?.events.emit("investigate-node", scenarioId);
+  });
   requiredElement<HTMLButtonElement>("#mission-briefing-button").addEventListener("click", () => briefing.open(difficultySelect.value as Difficulty, selectedMission()));
   requiredElement<HTMLButtonElement>("#clear-log").addEventListener("click", () => missionLog.replaceChildren());
   clearHistoryButton.addEventListener("click", () => {
@@ -330,6 +343,9 @@ export function bootstrapApplication(): void {
     mapDetailButton.disabled = false;
     mapDetailButton.textContent = "Map: Infrastructure";
     mapDetailButton.dataset.mode = "infrastructure";
+    nodeLabelButton.disabled = false;
+    nodeLabelButton.textContent = "Labels: Compact";
+    nodeLabelButton.dataset.mode = "compact";
     gameStatus.textContent = "Scenario loading. Investigate a node to begin.";
     missionLog.replaceChildren();
 
@@ -338,11 +354,18 @@ export function bootstrapApplication(): void {
     game.events.on("toggle-guide", guide.toggle);
     game.events.on("show-challenge", (request: ChallengeRequest) => challengeModal.show(request));
     game.events.on("hud-update", (update: HudUpdate) => updateHud(update));
-    game.events.on("node-focus", (scenario: Scenario) => {
+    game.events.on("node-focus", (scenario: Scenario, available = true) => {
       focusType.textContent = scenario.nodeType;
       focusTitle.textContent = scenario.title;
       focusEvent.textContent = scenario.event;
       focusTerms.innerHTML = `<b>${scenario.keyTerms.length} terms defined</b><span>${scenario.keyTerms.map((term) => term.term).join(" · ")}</span>`;
+      investigateFocusButton.dataset.scenarioId = scenario.id;
+      investigateFocusButton.disabled = !available;
+      investigateFocusButton.textContent = available ? "Investigate selected node" : "Node already addressed";
+    });
+    game.events.on("node-display-mode", (mode: "compact" | "detail") => {
+      nodeLabelButton.dataset.mode = mode;
+      nodeLabelButton.textContent = mode === "compact" ? "Labels: Compact" : "Labels: Detailed";
     });
     game.events.on("logistics-focus", (asset: LogisticsAssetInfo) => {
       assetMode.textContent = asset.mode;

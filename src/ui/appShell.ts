@@ -167,7 +167,10 @@ export function renderApplicationShell(): string {
             <div class="map-column">
               <div class="map-toolbar">
                 <div><b>Operational map</b><span>Roads, rail, runways, docks, terrain, vehicles, weather, and decision nodes.</span></div>
-                <button id="map-detail-button" class="secondary-button compact map-mode-button" type="button" aria-label="Change operational map layer" disabled>Map: Infrastructure</button>
+                <div class="map-toolbar-actions">
+                  <button id="node-label-button" class="secondary-button compact" type="button" aria-label="Change decision-node label density" disabled>Labels: Compact</button>
+                  <button id="map-detail-button" class="secondary-button compact map-mode-button" type="button" aria-label="Change operational map layer" disabled>Map: Infrastructure</button>
+                </div>
               </div>
               <div id="game-canvas" class="game-canvas" aria-label="Interactive supply-chain network"></div>
               <p class="canvas-disclaimer">The network, locations, incidents, and scores are fictional and intended only for education.</p>
@@ -183,6 +186,7 @@ export function renderApplicationShell(): string {
                   <b>Terms will be defined before the decision.</b>
                   <span>No prior supply-chain experience is required.</span>
                 </div>
+                <button id="investigate-focus-button" class="primary-button compact investigate-focus-button" type="button" disabled>Investigate selected node</button>
               </section>
 
               <section class="asset-panel" aria-live="polite">

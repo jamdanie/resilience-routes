@@ -19,9 +19,13 @@ import type {
 interface NodeView {
   scenario: Scenario;
   container: Phaser.GameObjects.Container;
+  shadow: Phaser.GameObjects.Rectangle;
   card: Phaser.GameObjects.Rectangle;
+  accent: Phaser.GameObjects.Rectangle;
+  type: Phaser.GameObjects.Text;
   status: Phaser.GameObjects.Text;
   label: Phaser.GameObjects.Text;
+  accentColor: number;
   active: boolean;
   completed: boolean;
 }
@@ -53,6 +57,8 @@ export class SupplyChainScene extends Phaser.Scene {
   private interactKey!: Phaser.Input.Keyboard.Key;
   private guideKey!: Phaser.Input.Keyboard.Key;
   private nodes: NodeView[] = [];
+  private focusedNode: NodeView | null = null;
+  private nodeDisplayMode: "compact" | "detail" = "compact";
   private promptText!: Phaser.GameObjects.Text;
   private challengeOpen = false;
   private resilience = 0;
@@ -140,6 +146,15 @@ export class SupplyChainScene extends Phaser.Scene {
     this.game.events.on("set-map-mode", (mode: MapSurfaceMode) => {
       const selected = this.surfaceLayer.setMode(mode);
       this.game.events.emit("map-surface-mode", selected);
+    });
+    this.game.events.on("cycle-node-display", () => {
+      this.nodeDisplayMode = this.nodeDisplayMode === "compact" ? "detail" : "compact";
+      this.nodes.forEach((node) => this.applyNodePresentation(node, this.nodeDisplayMode === "detail"));
+      this.game.events.emit("node-display-mode", this.nodeDisplayMode);
+    });
+    this.game.events.on("investigate-node", (scenarioId: string) => {
+      const node = this.nodes.find(({ scenario }) => scenario.id === scenarioId);
+      if (node) this.openChallenge(node);
     });
     this.emitHud();
     this.game.events.emit("resources-update", this.strategicResources.snapshot());
@@ -309,50 +324,50 @@ export class SupplyChainScene extends Phaser.Scene {
       const accentColor = Phaser.Display.Color.HexStringToColor(scenario.color).color;
 
       const shadow = this.add
-        .rectangle(3, 6, 164, 92, 0x020711, 0.35)
+        .rectangle(3, 5, 132, 64, 0x020711, 0.35)
         .setOrigin(0.5);
 
       const card = this.add
-        .rectangle(0, 0, 164, 92, 0x122238, 0.98)
+        .rectangle(0, 0, 132, 64, 0x122238, 0.96)
         .setStrokeStyle(2, 0x466681, 1)
         .setOrigin(0.5);
 
       const accent = this.add
-        .rectangle(-74, 0, 6, 70, accentColor, 1)
+        .rectangle(-59, 0, 5, 46, accentColor, 1)
         .setOrigin(0.5);
 
       const type = this.add
-        .text(-61, -28, scenario.nodeType.toUpperCase(), {
+        .text(-49, -19, scenario.nodeType.toUpperCase(), {
           fontFamily: "Arial, sans-serif",
-          fontSize: "9px",
+          fontSize: "8px",
           color: "#8ca4bc",
           fontStyle: "bold"
         })
         .setOrigin(0, 0.5);
 
       const label = this.add
-        .text(-61, 1, scenario.title, {
+        .text(-49, 0, scenario.title, {
           fontFamily: "Arial, sans-serif",
-          fontSize: "14px",
+          fontSize: "11px",
           color: "#f2f7ff",
           fontStyle: "bold",
-          wordWrap: { width: 122 }
+          wordWrap: { width: 96 }
         })
         .setOrigin(0, 0.5);
 
       const status = this.add
-        .text(-61, 31, "CLICK TO INVESTIGATE", {
+        .text(-49, 21, "SELECT", {
           fontFamily: "Arial, sans-serif",
-          fontSize: "9px",
+          fontSize: "8px",
           color: scenario.color,
           fontStyle: "bold"
         })
         .setOrigin(0, 0.5);
 
       container.add([shadow, card, accent, type, label, status]);
-      container.setSize(164, 92);
+      container.setSize(150, 82);
       container.setInteractive(
-        new Phaser.Geom.Rectangle(-90, -54, 180, 108),
+        new Phaser.Geom.Rectangle(-75, -41, 150, 82),
         Phaser.Geom.Rectangle.Contains
       );
       if (container.input) container.input.cursor = "pointer";
@@ -360,35 +375,69 @@ export class SupplyChainScene extends Phaser.Scene {
       const node: NodeView = {
         scenario,
         container,
+        shadow,
         card,
+        accent,
+        type,
         status,
         label,
+        accentColor,
         active: true,
         completed: false
       };
 
       container.on("pointerover", () => {
         if (!node.active) return;
+        this.setFocusedNode(node);
         if (!this.finished && !node.completed) {
           card.setStrokeStyle(2, accentColor, 1);
-          container.setScale(1.025);
+          container.setScale(1.035);
         }
-        this.game.events.emit("node-focus", scenario);
+        this.game.events.emit("node-focus", scenario, !node.completed);
       });
 
       container.on("pointerout", () => {
         if (this.finished || node.completed || !node.active) return;
+        if (this.focusedNode === node) this.setFocusedNode(null);
         card.setStrokeStyle(2, 0x466681, 1);
         container.setScale(1);
       });
 
       container.on("pointerdown", () => {
-        this.game.events.emit("node-focus", scenario);
+        this.setFocusedNode(node);
+        this.game.events.emit("node-focus", scenario, !node.completed);
         if (node.active && !node.completed) this.openChallenge(node);
       });
 
       return node;
     });
+  }
+
+  private setFocusedNode(node: NodeView | null): void {
+    if (this.focusedNode === node) return;
+    const previous = this.focusedNode;
+    this.focusedNode = node;
+    if (previous) this.applyNodePresentation(previous, this.nodeDisplayMode === "detail");
+    if (node) this.applyNodePresentation(node, true);
+  }
+
+  private applyNodePresentation(node: NodeView, expanded: boolean): void {
+    const width = expanded ? 164 : 132;
+    const height = expanded ? 88 : 64;
+    const left = expanded ? -61 : -49;
+    node.shadow.setSize(width, height).setPosition(3, expanded ? 6 : 5);
+    node.card.setSize(width, height);
+    node.accent.setSize(expanded ? 6 : 5, expanded ? 68 : 46).setX(expanded ? -74 : -59);
+    node.type.setPosition(left, expanded ? -27 : -19).setFontSize(expanded ? 9 : 8);
+    node.label
+      .setPosition(left, expanded ? 1 : 0)
+      .setFontSize(expanded ? 14 : 11)
+      .setWordWrapWidth(expanded ? 122 : 96);
+    node.status
+      .setPosition(left, expanded ? 30 : 21)
+      .setFontSize(expanded ? 9 : 8);
+    if (!node.completed) node.status.setText(expanded ? "CLICK TO INVESTIGATE" : "SELECT");
+    node.container.setDepth(expanded ? 5.25 : 4);
   }
 
   private createPlayer(): void {
@@ -476,7 +525,7 @@ export class SupplyChainScene extends Phaser.Scene {
 
     if (nearest && nearest.distance <= 105) {
       this.promptText.setText(`Press E to investigate ${nearest.node.scenario.title}`);
-      this.game.events.emit("node-focus", nearest.node.scenario);
+      this.game.events.emit("node-focus", nearest.node.scenario, true);
       return;
     }
 
@@ -519,11 +568,12 @@ export class SupplyChainScene extends Phaser.Scene {
     if (this.finished || this.resilience <= 0) return;
 
     this.challengeOpen = true;
+    this.setFocusedNode(node);
     node.card.setFillStyle(0x35212a, 1).setStrokeStyle(2, 0xff7d88, 1);
     node.status.setText("ACTIVE DISRUPTION").setColor("#ff9ca5");
 
     const transitions = this.logisticsLayer.applyScenarioDisruption(node.scenario.logisticsEffects);
-    this.game.events.emit("node-focus", node.scenario);
+    this.game.events.emit("node-focus", node.scenario, true);
     this.game.events.emit("mission-log", {
       level: "warning",
       text: `${node.scenario.title}: ${node.scenario.event} ${this.describeTransitions(transitions)}`
@@ -586,6 +636,7 @@ export class SupplyChainScene extends Phaser.Scene {
 
     node.completed = true;
     node.container.setScale(1);
+    this.game.events.emit("node-focus", node.scenario, false);
 
     this.completed += 1;
     this.challengeOpen = false;
@@ -765,7 +816,7 @@ export class SupplyChainScene extends Phaser.Scene {
         }))
         .find((candidate) =>
           placed.every((other) =>
-            Math.abs(candidate.x - other.x) >= 178 || Math.abs(candidate.y - other.y) >= 108
+            Math.abs(candidate.x - other.x) >= 148 || Math.abs(candidate.y - other.y) >= 82
           )
         ) ?? base;
       placed.push(position);

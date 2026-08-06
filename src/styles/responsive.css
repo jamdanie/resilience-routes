@@ -244,6 +244,11 @@
   .map-toolbar button {
     width: 100%;
   }
+
+  .map-toolbar .map-toolbar-actions {
+    width: 100%;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 900px) {
