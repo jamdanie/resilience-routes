@@ -126,6 +126,16 @@ export interface WeatherRunPlan {
   affectedAssetIds: string[];
 }
 
+export interface WeatherCursorUpdate {
+  x: number;
+  y: number;
+  zone: string;
+  intensity: number;
+  condition: string;
+  wind: string;
+  proximity: string;
+}
+
 export interface OperatingCondition {
   id: string;
   title: string;

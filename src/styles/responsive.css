@@ -49,6 +49,14 @@
     grid-row: 1;
   }
 
+  .mission-command-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .command-strip-actions {
+    grid-column: 1 / -1;
+  }
+
   .exercise-grid {
     grid-template-columns: 1fr;
   }
@@ -149,6 +157,28 @@
   .topbar-actions {
     order: 2;
     margin-left: auto;
+  }
+
+  .presence-indicator {
+    display: none;
+  }
+
+  .mission-command-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .cursor-weather {
+    padding: 12px 0 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .command-strip-actions {
+    grid-column: auto;
+  }
+
+  .command-strip-actions > * {
+    flex: 1;
   }
 
   .operations-sidebar,

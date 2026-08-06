@@ -17,8 +17,10 @@ import type {
   Scenario,
   StrategicResourceUpdate,
   StoredRunSummary,
+  WeatherCursorUpdate,
   WeatherUpdate
 } from "../game/types";
+import { createPresenceController } from "./presence";
 import { renderApplicationShell } from "../ui/appShell";
 import {
   createChallengeModalController,
@@ -94,16 +96,44 @@ export function bootstrapApplication(): void {
   const weatherArea = requiredElement<HTMLElement>("#weather-area");
   const weatherTiming = requiredElement<HTMLElement>("#weather-timing");
   const resourcePool = requiredElement<HTMLElement>("#resource-pool");
+  const pauseGameButton = requiredElement<HTMLButtonElement>("#pause-game-button");
+  const pauseOverlay = requiredElement<HTMLElement>("#pause-overlay");
+  const commandState = requiredElement<HTMLElement>("#command-state");
+  const operatorCallsign = requiredElement<HTMLElement>("#operator-callsign");
+  const weatherCursorGauge = requiredElement<HTMLElement>("#weather-cursor-gauge");
+  const weatherCursorValue = requiredElement<HTMLElement>("#weather-cursor-value");
+  const weatherCursorZone = requiredElement<HTMLElement>("#weather-cursor-zone");
+  const weatherCursorCondition = requiredElement<HTMLElement>("#weather-cursor-condition");
+  const presenceIndicator = requiredElement<HTMLElement>("#presence-indicator");
+  const presenceCount = requiredElement<HTMLElement>("#presence-count");
 
   const guide = createGuidePanelController();
   const glossary = createGlossaryPanelController();
   const challengeModal = createChallengeModalController();
+  const presence = createPresenceController(({ connected, active, label }) => {
+    presenceIndicator.dataset.connected = String(connected);
+    presenceCount.textContent = active === null ? label : `${active} ${label.toLowerCase()}`;
+  });
 
   let briefing: ReturnType<typeof createMissionBriefingController>;
 
   let game: Phaser.Game | null = null;
   let logCounter = 0;
   let currentRunPlan: MissionRunPlan | null = null;
+  let missionPaused = false;
+
+  const setPaused = (paused: boolean): void => {
+    if (!game) return;
+    missionPaused = paused;
+    if (paused) game.scene.pause("SupplyChainScene");
+    else game.scene.resume("SupplyChainScene");
+    pauseGameButton.setAttribute("aria-pressed", String(paused));
+    pauseGameButton.textContent = paused ? "Resume mission" : "Pause mission";
+    pauseOverlay.classList.toggle("hidden", !paused);
+    commandState.textContent = paused
+      ? "Operations are holding. Resume when you are ready."
+      : "Mission active · live systems updating";
+  };
 
   const resetResourceUi = (): void => {
     STRATEGIC_RESOURCE_KEYS.forEach((key) => {
@@ -188,6 +218,17 @@ export function bootstrapApplication(): void {
     weatherWind.textContent = "Forecast pending";
     weatherArea.textContent = "Coastal and inland routes";
     weatherTiming.textContent = "Awaiting launch";
+    weatherCursorGauge.style.setProperty("--weather-level", "0%");
+    weatherCursorValue.textContent = "0";
+    weatherCursorZone.textContent = "Move across the map";
+    weatherCursorCondition.textContent = "Localized exposure will appear here.";
+    operatorCallsign.textContent = "Response Lead · Standby";
+    commandState.textContent = "Launch a scenario to connect mission controls.";
+    pauseGameButton.disabled = true;
+    pauseGameButton.textContent = "Pause mission";
+    pauseGameButton.setAttribute("aria-pressed", "false");
+    pauseOverlay.classList.add("hidden");
+    missionPaused = false;
     runIdentity.innerHTML = `<span>${mission.name}</span><b>New random seed will be generated at launch</b>`;
     currentRunPlan = null;
     logCounter = 0;
@@ -210,6 +251,9 @@ export function bootstrapApplication(): void {
     nodeLabelButton.disabled = true;
     nodeLabelButton.textContent = "Labels: Compact";
     nodeLabelButton.dataset.mode = "compact";
+    pauseGameButton.disabled = true;
+    pauseOverlay.classList.add("hidden");
+    missionPaused = false;
   };
 
   const restartExercise = (): void => {
@@ -295,6 +339,8 @@ export function bootstrapApplication(): void {
   requiredElement<HTMLButtonElement>("#glossary-button").addEventListener("click", glossary.open);
   requiredElement<HTMLButtonElement>("#glossary-button-secondary").addEventListener("click", glossary.open);
   requiredElement<HTMLButtonElement>("#guide-button").addEventListener("click", guide.open);
+  requiredElement<HTMLButtonElement>("#ops-reference-button").addEventListener("click", guide.open);
+  pauseGameButton.addEventListener("click", () => setPaused(!missionPaused));
   mapDetailButton.addEventListener("click", () => game?.events.emit("cycle-map-mode"));
   nodeLabelButton.addEventListener("click", () => game?.events.emit("cycle-node-display"));
   investigateFocusButton.addEventListener("click", () => {
@@ -326,6 +372,7 @@ export function bootstrapApplication(): void {
     briefing.close();
     platformShell.classList.add("hidden");
     landingScreen.classList.remove("hidden");
+    presence.setMission(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
 
@@ -346,6 +393,11 @@ export function bootstrapApplication(): void {
     nodeLabelButton.disabled = false;
     nodeLabelButton.textContent = "Labels: Compact";
     nodeLabelButton.dataset.mode = "compact";
+    pauseGameButton.disabled = false;
+    pauseGameButton.textContent = "Pause mission";
+    pauseGameButton.setAttribute("aria-pressed", "false");
+    pauseOverlay.classList.add("hidden");
+    missionPaused = false;
     gameStatus.textContent = "Scenario loading. Investigate a node to begin.";
     missionLog.replaceChildren();
 
@@ -391,6 +443,14 @@ export function bootstrapApplication(): void {
       weatherArea.textContent = weather.affectedArea;
       weatherTiming.textContent = weather.timing;
     });
+    game.events.on("weather-cursor", (weather: WeatherCursorUpdate) => {
+      weatherCursorGauge.style.setProperty("--weather-level", `${weather.intensity}%`);
+      weatherCursorGauge.dataset.level = weather.intensity >= 70 ? "severe" : weather.intensity >= 35 ? "caution" : "clear";
+      weatherCursorValue.textContent = String(weather.intensity);
+      weatherCursorZone.textContent = weather.zone;
+      weatherCursorCondition.textContent = `${weather.condition} · ${weather.proximity}`;
+      weatherCursorGauge.title = `${weather.zone}: ${weather.intensity}% localized weather exposure. ${weather.wind}`;
+    });
     game.events.on("ambient-event-focus", (event: { kind: string; title: string; summary: string; durationSeconds: number }) => {
       focusType.textContent = `${event.kind} inject`;
       focusTitle.textContent = event.title;
@@ -405,6 +465,9 @@ export function bootstrapApplication(): void {
     });
     game.events.on("mission-started", (runPlan: MissionRunPlan) => {
       runIdentity.innerHTML = `<span>${runPlan.mission.region} · ${runPlan.condition.title}</span><b>Seed ${runPlan.seed} · ${runPlan.activeScenarioIds.length} decision injects · ${runPlan.ambientEvents.length} temporary injects</b>`;
+      operatorCallsign.textContent = `Response Lead · ${runPlan.mission.region}`;
+      commandState.textContent = "Mission active · live systems updating";
+      presence.setMission(runPlan.mission.id);
     });
     game.events.on("decision-result", (result: DecisionResult) => {
       const direction = result.resilienceChange >= 0 ? "+" : "";
@@ -417,7 +480,13 @@ export function bootstrapApplication(): void {
     game.events.on("game-ready", () => {
       gameStatus.textContent = "Scenario active. Every visible node can be clicked, or you can move nearby and press E.";
     });
-    game.events.on("game-complete", (report: GameReport) => reportModal.show(report));
+    game.events.on("game-complete", (report: GameReport) => {
+      pauseGameButton.disabled = true;
+      pauseOverlay.classList.add("hidden");
+      commandState.textContent = "Mission complete · after-action review ready";
+      presence.setMission(null);
+      reportModal.show(report);
+    });
 
     document.querySelector("#exercise")?.scrollIntoView({ behavior: "smooth" });
   });
