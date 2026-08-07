@@ -64,6 +64,7 @@ src/
 ├── game/
 │   ├── config.ts
 │   ├── createSupplyChainGame.ts
+│   ├── ConsequenceLensLayer.ts
 │   ├── LiveLogisticsLayer.ts
 │   ├── AmbientEventSystem.ts
 │   ├── MapSurfaceLayer.ts
@@ -139,6 +140,12 @@ Completed runs are stored only in the current browser. The history panel compare
 The exercise interface includes a live mission pulse for active and upcoming temporary injects, tactical map zoom from 100% to 160%, and a distraction-free map focus mode. A searchable command palette gives mouse, touch, and keyboard users the same controls without hunting through the interface.
 
 Open the command palette with `Ctrl K` (or `Command K` on macOS). During an active mission, use `P` to pause, `F` to focus the map, `L` to cycle map layers, `N` to change node labels, `+` / `-` / `0` to control zoom, `M` for quick reference, and `G` for the glossary. The decision window pauses the mission clock, weather, assets, and temporary inject schedule together so the displayed timeline remains accurate.
+
+## Network consequence lens
+
+Selecting a decision node now traces the physical routes connected to that location, animates the direction of exposure, dims unrelated map activity, and summarizes connected infrastructure, affected movements, intelligence confidence, and the likely downstream consequence. Press `C` or use the map toolbar to turn the lens off when the full operating picture is needed.
+
+The lens is derived from the mission's existing route geometry, scenario coordinates, logistics effects, cascade steps, and intelligence brief. Contributors do not need to add a separate consequence-lens section to their JSON. Movement-board rows are also keyboard and mouse selectable, so an asset can be focused from the sidebar without finding its moving icon on the map.
 
 ## Community content SDK
 

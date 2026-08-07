@@ -8,6 +8,7 @@ import {
   STRATEGIC_RESOURCE_LABELS
 } from "../game/StrategicResourceSystem";
 import type {
+  ConsequenceLensUpdate,
   Difficulty,
   GameReport,
   HudUpdate,
@@ -64,6 +65,7 @@ export function bootstrapApplication(): void {
   const returnHomeButton = requiredElement<HTMLButtonElement>("#return-home");
   const startGameButton = requiredElement<HTMLButtonElement>("#start-game");
   const mapDetailButton = requiredElement<HTMLButtonElement>("#map-detail-button");
+  const consequenceLensButton = requiredElement<HTMLButtonElement>("#consequence-lens-button");
   const nodeLabelButton = requiredElement<HTMLButtonElement>("#node-label-button");
   const zoomOutButton = requiredElement<HTMLButtonElement>("#zoom-out-button");
   const zoomResetButton = requiredElement<HTMLButtonElement>("#zoom-reset-button");
@@ -115,6 +117,13 @@ export function bootstrapApplication(): void {
   const missionPulse = requiredElement<HTMLElement>("#mission-pulse");
   const missionPulseTitle = requiredElement<HTMLElement>("#mission-pulse-title");
   const missionPulseCountdown = requiredElement<HTMLElement>("#mission-pulse-countdown");
+  const consequenceLensPanel = requiredElement<HTMLElement>("#consequence-lens-panel");
+  const lensExposure = requiredElement<HTMLElement>("#lens-exposure");
+  const lensRouteCount = requiredElement<HTMLElement>("#lens-route-count");
+  const lensAssetCount = requiredElement<HTMLElement>("#lens-asset-count");
+  const lensConfidence = requiredElement<HTMLElement>("#lens-confidence");
+  const lensConnections = requiredElement<HTMLElement>("#lens-connections");
+  const lensConsequence = requiredElement<HTMLElement>("#lens-consequence");
 
   const guide = createGuidePanelController();
   const glossary = createGlossaryPanelController();
@@ -241,6 +250,13 @@ export function bootstrapApplication(): void {
     focusTitle.textContent = "Select an infrastructure node";
     focusEvent.textContent = "Hover over, approach, or select a node to preview the disruption located there.";
     focusTerms.innerHTML = `<b>Terms will be defined before the decision.</b><span>No prior supply-chain experience is required.</span>`;
+    consequenceLensPanel.dataset.exposure = "standby";
+    lensExposure.textContent = "Standby";
+    lensRouteCount.textContent = "—";
+    lensAssetCount.textContent = "—";
+    lensConfidence.textContent = "—";
+    lensConnections.innerHTML = `<span>Select a node to trace its dependencies.</span>`;
+    lensConsequence.textContent = "The map will highlight exposed routes and dim unrelated activity.";
     investigateFocusButton.disabled = true;
     investigateFocusButton.textContent = "Investigate selected node";
     delete investigateFocusButton.dataset.scenarioId;
@@ -295,6 +311,9 @@ export function bootstrapApplication(): void {
     mapDetailButton.disabled = true;
     mapDetailButton.textContent = "Map: Infrastructure";
     mapDetailButton.dataset.mode = "infrastructure";
+    consequenceLensButton.disabled = true;
+    consequenceLensButton.textContent = "Impact lens: On";
+    consequenceLensButton.setAttribute("aria-pressed", "true");
     nodeLabelButton.disabled = true;
     nodeLabelButton.textContent = "Labels: Compact";
     nodeLabelButton.dataset.mode = "compact";
@@ -351,6 +370,10 @@ export function bootstrapApplication(): void {
       const row = document.createElement("article");
       row.className = "asset-board-row";
       row.dataset.status = asset.status.toLowerCase().replaceAll(" ", "-");
+      row.dataset.assetId = asset.id;
+      row.tabIndex = 0;
+      row.setAttribute("role", "button");
+      row.setAttribute("aria-label", `Focus ${asset.name}, ${asset.status}`);
 
       const identity = document.createElement("span");
       const name = document.createElement("b");
@@ -370,6 +393,18 @@ export function bootstrapApplication(): void {
       assetStatusBoard.append(row);
     });
   };
+
+  const focusMovementBoardAsset = (target: EventTarget | null): void => {
+    const row = (target as HTMLElement | null)?.closest<HTMLElement>("[data-asset-id]");
+    if (row?.dataset.assetId) game?.events.emit("focus-logistics-asset", row.dataset.assetId);
+  };
+
+  assetStatusBoard.addEventListener("click", (event) => focusMovementBoardAsset(event.target));
+  assetStatusBoard.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    focusMovementBoardAsset(event.target);
+  });
 
   startExerciseButton.addEventListener("click", () => {
     setMission(landingMissionSelect.value);
@@ -392,6 +427,7 @@ export function bootstrapApplication(): void {
   requiredElement<HTMLButtonElement>("#ops-reference-button").addEventListener("click", guide.open);
   pauseGameButton.addEventListener("click", () => setPaused(!missionPaused));
   mapDetailButton.addEventListener("click", () => game?.events.emit("cycle-map-mode"));
+  consequenceLensButton.addEventListener("click", () => game?.events.emit("toggle-consequence-lens"));
   nodeLabelButton.addEventListener("click", () => game?.events.emit("cycle-node-display"));
   zoomOutButton.addEventListener("click", () => game?.events.emit("map-zoom-step", -0.1));
   zoomResetButton.addEventListener("click", () => game?.events.emit("map-zoom-reset"));
@@ -444,6 +480,9 @@ export function bootstrapApplication(): void {
     mapDetailButton.disabled = false;
     mapDetailButton.textContent = "Map: Infrastructure";
     mapDetailButton.dataset.mode = "infrastructure";
+    consequenceLensButton.disabled = false;
+    consequenceLensButton.textContent = "Impact lens: On";
+    consequenceLensButton.setAttribute("aria-pressed", "true");
     nodeLabelButton.disabled = false;
     nodeLabelButton.textContent = "Labels: Compact";
     nodeLabelButton.dataset.mode = "compact";
@@ -523,6 +562,45 @@ export function bootstrapApplication(): void {
       mapDetailButton.dataset.mode = mode;
       mapDetailButton.setAttribute("aria-label", `Current map layer: ${label}. Activate to change layer.`);
     });
+    game.events.on("consequence-lens-state", (enabled: boolean) => {
+      consequenceLensButton.textContent = `Impact lens: ${enabled ? "On" : "Off"}`;
+      consequenceLensButton.setAttribute("aria-pressed", String(enabled));
+      consequenceLensButton.dataset.enabled = String(enabled);
+    });
+    game.events.on("consequence-lens-update", (update: ConsequenceLensUpdate | null) => {
+      if (!update) {
+        consequenceLensPanel.dataset.exposure = "standby";
+        lensExposure.textContent = "Standby";
+        lensRouteCount.textContent = "—";
+        lensAssetCount.textContent = "—";
+        lensConfidence.textContent = "—";
+        lensConnections.innerHTML = `<span>Select a node to trace its dependencies.</span>`;
+        lensConsequence.textContent = "The map will highlight exposed routes and dim unrelated activity.";
+        return;
+      }
+      consequenceLensPanel.dataset.exposure = update.exposure;
+      lensExposure.textContent = `${update.exposure.charAt(0).toUpperCase()}${update.exposure.slice(1)} exposure`;
+      lensRouteCount.textContent = String(update.routeCount);
+      lensAssetCount.textContent = String(update.affectedAssets.length);
+      lensConfidence.textContent = `${update.confidence.charAt(0).toUpperCase()}${update.confidence.slice(1)}`;
+      lensConnections.replaceChildren();
+      if (update.connectedNodes.length === 0) {
+        lensConnections.innerHTML = `<span>No additional decision node is directly connected.</span>`;
+      } else {
+        update.connectedNodes.forEach((node) => {
+          const chip = document.createElement("span");
+          chip.textContent = `${node.nodeType}: ${node.title}`;
+          lensConnections.append(chip);
+        });
+      }
+      if (update.affectedAssets.length > 0) {
+        const chip = document.createElement("span");
+        chip.dataset.kind = "movement";
+        chip.textContent = `Movements: ${update.affectedAssets.join(", ")}`;
+        lensConnections.append(chip);
+      }
+      lensConsequence.textContent = update.consequence;
+    });
     game.events.on("map-zoom-update", (zoom: number) => {
       zoomResetButton.textContent = `${Math.round(zoom * 100)}%`;
       zoomOutButton.disabled = zoom <= 1;
@@ -563,6 +641,7 @@ export function bootstrapApplication(): void {
       focus: () => { if (!mapFocusButton.disabled) setMapFocus(!mapFocusActive); },
       map: () => { if (!mapDetailButton.disabled) game?.events.emit("cycle-map-mode"); },
       labels: () => { if (!nodeLabelButton.disabled) game?.events.emit("cycle-node-display"); },
+      lens: () => { if (!consequenceLensButton.disabled) game?.events.emit("toggle-consequence-lens"); },
       "zoom-in": () => { if (!zoomInButton.disabled) game?.events.emit("map-zoom-step", 0.1); },
       "zoom-out": () => { if (!zoomOutButton.disabled) game?.events.emit("map-zoom-step", -0.1); },
       "zoom-reset": () => { if (!zoomResetButton.disabled) game?.events.emit("map-zoom-reset"); },
@@ -595,6 +674,7 @@ export function bootstrapApplication(): void {
       f: "focus",
       l: "map",
       n: "labels",
+      c: "lens",
       "+": "zoom-in",
       "=": "zoom-in",
       "-": "zoom-out",
