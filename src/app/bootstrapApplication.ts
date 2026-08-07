@@ -1,6 +1,12 @@
 import type Phaser from "phaser";
 import { defaultMission, getMissionPack, missionPacks } from "../data/missions";
 import { createSupplyChainGame } from "../game/createSupplyChainGame";
+import {
+  buildOperatingPictureGeoJson,
+  formatCoordinate,
+  haversineMiles,
+  screenToGeographic
+} from "../game/geo";
 import { createMissionRunPlan, createMissionSeed } from "../game/randomization";
 import { clearRunHistory, loadRunHistory, saveRunReport } from "../game/runHistory";
 import {
@@ -10,7 +16,11 @@ import {
 import type {
   ConsequenceLensUpdate,
   Difficulty,
+  GeoCursorUpdate,
+  GeoIdentifyUpdate,
+  GeoMeasurementUpdate,
   GameReport,
+  GisToolMode,
   HudUpdate,
   LogisticsAssetInfo,
   LogisticsSnapshot,
@@ -65,6 +75,7 @@ export function bootstrapApplication(): void {
   const returnHomeButton = requiredElement<HTMLButtonElement>("#return-home");
   const startGameButton = requiredElement<HTMLButtonElement>("#start-game");
   const mapDetailButton = requiredElement<HTMLButtonElement>("#map-detail-button");
+  const gisToolsButton = requiredElement<HTMLButtonElement>("#gis-tools-button");
   const consequenceLensButton = requiredElement<HTMLButtonElement>("#consequence-lens-button");
   const nodeLabelButton = requiredElement<HTMLButtonElement>("#node-label-button");
   const zoomOutButton = requiredElement<HTMLButtonElement>("#zoom-out-button");
@@ -124,6 +135,17 @@ export function bootstrapApplication(): void {
   const lensConfidence = requiredElement<HTMLElement>("#lens-confidence");
   const lensConnections = requiredElement<HTMLElement>("#lens-connections");
   const lensConsequence = requiredElement<HTMLElement>("#lens-consequence");
+  const gisPanel = requiredElement<HTMLElement>("#gis-panel");
+  const gisCoordinate = requiredElement<HTMLElement>("#gis-coordinate");
+  const gisGridReference = requiredElement<HTMLElement>("#gis-grid-reference");
+  const gisCrs = requiredElement<HTMLElement>("#gis-crs");
+  const gisScaleLabel = requiredElement<HTMLElement>("#gis-scale-label");
+  const gisResultTitle = requiredElement<HTMLElement>("#gis-result-title");
+  const gisResultDetail = requiredElement<HTMLElement>("#gis-result-detail");
+  const gisGridLayer = requiredElement<HTMLInputElement>("#gis-grid-layer");
+  const gisWeatherLayer = requiredElement<HTMLInputElement>("#gis-weather-layer");
+  const gisLogisticsLayer = requiredElement<HTMLInputElement>("#gis-logistics-layer");
+  const exportGeoJsonButton = requiredElement<HTMLButtonElement>("#export-geojson-button");
 
   const guide = createGuidePanelController();
   const glossary = createGlossaryPanelController();
@@ -138,8 +160,48 @@ export function bootstrapApplication(): void {
   let game: Phaser.Game | null = null;
   let logCounter = 0;
   let currentRunPlan: MissionRunPlan | null = null;
+  let currentLogisticsSnapshot: LogisticsSnapshot | null = null;
   let missionPaused = false;
   let mapFocusActive = false;
+  let gisTool: GisToolMode = "navigate";
+
+  const setGisPanel = (open: boolean): void => {
+    if (open && gisToolsButton.disabled) return;
+    gisPanel.classList.toggle("hidden", !open);
+    gisPanel.setAttribute("aria-hidden", String(!open));
+    gisToolsButton.setAttribute("aria-expanded", String(open));
+    gisToolsButton.dataset.active = String(open);
+  };
+
+  const setGisTool = (tool: GisToolMode): void => {
+    gisTool = tool;
+    gisPanel.querySelectorAll<HTMLButtonElement>("[data-gis-tool]").forEach((button) => {
+      button.dataset.active = String(button.dataset.gisTool === tool);
+    });
+    game?.events.emit("set-gis-tool", tool);
+    gisResultTitle.textContent = tool === "identify" ? "Click the map to identify" : tool === "measure" ? "Click a start point" : "Navigation active";
+    gisResultDetail.textContent = tool === "identify"
+      ? "The workbench will report coordinates and the nearest active decision node."
+      : tool === "measure"
+        ? "Select two map locations to calculate approximate great-circle distance."
+        : "Decision nodes and moving assets respond normally to clicks.";
+  };
+
+  const exportOperatingPicture = (): void => {
+    if (!currentRunPlan) return;
+    const data = buildOperatingPictureGeoJson(currentRunPlan, currentLogisticsSnapshot);
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/geo+json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${currentRunPlan.mission.id}-${currentRunPlan.seed.toLowerCase()}-operating-picture.geojson`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    gisResultTitle.textContent = "Operating picture exported";
+    gisResultDetail.textContent = `${data.features.length} GIS features saved as standards-compatible GeoJSON.`;
+  };
 
   const setMapFocus = (active: boolean): void => {
     if (!game && active) return;
@@ -281,6 +343,18 @@ export function bootstrapApplication(): void {
     weatherCursorValue.textContent = "0";
     weatherCursorZone.textContent = "Move across the map";
     weatherCursorCondition.textContent = "Localized exposure will appear here.";
+    gisCoordinate.textContent = "Geographic cursor awaiting mission";
+    gisGridReference.textContent = "GRID —";
+    gisCrs.textContent = `${mission.geography.crs} · ${mission.geography.referenceName}`;
+    gisScaleLabel.textContent = "Approx. scale";
+    gisResultTitle.textContent = "Choose Identify or Measure";
+    gisResultDetail.textContent = "Identify finds the nearest active node. Measure calculates an approximate great-circle distance.";
+    gisGridLayer.checked = false;
+    gisWeatherLayer.checked = true;
+    gisLogisticsLayer.checked = true;
+    currentLogisticsSnapshot = null;
+    setGisTool("navigate");
+    setGisPanel(false);
     missionPulse.dataset.kind = "standby";
     missionPulseTitle.textContent = "Inject schedule offline";
     missionPulseCountdown.textContent = "Launch a mission to begin";
@@ -314,6 +388,8 @@ export function bootstrapApplication(): void {
     consequenceLensButton.disabled = true;
     consequenceLensButton.textContent = "Impact lens: On";
     consequenceLensButton.setAttribute("aria-pressed", "true");
+    gisToolsButton.disabled = true;
+    setGisPanel(false);
     nodeLabelButton.disabled = true;
     nodeLabelButton.textContent = "Labels: Compact";
     nodeLabelButton.dataset.mode = "compact";
@@ -426,6 +502,20 @@ export function bootstrapApplication(): void {
   requiredElement<HTMLButtonElement>("#guide-button").addEventListener("click", guide.open);
   requiredElement<HTMLButtonElement>("#ops-reference-button").addEventListener("click", guide.open);
   pauseGameButton.addEventListener("click", () => setPaused(!missionPaused));
+  gisToolsButton.addEventListener("click", () => setGisPanel(gisPanel.classList.contains("hidden")));
+  requiredElement<HTMLButtonElement>("#close-gis-panel").addEventListener("click", () => setGisPanel(false));
+  gisPanel.querySelectorAll<HTMLButtonElement>("[data-gis-tool]").forEach((button) => {
+    button.addEventListener("click", () => setGisTool(button.dataset.gisTool as GisToolMode));
+  });
+  gisGridLayer.addEventListener("change", () => game?.events.emit("set-gis-grid-visible", gisGridLayer.checked));
+  gisWeatherLayer.addEventListener("change", () => game?.events.emit("set-weather-layer-visible", gisWeatherLayer.checked));
+  gisLogisticsLayer.addEventListener("change", () => game?.events.emit("set-logistics-layer-visible", gisLogisticsLayer.checked));
+  requiredElement<HTMLButtonElement>("#clear-gis-button").addEventListener("click", () => {
+    game?.events.emit("clear-gis-analysis");
+    gisResultTitle.textContent = "Analysis cleared";
+    gisResultDetail.textContent = gisTool === "measure" ? "Click a new start point." : "Choose a location to inspect.";
+  });
+  exportGeoJsonButton.addEventListener("click", exportOperatingPicture);
   mapDetailButton.addEventListener("click", () => game?.events.emit("cycle-map-mode"));
   consequenceLensButton.addEventListener("click", () => game?.events.emit("toggle-consequence-lens"));
   nodeLabelButton.addEventListener("click", () => game?.events.emit("cycle-node-display"));
@@ -483,6 +573,12 @@ export function bootstrapApplication(): void {
     consequenceLensButton.disabled = false;
     consequenceLensButton.textContent = "Impact lens: On";
     consequenceLensButton.setAttribute("aria-pressed", "true");
+    gisToolsButton.disabled = false;
+    gisCrs.textContent = `${currentRunPlan.mission.geography.crs} · ${currentRunPlan.mission.geography.referenceName}`;
+    const scaleStart = screenToGeographic(430, 350, currentRunPlan.mission.geography);
+    const scaleEnd = screenToGeographic(530, 350, currentRunPlan.mission.geography);
+    gisScaleLabel.textContent = `≈ ${Math.round(haversineMiles(scaleStart, scaleEnd))} mi`;
+    setGisTool("navigate");
     nodeLabelButton.disabled = false;
     nodeLabelButton.textContent = "Labels: Compact";
     nodeLabelButton.dataset.mode = "compact";
@@ -528,7 +624,26 @@ export function bootstrapApplication(): void {
       assetDefinition.innerHTML = `<b>${asset.mode}</b><span>${asset.meaning}</span>`;
     });
     game.events.on("logistics-snapshot", (snapshot: LogisticsSnapshot) => {
+      currentLogisticsSnapshot = snapshot;
       renderLogisticsSnapshot(snapshot);
+    });
+    game.events.on("gis-cursor", (cursor: GeoCursorUpdate) => {
+      gisCoordinate.textContent = `${formatCoordinate(cursor.latitude, "N", "S")} · ${formatCoordinate(cursor.longitude, "E", "W")}`;
+      gisGridReference.textContent = `GRID ${cursor.gridReference}`;
+    });
+    game.events.on("gis-identify", (result: GeoIdentifyUpdate | null) => {
+      if (!result) return;
+      gisResultTitle.textContent = `${result.nodeType}: ${result.nearestNode}`;
+      gisResultDetail.textContent = `Grid ${result.gridReference} · ${formatCoordinate(result.latitude, "N", "S")}, ${formatCoordinate(result.longitude, "E", "W")} · approximately ${result.distanceMiles.toFixed(1)} mi from the node.`;
+    });
+    game.events.on("gis-measurement", (result: GeoMeasurementUpdate) => {
+      if (result.state === "awaiting-second") {
+        gisResultTitle.textContent = "Start point recorded";
+        gisResultDetail.textContent = `Grid ${result.start?.gridReference ?? "—"}. Click the destination point.`;
+      } else if (result.state === "complete") {
+        gisResultTitle.textContent = `${result.distanceMiles?.toFixed(1) ?? "—"} miles`;
+        gisResultDetail.textContent = `Approximate great-circle distance from grid ${result.start?.gridReference} to ${result.end?.gridReference}.`;
+      }
     });
     game.events.on("resources-update", (update: StrategicResourceUpdate) => {
       renderResources(update);
@@ -642,6 +757,7 @@ export function bootstrapApplication(): void {
       map: () => { if (!mapDetailButton.disabled) game?.events.emit("cycle-map-mode"); },
       labels: () => { if (!nodeLabelButton.disabled) game?.events.emit("cycle-node-display"); },
       lens: () => { if (!consequenceLensButton.disabled) game?.events.emit("toggle-consequence-lens"); },
+      gis: () => setGisPanel(gisPanel.classList.contains("hidden")),
       "zoom-in": () => { if (!zoomInButton.disabled) game?.events.emit("map-zoom-step", 0.1); },
       "zoom-out": () => { if (!zoomOutButton.disabled) game?.events.emit("map-zoom-step", -0.1); },
       "zoom-reset": () => { if (!zoomResetButton.disabled) game?.events.emit("map-zoom-reset"); },
@@ -675,6 +791,7 @@ export function bootstrapApplication(): void {
       l: "map",
       n: "labels",
       c: "lens",
+      i: "gis",
       "+": "zoom-in",
       "=": "zoom-in",
       "-": "zoom-out",

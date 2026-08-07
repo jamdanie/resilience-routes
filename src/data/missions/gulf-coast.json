@@ -8,6 +8,11 @@
   "commandIntent": "Protect life-safety shipments, fuel distribution, port access, and inland freight while coastal conditions change.",
   "target": 3,
   "playerStart": [480, 325],
+  "geography": {
+    "crs": "EPSG:4326",
+    "referenceName": "Gulf Coast exercise grid",
+    "bounds": { "west": -97.8, "south": 26.0, "east": -88.5, "north": 31.0 }
+  },
   "routes": [
     { "from": [155, 210], "to": [420, 150], "color": "#4fc3d7" },
     { "from": [420, 150], "to": [760, 205], "color": "#f0a65a" },

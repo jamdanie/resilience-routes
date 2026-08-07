@@ -338,6 +338,29 @@
 }
 
 @media (max-width: 620px) {
+  .gis-map-readout {
+    max-width: calc(100% - 118px);
+  }
+
+  .gis-map-readout small,
+  .gis-north-reference {
+    display: none;
+  }
+
+  .gis-scale-reference i {
+    width: 42px;
+  }
+
+  .gis-panel {
+    inset: 8px 8px auto;
+    width: auto;
+    max-height: calc(100% - 16px);
+  }
+
+  .gis-panel-actions {
+    grid-template-columns: 1fr;
+  }
+
   .briefing-header,
   .briefing-page,
   .briefing-progress,

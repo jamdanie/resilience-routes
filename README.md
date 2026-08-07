@@ -1,6 +1,6 @@
 # Resilience Routes
 
-Resilience Routes is a portfolio-ready educational simulator about supply-chain interdependence, critical infrastructure, disruption, and recovery decisions. It includes two regional mission packs, seeded procedural runs, limited strategic resources, changing operating conditions, randomized logistics and localized weather, temporary injects, a layered operational basemap, and browser-local performance history.
+Resilience Routes is a portfolio-ready educational simulator about supply-chain interdependence, critical infrastructure, disruption, and recovery decisions. It includes two regional mission packs, seeded procedural runs, limited strategic resources, changing operating conditions, randomized logistics and localized weather, temporary injects, a layered operational basemap, a GIS operations workbench, and browser-local performance history.
 
 ## What this rebuild changes
 
@@ -146,6 +146,14 @@ Open the command palette with `Ctrl K` (or `Command K` on macOS). During an acti
 Selecting a decision node now traces the physical routes connected to that location, animates the direction of exposure, dims unrelated map activity, and summarizes connected infrastructure, affected movements, intelligence confidence, and the likely downstream consequence. Press `C` or use the map toolbar to turn the lens off when the full operating picture is needed.
 
 The lens is derived from the mission's existing route geometry, scenario coordinates, logistics effects, cascade steps, and intelligence brief. Contributors do not need to add a separate consequence-lens section to their JSON. Movement-board rows are also keyboard and mouse selectable, so an asset can be focused from the sidebar without finding its moving icon on the map.
+
+## GIS operations workbench
+
+Every playable mission defines a WGS84 (`EPSG:4326`) exercise extent. The GIS workbench projects the fictional simulation surface into that extent and adds live latitude/longitude, an alphanumeric grid, north and scale references, layer controls, location identification, and two-point great-circle distance measurement. Press `I`, choose **GIS tools** in the map toolbar, or search for GIS in the command palette.
+
+**Identify** reports the clicked coordinate and nearest active decision node. **Measure** calculates approximate miles between two map locations. Layer switches can isolate the coordinate grid, weather system, and live logistics. **Export GeoJSON** downloads the current routes, active nodes, scheduled inject locations, and latest moving-asset positions for use in desktop GIS tools or portfolio analysis.
+
+Coordinates are approximate and all exported features retain a fictional-exercise marker. The tool does not load commercial tiles, collect location data, or claim to represent a navigationally accurate network.
 
 ## Community content SDK
 

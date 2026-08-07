@@ -97,6 +97,10 @@ export class WeatherSystemLayer {
     this.scene.game.events.emit("weather-cursor", update);
   }
 
+  setVisible(visible: boolean): void {
+    this.stormContainer.setVisible(visible);
+  }
+
   private createStormGraphic(): void {
     this.stormContainer = this.scene.add
       .container(this.runPlan?.startX ?? -145, this.runPlan?.trackY ?? 270)

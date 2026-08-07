@@ -6,6 +6,7 @@ export type CommandId =
   | "map"
   | "labels"
   | "lens"
+  | "gis"
   | "zoom-in"
   | "zoom-out"
   | "zoom-reset"
