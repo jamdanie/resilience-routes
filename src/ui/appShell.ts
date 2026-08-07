@@ -192,6 +192,7 @@ export function renderApplicationShell(): string {
               <div class="map-toolbar">
                 <div><b>Operational map</b><span>Roads, rail, runways, docks, terrain, vehicles, weather, and decision nodes.</span></div>
                 <div class="map-toolbar-actions">
+                  <button id="consequence-lens-button" class="secondary-button compact consequence-lens-button" type="button" aria-label="Toggle network consequence lens" aria-pressed="true" disabled>Impact lens: On</button>
                   <button id="node-label-button" class="secondary-button compact" type="button" aria-label="Change decision-node label density" disabled>Labels: Compact</button>
                   <button id="map-detail-button" class="secondary-button compact map-mode-button" type="button" aria-label="Change operational map layer" disabled>Map: Infrastructure</button>
                   <div class="map-zoom-controls" role="group" aria-label="Tactical map zoom">
@@ -219,6 +220,18 @@ export function renderApplicationShell(): string {
                   <b>Terms will be defined before the decision.</b>
                   <span>No prior supply-chain experience is required.</span>
                 </div>
+                <details id="consequence-lens-panel" class="consequence-lens-panel" data-exposure="standby" open>
+                  <summary><span>Consequence lens</span><b id="lens-exposure">Standby</b></summary>
+                  <div class="consequence-lens-body">
+                    <div class="lens-metrics">
+                      <span><small>Connected routes</small><b id="lens-route-count">—</b></span>
+                      <span><small>Affected movements</small><b id="lens-asset-count">—</b></span>
+                      <span><small>Intel confidence</small><b id="lens-confidence">—</b></span>
+                    </div>
+                    <div><small>Connected infrastructure</small><div id="lens-connections" class="lens-connections"><span>Select a node to trace its dependencies.</span></div></div>
+                    <p id="lens-consequence">The map will highlight exposed routes and dim unrelated activity.</p>
+                  </div>
+                </details>
                 <button id="investigate-focus-button" class="primary-button compact investigate-focus-button" type="button" disabled>Investigate selected node</button>
               </section>
 
@@ -357,7 +370,7 @@ export function renderApplicationShell(): string {
         <li><b>Continue the mission.</b><span>Later options depend on what remains. Stabilize three nodes and review resource use in the final report.</span></li>
       </ol>
       <div class="drawer-callout"><b>Keyboard controls</b><span>Move: WASD or arrows · Investigate: E · Quick reference: M</span></div>
-      <div class="drawer-callout"><b>Command shortcuts</b><span>Commands: Ctrl K · Pause: P · Map focus: F · Zoom: + / − / 0 · Close: Esc</span></div>
+      <div class="drawer-callout"><b>Command shortcuts</b><span>Commands: Ctrl K · Pause: P · Map focus: F · Impact lens: C · Zoom: + / − / 0 · Close: Esc</span></div>
     </aside>
 
     <aside id="glossary-panel" class="drawer glossary-drawer" aria-hidden="true" aria-labelledby="glossary-title">
@@ -381,6 +394,7 @@ export function renderApplicationShell(): string {
           <button type="button" data-command="focus"><span>Toggle tactical map focus</span><kbd>F</kbd></button>
           <button type="button" data-command="map"><span>Cycle operational map layer</span><kbd>L</kbd></button>
           <button type="button" data-command="labels"><span>Change node label density</span><kbd>N</kbd></button>
+          <button type="button" data-command="lens"><span>Toggle network consequence lens</span><kbd>C</kbd></button>
           <button type="button" data-command="zoom-in"><span>Zoom tactical map in</span><kbd>+</kbd></button>
           <button type="button" data-command="zoom-out"><span>Zoom tactical map out</span><kbd>−</kbd></button>
           <button type="button" data-command="zoom-reset"><span>Reset tactical map zoom</span><kbd>0</kbd></button>

@@ -5,6 +5,7 @@ export type CommandId =
   | "focus"
   | "map"
   | "labels"
+  | "lens"
   | "zoom-in"
   | "zoom-out"
   | "zoom-reset"

@@ -286,6 +286,7 @@ export class LiveLogisticsLayer {
   create(): void {
     this.drawLayerLabel();
     this.definitions.forEach((definition) => this.createAsset(definition));
+    this.scene.game.events.on("focus-logistics-asset", (assetId: string) => this.selectAsset(assetId));
     this.emitSnapshot();
     this.scene.time.delayedCall(0, () => this.emitSnapshot());
   }
@@ -483,16 +484,11 @@ export class LiveLogisticsLayer {
       this.emitAssetFocus(view);
     });
     container.on("pointerout", () => {
-      halo.setFillStyle(definition.color, 0.08);
+      halo.setFillStyle(definition.color, this.selectedAssetId === definition.id ? 0.28 : 0.08);
       statusLabel.setVisible(this.selectedAssetId === definition.id || view.status !== "In transit");
     });
     container.on("pointerdown", () => {
-      this.selectedAssetId = definition.id;
-      this.assets.forEach((asset) => {
-        asset.statusLabel.setVisible(asset.definition.id === definition.id || asset.status !== "In transit");
-      });
-      statusLabel.setVisible(true);
-      this.emitAssetFocus(view);
+      this.selectAsset(definition.id);
     });
 
     const start = this.pointAlongRoute(view, view.progress);
@@ -678,6 +674,18 @@ export class LiveLogisticsLayer {
       meaning: asset.definition.meaning,
       operationalNote: asset.operationalNote
     };
+  }
+
+  private selectAsset(assetId: string): void {
+    const selected = this.assets.get(assetId);
+    if (!selected) return;
+    this.selectedAssetId = assetId;
+    this.assets.forEach((asset) => {
+      const active = asset.definition.id === assetId;
+      asset.statusLabel.setVisible(active || asset.status !== "In transit");
+      asset.halo.setFillStyle(asset.definition.color, active ? 0.28 : 0.08);
+    });
+    this.emitAssetFocus(selected);
   }
 
   private emitAssetFocus(asset: LogisticsAssetView): void {

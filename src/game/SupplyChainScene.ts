@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { difficultySettings } from "./config";
 import { AmbientEventSystem } from "./AmbientEventSystem";
+import { ConsequenceLensLayer } from "./ConsequenceLensLayer";
 import { LiveLogisticsLayer } from "./LiveLogisticsLayer";
 import { MapSurfaceLayer, type MapSurfaceMode } from "./MapSurfaceLayer";
 import { formatResourceCost, StrategicResourceSystem } from "./StrategicResourceSystem";
@@ -70,6 +71,7 @@ export class SupplyChainScene extends Phaser.Scene {
   private focusedNode: NodeView | null = null;
   private nodeDisplayMode: "compact" | "detail" = "compact";
   private mapZoom = 1;
+  private consequenceLens!: ConsequenceLensLayer;
   private promptText!: Phaser.GameObjects.Text;
   private challengeOpen = false;
   private resilience = 0;
@@ -148,6 +150,7 @@ export class SupplyChainScene extends Phaser.Scene {
     );
     this.ambientEvents.create();
     this.createNodes();
+    this.consequenceLens = new ConsequenceLensLayer(this, this.runPlan, this.nodes);
     this.createPlayer();
     this.createControls();
     this.createPrompt();
@@ -171,6 +174,10 @@ export class SupplyChainScene extends Phaser.Scene {
       this.setMapZoom(this.mapZoom + step);
     });
     this.game.events.on("map-zoom-reset", () => this.setMapZoom(1));
+    this.game.events.on("toggle-consequence-lens", () => {
+      const enabled = this.consequenceLens.toggle();
+      this.game.events.emit("consequence-lens-state", enabled);
+    });
     this.game.events.on("investigate-node", (scenarioId: string) => {
       const node = this.nodes.find(({ scenario }) => scenario.id === scenarioId);
       if (node) this.openChallenge(node);
@@ -191,6 +198,7 @@ export class SupplyChainScene extends Phaser.Scene {
     this.weatherLayer.update(delta);
     this.logisticsLayer.update(delta);
     this.ambientEvents.update(delta);
+    this.consequenceLens.update(delta);
 
     this.updateMovement(delta);
     this.updateNearbyPrompt();
@@ -417,7 +425,6 @@ export class SupplyChainScene extends Phaser.Scene {
 
       container.on("pointerout", () => {
         if (this.finished || node.completed || !node.active) return;
-        if (this.focusedNode === node) this.setFocusedNode(null);
         card.setStrokeStyle(2, 0x466681, 1);
         container.setScale(1);
       });
@@ -438,6 +445,7 @@ export class SupplyChainScene extends Phaser.Scene {
     this.focusedNode = node;
     if (previous) this.applyNodePresentation(previous, this.nodeDisplayMode === "detail");
     if (node) this.applyNodePresentation(node, true);
+    this.consequenceLens.focus(node);
   }
 
   private applyNodePresentation(node: NodeView, expanded: boolean): void {

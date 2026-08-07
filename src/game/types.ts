@@ -298,6 +298,17 @@ export interface HudUpdate {
   remainingSeconds: number | null;
 }
 
+export interface ConsequenceLensUpdate {
+  scenarioId: string;
+  title: string;
+  exposure: "guarded" | "elevated" | "high";
+  routeCount: number;
+  connectedNodes: Array<{ title: string; nodeType: string }>;
+  affectedAssets: string[];
+  consequence: string;
+  confidence: "low" | "moderate" | "high";
+}
+
 export type LogisticsMode = "Vessel" | "Aircraft" | "Freight train" | "Truck";
 
 export type LogisticsStatus =
