@@ -1,0 +1,71 @@
+{
+  "id": "gulf-commodity-cost-spike",
+  "title": "Commodity cost spike changes delivery priorities",
+  "nodeType": "Cost of goods",
+  "x": 850,
+  "y": 350,
+  "color": "#f0bd62",
+  "event": "A sudden wholesale fuel and materials price increase has made several planned replenishment loads more expensive than expected.",
+  "why": "Cost changes can reduce how much an organization can move or buy even when physical supply remains available.",
+  "how": "Higher input and transportation costs affect purchasing limits, carrier schedules, inventory quantity, and eventually customer prices.",
+  "when": "The risk grows when budgets are fixed, shipments are fragmented, or all products are treated as equally urgent.",
+  "where": "The change appears first in purchasing and dispatch, then in warehouse stock, delivery frequency, and local prices.",
+  "keyTerms": [
+    {
+      "term": "Commodity",
+      "definition": "A basic good or material that can be bought and sold, such as fuel, grain, or metals.",
+      "example": "Diesel fuel is purchased by many carriers and its market price can change quickly.",
+      "whyItMatters": "A price change can affect many transportation and production activities at the same time."
+    },
+    {
+      "term": "Demand prioritization",
+      "definition": "Ranking requests so limited money, material, or transportation supports the most important needs first.",
+      "example": "Hospital generator fuel is scheduled before a lower-priority restocking trip.",
+      "whyItMatters": "It prevents scarce resources from being spread evenly when some needs have greater consequences."
+    }
+  ],
+  "question": "How should planners respond to the short-term cost spike?",
+  "options": [
+    "Confirm the increase, consolidate compatible loads, and protect essential deliveries first",
+    "Cancel all deliveries until prices return to normal",
+    "Continue every route unchanged without reviewing cost or priority"
+  ],
+  "optionRationales": [
+    "This response uses current evidence, reduces avoidable trips, and protects the deliveries whose delay would cause the greatest harm.",
+    "A complete stop creates shortages even where critical movement remains affordable and available.",
+    "Ignoring the change can exhaust the budget early and leave later essential deliveries without support."
+  ],
+  "correctIndex": 0,
+  "takeaway": "Economic disruption requires verified costs and clear priorities, not an automatic shutdown or unchanged spending.",
+  "responsePrinciple": "Verify the change, consolidate movement, and protect essential demand.",
+  "basePenalty": 9,
+  "logisticsEffects": [
+    {
+      "assetId": "gulf-road-22",
+      "activeStatus": "Delayed",
+      "activeReason": "Dispatch is reviewing fragmented routes after an unexpected cost increase.",
+      "correctStatus": "Rerouted",
+      "correctReason": "Compatible priority loads were consolidated onto a shorter supported route.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "The delivery plan exceeded available cost capacity without a priority decision."
+    }
+  ],
+  "cascadeSteps": [
+    "Wholesale fuel and material prices increase unexpectedly.",
+    "Planned deliveries require more money than the original budget allowed.",
+    "Carriers and warehouses reduce or postpone lower-priority movement.",
+    "Essential sites may receive less supply unless demand is ranked and loads are consolidated."
+  ],
+  "resourceCosts": [
+    {
+      "funds": 2,
+      "transport": 1,
+      "inventory": 1
+    },
+    {},
+    {
+      "transport": 1,
+      "fuel": 1
+    }
+  ]
+}

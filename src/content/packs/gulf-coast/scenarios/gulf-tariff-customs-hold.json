@@ -1,0 +1,78 @@
+{
+  "id": "gulf-tariff-customs-hold",
+  "title": "Tariff review holds recovery equipment",
+  "nodeType": "Customs and trade",
+  "x": 120,
+  "y": 350,
+  "color": "#d9a555",
+  "event": "A tariff classification question has placed imported recovery equipment on manual customs review at the fictional port.",
+  "why": "Documentation and trade rules can delay critical equipment even when the ship, terminal, and roads are physically available.",
+  "how": "The customs hold delays port release, the truck misses its appointment, and utility crews wait for replacement equipment.",
+  "when": "The risk grows when descriptions are inconsistent, product classifications changed, or no one is assigned to answer the review quickly.",
+  "where": "The hold begins in the import record but affects the terminal, truck schedule, restoration staging area, and customers waiting for service.",
+  "keyTerms": [
+    {
+      "term": "Customs hold",
+      "definition": "A temporary stop placed on imported goods until required information, inspection, or payment is completed.",
+      "example": "Equipment remains at the terminal while its product classification is confirmed.",
+      "whyItMatters": "A paperwork issue can create the same downstream delay as a physical route closure."
+    },
+    {
+      "term": "Product classification",
+      "definition": "The code and description used to determine how an imported item is treated under trade rules.",
+      "example": "A specialized pump is classified according to its function and construction.",
+      "whyItMatters": "An incorrect code can cause the wrong tariff, additional review, penalties, or release delays."
+    }
+  ],
+  "question": "What is the best first action?",
+  "options": [
+    "Provide verified technical documents through the customs broker and protect the next delivery appointment",
+    "Move the equipment out of the terminal before the hold is released",
+    "Submit a different description that has a lower tariff without checking accuracy"
+  ],
+  "optionRationales": [
+    "Accurate documents address the reason for the hold while coordination protects transportation capacity after release.",
+    "Moving held cargo without authorization can create legal, safety, and chain-of-custody problems.",
+    "Changing a description to avoid a charge can be inaccurate or fraudulent and may lengthen the review."
+  ],
+  "correctIndex": 0,
+  "takeaway": "Documentation disruptions are resolved through accurate records, assigned ownership, and coordination with the next transportation step.",
+  "responsePrinciple": "Correct the record through the authorized process and protect the downstream operating window.",
+  "basePenalty": 10,
+  "logisticsEffects": [
+    {
+      "assetId": "gulf-vessel-9",
+      "activeStatus": "Holding",
+      "activeReason": "The recovery equipment cannot be released while its customs review remains open.",
+      "correctStatus": "In transit",
+      "correctReason": "Verified documents resolved the hold and the cargo was released to the protected appointment.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "Inaccurate or unauthorized action left the customs hold unresolved."
+    },
+    {
+      "assetId": "gulf-road-22",
+      "activeStatus": "Delayed",
+      "activeReason": "The truck missed its original pickup appointment while the cargo was held.",
+      "correctStatus": "Rerouted",
+      "correctReason": "A new verified pickup window was matched to an available recovery corridor.",
+      "incorrectStatus": "Delayed",
+      "incorrectReason": "The truck remains without a confirmed release or pickup time."
+    }
+  ],
+  "cascadeSteps": [
+    "A tariff classification question places imported equipment on customs hold.",
+    "The terminal cannot release the equipment to its planned truck.",
+    "The truck misses its appointment and utility staging inventory remains incomplete.",
+    "Restoration work takes longer while communities wait for repaired service."
+  ],
+  "resourceCosts": [
+    {
+      "funds": 1,
+      "intelligence": 2
+    },
+    {
+      "transport": 1
+    },
+    {}
+  ]
+}

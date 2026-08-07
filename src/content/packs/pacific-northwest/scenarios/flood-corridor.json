@@ -1,0 +1,86 @@
+{
+  "id": "flood-corridor",
+  "title": "Riverbend Rail Junction",
+  "nodeType": "Rail",
+  "x": 445,
+  "y": 130,
+  "color": "#e3b455",
+  "event": "Floodwater closes a rail corridor that carries food, fuel, and industrial materials.",
+  "why": "A rail corridor is a connected route used by many trains. Rail can move large amounts of cargo efficiently, so one damaged segment may affect several industries at the same time.",
+  "how": "A washed-out section blocks trains, fills nearby rail yards, and pushes freight toward roads or alternate rail lines that may not have enough space.",
+  "when": "The risk increases during prolonged rain, rapid snowmelt, tropical systems, or when drainage systems, bridges, and riverbanks are already stressed.",
+  "where": "The disruption begins along the flooded track and can spread to ports, farms, factories, warehouses, fuel terminals, stores, and communities that depend on the route.",
+  "keyTerms": [
+    {
+      "term": "Corridor",
+      "definition": "A major transportation route that connects several places and carries repeated flows of cargo or people.",
+      "example": "A rail corridor may connect a port, an inland yard, and several distribution centers.",
+      "whyItMatters": "Closing one section can interrupt every shipment that depends on the larger route."
+    },
+    {
+      "term": "Capacity",
+      "definition": "The amount of cargo, traffic, work, or demand that a route or facility can handle during a period of time.",
+      "example": "A highway that can handle 2,000 trucks per day has less capacity than a rail line carrying the same cargo in many trains.",
+      "whyItMatters": "An alternate route may exist but still be unable to carry all of the displaced freight."
+    },
+    {
+      "term": "Prioritization",
+      "definition": "Choosing which needs must be handled first when there are not enough resources for everything at once.",
+      "example": "Moving medical supplies and fuel before lower-priority consumer goods.",
+      "whyItMatters": "Limited alternate capacity should protect essential services before normal efficiency."
+    }
+  ],
+  "question": "What is the strongest first planning decision?",
+  "options": [
+    "Prioritize critical cargo and activate pre-identified road or alternate rail routes",
+    "Move all cargo to trucks without checking road capacity",
+    "Keep dispatching trains toward the closed segment"
+  ],
+  "optionRationales": [
+    "This response matches limited alternate capacity to the cargo that causes the greatest harm if delayed.",
+    "Trucks may help, but moving everything without checking road, driver, trailer, and fuel capacity can create a second bottleneck.",
+    "Continuing to dispatch trains toward a confirmed closure adds congestion and makes recovery more difficult."
+  ],
+  "correctIndex": 0,
+  "takeaway": "Prioritization matters because alternate routes usually have less capacity than the primary corridor.",
+  "responsePrinciple": "Identify essential cargo, confirm safe alternate routes, and match volume to available capacity.",
+  "basePenalty": 11,
+  "logisticsEffects": [
+    {
+      "assetId": "freight-6",
+      "activeStatus": "Holding",
+      "activeReason": "The train stopped before entering the flooded rail segment.",
+      "correctStatus": "Rerouted",
+      "correctReason": "Priority cars were assigned to a verified rail bypass with available capacity.",
+      "incorrectStatus": "Delayed",
+      "incorrectReason": "The train remains queued because alternate rail capacity was not confirmed."
+    },
+    {
+      "assetId": "roadlink-14",
+      "activeStatus": "Delayed",
+      "activeReason": "Displaced rail freight is adding demand to the road network.",
+      "correctStatus": "Rerouted",
+      "correctReason": "Only priority loads were shifted to a checked road route.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "Unplanned freight transfers exceeded available truck and road capacity."
+    }
+  ],
+  "cascadeSteps": [
+    "Floodwater closes a high-volume rail segment.",
+    "Trains wait or divert, while nearby yards begin to fill.",
+    "Freight shifts toward roads and alternate rail lines with less capacity.",
+    "Food, fuel, industrial materials, and community deliveries arrive late."
+  ],
+  "resourceCosts": [
+    {
+      "crews": 1,
+      "transport": 2,
+      "fuel": 1
+    },
+    {
+      "transport": 2,
+      "fuel": 2
+    },
+    {}
+  ]
+}

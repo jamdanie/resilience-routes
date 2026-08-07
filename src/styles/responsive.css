@@ -1,0 +1,388 @@
+@media (max-width: 1100px) {
+  .landing-content,
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-brief,
+  .command-intent-card {
+    max-width: 720px;
+  }
+
+  .scenario-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .architecture-grid,
+  .learning-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .report-resource-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 920px) {
+  .topbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 14px;
+    padding: 9px 16px;
+  }
+
+  .topbar nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: flex-start;
+    gap: 18px;
+    overflow-x: auto;
+    padding: 7px 0 3px;
+    border-top: 1px solid rgba(72, 105, 134, 0.2);
+  }
+
+  .topbar-actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .mission-command-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .command-strip-actions {
+    grid-column: 1 / -1;
+  }
+
+  .mission-pulse {
+    min-height: 54px;
+  }
+
+  .exercise-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .operations-sidebar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hud-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .resource-command-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .briefing-resource-note {
+    grid-template-columns: 1fr;
+  }
+
+  .resource-pool,
+  .modal-resource-context {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .contributors-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .term-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .intelligence-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .history-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .landing-header,
+  .landing-footer,
+  .section-heading,
+  .term-heading,
+  .modal-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .landing-header,
+  .landing-footer,
+  .section-heading,
+  .term-heading {
+    display: flex;
+  }
+
+  .readiness {
+    display: none;
+  }
+
+  .landing-header,
+  .landing-content,
+  .landing-footer,
+  .hero,
+  .section {
+    width: min(100% - 30px, var(--content));
+  }
+
+  .landing-content,
+  .hero {
+    padding-top: 52px;
+  }
+
+  .landing-actions > *,
+  .section-actions > * {
+    width: 100%;
+  }
+
+  .topbar {
+    display: flex;
+    flex-wrap: wrap;
+    padding-inline: 15px;
+  }
+
+  .topbar .brand {
+    order: 1;
+  }
+
+  .topbar nav {
+    order: 3;
+    width: 100%;
+    flex-wrap: nowrap;
+  }
+
+  .topbar-actions {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .presence-indicator {
+    display: none;
+  }
+
+  .mission-command-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .cursor-weather {
+    padding: 12px 0 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .mission-pulse {
+    padding: 12px 0 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .command-strip-actions {
+    grid-column: auto;
+  }
+
+  .command-palette-trigger kbd {
+    display: none;
+  }
+
+  .command-strip-actions > * {
+    flex: 1;
+  }
+
+  .operations-sidebar,
+  .hud-grid,
+  .learning-steps,
+  .scenario-grid,
+  .architecture-grid,
+  .contributors-grid,
+  .report-summary,
+  .four-part-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-canvas {
+    min-height: 330px;
+  }
+
+  .modal-backdrop {
+    padding: 8px;
+  }
+
+  .modal {
+    max-height: calc(100vh - 16px);
+    border-radius: 16px;
+  }
+
+  .modal-step {
+    display: none;
+  }
+
+  .option-button {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .option-button .option-meta {
+    justify-content: flex-start;
+  }
+
+  .resource-pool,
+  .modal-resource-context {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cascade-chain {
+    grid-template-columns: 1fr;
+  }
+
+  .cascade-step:not(:last-child)::after {
+    content: "↓";
+    top: auto;
+    right: 50%;
+    bottom: -20px;
+    transform: translateX(50%);
+  }
+
+  .worked-score-heading {
+    flex-direction: column;
+  }
+
+  .report-decision {
+    grid-template-columns: 1fr;
+  }
+
+  .report-resource-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-ambient-events {
+    grid-template-columns: 1fr;
+  }
+
+  .seed-control > div,
+  .history-row {
+    grid-template-columns: 1fr;
+  }
+
+  .seed-control button,
+  .history-row button {
+    width: 100%;
+  }
+
+  .run-identity {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .run-identity b {
+    text-align: left;
+  }
+
+  .map-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .map-toolbar button {
+    width: 100%;
+  }
+
+  .map-toolbar .map-toolbar-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 900px) {
+  .briefing-situation-grid,
+  .difficulty-card-grid,
+  .score-reasoning {
+    grid-template-columns: 1fr;
+  }
+
+  .cascade-chain {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cascade-step:nth-child(2)::after {
+    display: none;
+  }
+
+  .briefing-term-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .score-formula {
+    grid-template-columns: 1fr;
+  }
+
+  .score-formula b {
+    transform: rotate(90deg);
+    justify-self: center;
+  }
+
+  .worked-example-grid,
+  .learning-formula-card {
+    grid-template-columns: 1fr;
+  }
+
+  .difficulty-card {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .briefing-header,
+  .briefing-page,
+  .briefing-progress,
+  .briefing-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .briefing-progress {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .briefing-progress > i,
+  .briefing-progress-step b {
+    display: none;
+  }
+
+  .briefing-progress-step {
+    justify-content: center;
+  }
+
+  .briefing-term-grid,
+  .mission-action-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .briefing-section-heading,
+  .briefing-readiness-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .briefing-readiness-card {
+    display: flex;
+  }
+
+  .briefing-readiness-card .primary-button {
+    width: 100%;
+  }
+
+  .briefing-footer {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .briefing-footer > span {
+    display: none;
+  }
+}

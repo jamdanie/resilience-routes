@@ -5,9 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "npm run validate:content && npm run test:missions && npm run test:resources && npm run test:intelligence && tsc --noEmit && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "validate:content": "node scripts/validate-scenarios.mjs",
+    "validate:scenarios": "npm run validate:content",
+    "content:report": "node scripts/content-report.mjs",
+    "create:scenario": "node scripts/scaffold-content.mjs scenario",
+    "create:level": "node scripts/scaffold-content.mjs level",
+    "test:missions": "node scripts/test-mission-randomization.mjs",
+    "test:resources": "node scripts/test-resource-economy.mjs",
+    "test:intelligence": "node scripts/test-intelligence-economy.mjs"
   },
   "dependencies": {
     "phaser": "3.90.0"

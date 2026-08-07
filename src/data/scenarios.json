@@ -5,21 +5,84 @@
     "nodeType": "Port",
     "x": 155,
     "y": 160,
-    "color": "#3aaed8",
+    "color": "#45b7e8",
     "event": "A labor disruption closes the main container terminal for several days.",
-    "why": "Ports connect overseas suppliers to domestic transportation networks. A closure can delay goods before they reach rail, trucks, warehouses, or stores.",
-    "how": "The disruption creates vessel backlogs, equipment shortages, missed delivery windows, and higher rerouting costs.",
-    "when": "The risk grows during peak shipping seasons, labor disputes, major storms, cyber incidents, or equipment failures.",
-    "where": "The first effects appear at the port, but delays can spread to inland rail terminals, distribution centers, factories, and retailers.",
+    "why": "A port is a transfer point where cargo moves between ships and land transportation. When the main terminal closes, goods cannot move normally from vessels to rail lines, trucks, warehouses, factories, or stores.",
+    "how": "Ships begin waiting offshore, containers remain in the wrong place, equipment becomes unavailable, and delivery appointments are missed. These delays then move outward through the network.",
+    "when": "The risk becomes more serious during peak shipping seasons, labor disputes, severe weather, cyber incidents, or equipment failures because there is less unused capacity available.",
+    "where": "The first effects appear at the port. They can then spread to inland rail terminals, distribution centers, factories, retailers, and customers waiting for imported goods.",
+    "keyTerms": [
+      {
+        "term": "Terminal",
+        "definition": "A specific part of a port where ships are loaded or unloaded and containers are transferred to another form of transportation.",
+        "example": "A container ship unloads at a marine terminal before the containers are placed on trucks or trains.",
+        "whyItMatters": "A port may remain open while one important terminal is closed, so planners need to know exactly which capability was lost."
+      },
+      {
+        "term": "Redundancy",
+        "definition": "A backup route, facility, system, or supplier that can be used when the normal one is unavailable.",
+        "example": "Using a second port when the primary port cannot handle cargo.",
+        "whyItMatters": "A backup only helps when transportation space, equipment, and agreements are arranged before the disruption becomes severe."
+      },
+      {
+        "term": "Cascading risk",
+        "definition": "A problem that begins in one place and causes additional problems in connected parts of the system.",
+        "example": "A port closure delays rail shipments, which then causes a factory to run out of parts.",
+        "whyItMatters": "The largest harm may occur far away from the place where the original disruption started."
+      }
+    ],
     "question": "Which response best reduces the immediate cascading risk?",
     "options": [
       "Wait for the port to reopen and keep all shipments unchanged",
       "Use a secondary port and reserve rail or truck capacity before rerouting",
       "Cancel every inbound order regardless of priority"
     ],
+    "optionRationales": [
+      "Waiting keeps every shipment tied to the failed terminal. The backlog grows, and no backup capacity is secured.",
+      "This response uses redundancy and also reserves the transportation capacity needed after cargo reaches the alternate port.",
+      "Canceling everything removes both low-priority and essential cargo. It does not distinguish between what can wait and what must continue moving."
+    ],
     "correctIndex": 1,
     "takeaway": "Redundancy works only when alternate routes and transportation capacity are arranged before the main node fails.",
-    "basePenalty": 10
+    "responsePrinciple": "Confirm the alternate node, reserve onward transportation, and move the highest-priority cargo first.",
+    "basePenalty": 10,
+    "logisticsEffects": [
+      {
+        "assetId": "vessel-cascade",
+        "activeStatus": "Holding",
+        "activeReason": "The closed terminal prevents the vessel from unloading safely.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Space was confirmed at a secondary terminal before the vessel changed course.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "No usable terminal capacity was secured, so the vessel remains offshore."
+      },
+      {
+        "assetId": "roadlink-14",
+        "activeStatus": "Delayed",
+        "activeReason": "Missed port appointments have interrupted the truck's planned pickup sequence.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Reserved road capacity now connects the secondary terminal to inland distribution.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "The truck is waiting for cargo that remains tied to the closed terminal."
+      }
+    ],
+    "cascadeSteps": [
+      "The main container terminal closes and ships cannot unload normally.",
+      "Containers, cranes, chassis, rail slots, and truck appointments fall out of sequence.",
+      "Warehouses and factories receive late or incomplete deliveries.",
+      "Stores, repair operations, and essential services face shortages or higher costs."
+    ],
+    "resourceCosts": [
+      {},
+      {
+        "funds": 1,
+        "transport": 2,
+        "fuel": 1
+      },
+      {
+        "funds": 1
+      }
+    ]
   },
   {
     "id": "flood-corridor",
@@ -27,21 +90,85 @@
     "nodeType": "Rail",
     "x": 445,
     "y": 130,
-    "color": "#d6a84b",
+    "color": "#e3b455",
     "event": "Floodwater closes a rail corridor that carries food, fuel, and industrial materials.",
-    "why": "Rail corridors move high volumes efficiently, so one damaged segment can affect multiple industries at the same time.",
-    "how": "A washed-out section blocks trains, fills nearby yards, and pushes freight toward roads that may not have enough capacity.",
-    "when": "The risk rises during prolonged rain, rapid snowmelt, tropical systems, or when drainage and bridge systems are already stressed.",
-    "where": "Effects begin along the flooded corridor and spread to ports, factories, farms, warehouses, fuel terminals, and communities that depend on the route.",
+    "why": "A rail corridor is a connected route used by many trains. Rail can move large amounts of cargo efficiently, so one damaged segment may affect several industries at the same time.",
+    "how": "A washed-out section blocks trains, fills nearby rail yards, and pushes freight toward roads or alternate rail lines that may not have enough space.",
+    "when": "The risk increases during prolonged rain, rapid snowmelt, tropical systems, or when drainage systems, bridges, and riverbanks are already stressed.",
+    "where": "The disruption begins along the flooded track and can spread to ports, farms, factories, warehouses, fuel terminals, stores, and communities that depend on the route.",
+    "keyTerms": [
+      {
+        "term": "Corridor",
+        "definition": "A major transportation route that connects several places and carries repeated flows of cargo or people.",
+        "example": "A rail corridor may connect a port, an inland yard, and several distribution centers.",
+        "whyItMatters": "Closing one section can interrupt every shipment that depends on the larger route."
+      },
+      {
+        "term": "Capacity",
+        "definition": "The amount of cargo, traffic, work, or demand that a route or facility can handle during a period of time.",
+        "example": "A highway that can handle 2,000 trucks per day has less capacity than a rail line carrying the same cargo in many trains.",
+        "whyItMatters": "An alternate route may exist but still be unable to carry all of the displaced freight."
+      },
+      {
+        "term": "Prioritization",
+        "definition": "Choosing which needs must be handled first when there are not enough resources for everything at once.",
+        "example": "Moving medical supplies and fuel before lower-priority consumer goods.",
+        "whyItMatters": "Limited alternate capacity should protect essential services before normal efficiency."
+      }
+    ],
     "question": "What is the strongest first planning decision?",
     "options": [
       "Prioritize critical cargo and activate pre-identified road or alternate rail routes",
       "Move all cargo to trucks without checking road capacity",
       "Keep dispatching trains toward the closed segment"
     ],
+    "optionRationales": [
+      "This response matches limited alternate capacity to the cargo that causes the greatest harm if delayed.",
+      "Trucks may help, but moving everything without checking road, driver, trailer, and fuel capacity can create a second bottleneck.",
+      "Continuing to dispatch trains toward a confirmed closure adds congestion and makes recovery more difficult."
+    ],
     "correctIndex": 0,
     "takeaway": "Prioritization matters because alternate routes usually have less capacity than the primary corridor.",
-    "basePenalty": 11
+    "responsePrinciple": "Identify essential cargo, confirm safe alternate routes, and match volume to available capacity.",
+    "basePenalty": 11,
+    "logisticsEffects": [
+      {
+        "assetId": "freight-6",
+        "activeStatus": "Holding",
+        "activeReason": "The train stopped before entering the flooded rail segment.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Priority cars were assigned to a verified rail bypass with available capacity.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "The train remains queued because alternate rail capacity was not confirmed."
+      },
+      {
+        "assetId": "roadlink-14",
+        "activeStatus": "Delayed",
+        "activeReason": "Displaced rail freight is adding demand to the road network.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Only priority loads were shifted to a checked road route.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "Unplanned freight transfers exceeded available truck and road capacity."
+      }
+    ],
+    "cascadeSteps": [
+      "Floodwater closes a high-volume rail segment.",
+      "Trains wait or divert, while nearby yards begin to fill.",
+      "Freight shifts toward roads and alternate rail lines with less capacity.",
+      "Food, fuel, industrial materials, and community deliveries arrive late."
+    ],
+    "resourceCosts": [
+      {
+        "crews": 1,
+        "transport": 2,
+        "fuel": 1
+      },
+      {
+        "transport": 2,
+        "fuel": 2
+      },
+      {}
+    ]
   },
   {
     "id": "wildfire-smoke",
@@ -49,21 +176,85 @@
     "nodeType": "Airport",
     "x": 755,
     "y": 180,
-    "color": "#bd6b4a",
+    "color": "#d97d58",
     "event": "Wildfire smoke reduces visibility and creates unsafe working conditions near a cargo airport.",
-    "why": "Air cargo is often used for urgent, high-value, medical, or time-sensitive goods.",
-    "how": "Smoke can delay flights, reduce ramp activity, affect worker health, close roads, and slow ground transportation.",
+    "why": "Air cargo is often used for urgent, high-value, medical, repair, or time-sensitive goods. Delays can matter quickly because these shipments were chosen for speed.",
+    "how": "Smoke can delay flights, reduce ramp activity, affect worker health, close roads, and slow the trucks that connect the airport to hospitals and businesses.",
     "when": "The risk is highest during active wildfire periods, shifting winds, temperature inversions, and regional evacuations.",
     "where": "The disruption affects the airport and nearby roads first, then spreads to hospitals, manufacturers, repair operations, and customers waiting for urgent items.",
+    "keyTerms": [
+      {
+        "term": "Continuity",
+        "definition": "The ability to keep the most important work operating during and after a disruption.",
+        "example": "Moving urgent medical cargo through another airport while the primary airport is unsafe.",
+        "whyItMatters": "Continuity does not mean keeping every normal activity running. It means protecting essential functions safely."
+      },
+      {
+        "term": "Threshold",
+        "definition": "A measured point that triggers a planned action when conditions become too risky or too severe.",
+        "example": "Airport ramp work pauses when air-quality readings pass a safety threshold.",
+        "whyItMatters": "Thresholds turn vague concern into a consistent decision rule."
+      },
+      {
+        "term": "Alternate node",
+        "definition": "Another facility that can perform some or all of the work normally handled by the primary facility.",
+        "example": "A nearby cargo airport receiving urgent flights during a smoke closure.",
+        "whyItMatters": "The alternate node must have runway, staffing, cargo-handling, and ground-transportation capability."
+      }
+    ],
     "question": "Which option protects continuity without ignoring worker safety?",
     "options": [
       "Keep full operations running regardless of air quality",
       "Pause all regional deliveries for the rest of the month",
       "Shift urgent cargo to a safer airport and use air-quality thresholds for local work"
     ],
+    "optionRationales": [
+      "Ignoring air quality places workers and operations at risk and can make the disruption worse.",
+      "A month-long regional shutdown is broader than the known hazard and would stop essential deliveries unnecessarily.",
+      "This response protects workers, preserves urgent movement, and uses measurable thresholds to decide when local work is safe."
+    ],
     "correctIndex": 2,
     "takeaway": "Continuity plans must protect workers while identifying alternate nodes for truly urgent cargo.",
-    "basePenalty": 9
+    "responsePrinciple": "Use safety thresholds, shift essential cargo, and restore normal operations only when conditions are verified.",
+    "basePenalty": 9,
+    "logisticsEffects": [
+      {
+        "assetId": "airlift-27",
+        "activeStatus": "Holding",
+        "activeReason": "Unsafe visibility and ramp conditions prevent local cargo operations.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Urgent cargo was diverted to a safer airport using verified thresholds.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "The aircraft cannot continue while local conditions remain unsafe."
+      },
+      {
+        "assetId": "roadlink-14",
+        "activeStatus": "Delayed",
+        "activeReason": "Smoke and flight changes have disrupted airport truck appointments.",
+        "correctStatus": "Rerouted",
+        "correctReason": "The truck is collecting urgent cargo from the alternate airport.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "The truck remains tied to an airport that cannot accept the shipment."
+      }
+    ],
+    "cascadeSteps": [
+      "Smoke reduces visibility and creates unsafe air quality at the cargo airport.",
+      "Flights, ramp work, and nearby truck movement slow or pause.",
+      "Urgent cargo must compete for space at safer alternate airports.",
+      "Hospitals, repair teams, manufacturers, and customers wait longer for time-sensitive goods."
+    ],
+    "resourceCosts": [
+      {},
+      {
+        "funds": 1,
+        "transport": 1
+      },
+      {
+        "funds": 1,
+        "transport": 2,
+        "intelligence": 1
+      }
+    ]
   },
   {
     "id": "cyber-logistics",
@@ -71,21 +262,83 @@
     "nodeType": "Digital logistics",
     "x": 695,
     "y": 445,
-    "color": "#8b7bd8",
+    "color": "#9a89ef",
     "event": "A cyberattack disrupts shipment scheduling, gate appointments, and inventory visibility.",
-    "why": "Physical cargo movement depends on digital systems for scheduling, documentation, routing, and tracking.",
-    "how": "When data is unavailable or untrusted, trucks may queue, containers may be misplaced, and partners may stop accepting automated instructions.",
+    "why": "Physical cargo movement depends on digital systems for schedules, documents, routing, inventory records, and communication. A digital failure can therefore stop physical work.",
+    "how": "When data is unavailable or cannot be trusted, trucks may queue, containers may be misplaced, and partners may stop accepting automated instructions.",
     "when": "The risk can appear after phishing, weak access controls, vulnerable software, compromised vendors, or poor network separation.",
-    "where": "The initial system outage may be local, but connected carriers, ports, warehouses, suppliers, and customers can all lose visibility.",
+    "where": "The initial outage may be local, but connected carriers, ports, warehouses, suppliers, and customers can all lose visibility.",
+    "keyTerms": [
+      {
+        "term": "Manual fallback",
+        "definition": "A tested non-automated procedure used when the normal digital system is unavailable or untrusted.",
+        "example": "Using verified paper gate lists and telephone confirmation while scheduling software is offline.",
+        "whyItMatters": "A fallback keeps essential work moving without reconnecting a potentially compromised system."
+      },
+      {
+        "term": "Isolation",
+        "definition": "Separating an affected device, account, or network area so the problem cannot spread to connected systems.",
+        "example": "Disconnecting the compromised scheduling server from the rest of the logistics network.",
+        "whyItMatters": "Isolation limits damage while investigators determine what happened."
+      },
+      {
+        "term": "Verified restoration",
+        "definition": "Returning systems to service only after confirming that data, software, accounts, and connections can be trusted.",
+        "example": "Restoring clean backups, changing credentials, testing records, and monitoring before normal operations resume.",
+        "whyItMatters": "Fast restoration without verification can reintroduce the attack or spread false information."
+      }
+    ],
     "question": "Which response best limits operational and cyber risk?",
     "options": [
       "Use a tested manual fallback, isolate affected systems, and verify data before restoration",
       "Reconnect every system immediately without checking the cause",
       "Post administrator credentials in the team chat so work can continue"
     ],
+    "optionRationales": [
+      "This response maintains essential operations while containing the incident and protecting the integrity of restored data.",
+      "Immediate reconnection can spread the attack and restore incorrect or malicious data.",
+      "Sharing administrator credentials removes accountability and gives excessive access to anyone who can view the chat."
+    ],
     "correctIndex": 0,
     "takeaway": "Resilience includes tested manual procedures, network isolation, verified restoration, and controlled access.",
-    "basePenalty": 13
+    "responsePrinciple": "Contain first, operate through a tested fallback, verify trust, and restore in controlled stages.",
+    "basePenalty": 13,
+    "logisticsEffects": [
+      {
+        "assetId": "roadlink-14",
+        "activeStatus": "Holding",
+        "activeReason": "Untrusted gate and inventory data prevent the truck from receiving a verified load.",
+        "correctStatus": "In transit",
+        "correctReason": "A tested manual fallback produced a verified dispatch instruction.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "The dispatch remains unverified because affected systems were not contained."
+      },
+      {
+        "assetId": "freight-6",
+        "activeStatus": "Delayed",
+        "activeReason": "The train is moving slowly while cargo records are checked manually.",
+        "correctStatus": "In transit",
+        "correctReason": "Verified records restored normal release and routing procedures.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "Untrusted cargo records continue to slow train release."
+      }
+    ],
+    "cascadeSteps": [
+      "A cyberattack makes scheduling and inventory data unavailable or untrusted.",
+      "Gate appointments, routing instructions, and cargo records become unreliable.",
+      "Trucks queue, containers are misplaced, and partners stop accepting automated directions.",
+      "Physical cargo movement slows across ports, carriers, warehouses, suppliers, and customers."
+    ],
+    "resourceCosts": [
+      {
+        "crews": 1,
+        "intelligence": 2
+      },
+      {
+        "crews": 1
+      },
+      {}
+    ]
   },
   {
     "id": "fuel-shortage",
@@ -93,20 +346,283 @@
     "nodeType": "Warehouse",
     "x": 270,
     "y": 430,
-    "color": "#63a86d",
+    "color": "#70c37d",
     "event": "A regional fuel shortage reduces available trucking capacity.",
-    "why": "Warehouses depend on reliable inbound and outbound transportation. Inventory cannot help communities if it cannot move.",
-    "how": "Fuel shortages increase costs, reduce trip frequency, and force carriers to prioritize routes and customers.",
+    "why": "A warehouse stores and organizes inventory, but the inventory cannot help communities unless transportation is available to move it.",
+    "how": "Fuel shortages increase costs, reduce trip frequency, and force carriers to choose which routes and customers receive limited transportation.",
     "when": "The risk rises after refinery outages, pipeline problems, severe weather, conflict, cyber incidents, or sudden demand spikes.",
-    "where": "The shortage affects carriers and fuel terminals first, then spreads to warehouses, stores, hospitals, farms, and emergency response operations.",
+    "where": "The shortage affects carriers and fuel terminals first, then spreads to warehouses, stores, hospitals, farms, and emergency-response operations.",
+    "keyTerms": [
+      {
+        "term": "Load consolidation",
+        "definition": "Combining compatible shipments so a vehicle carries more useful cargo on each trip.",
+        "example": "Combining several small hospital deliveries into one fuller truck route.",
+        "whyItMatters": "Fewer, fuller trips use limited fuel and driver time more efficiently."
+      },
+      {
+        "term": "Essential delivery",
+        "definition": "A shipment whose delay could seriously affect health, safety, utilities, emergency response, or another critical service.",
+        "example": "Fuel for emergency generators or medicine for a hospital.",
+        "whyItMatters": "Not every delayed product creates the same level of harm."
+      },
+      {
+        "term": "Resource coordination",
+        "definition": "Sharing accurate needs, availability, and priorities among organizations so limited resources are not wasted or duplicated.",
+        "example": "Carriers, hospitals, fuel suppliers, and emergency managers agreeing on a priority fuel schedule.",
+        "whyItMatters": "Coordination prevents several organizations from competing blindly for the same limited supply."
+      }
+    ],
     "question": "Which action best protects essential deliveries?",
     "options": [
       "Prioritize critical loads, combine trips, and coordinate fuel access with partners",
       "Send every truck on its normal route even when loads are nearly empty",
       "Stop sharing status information with partners"
     ],
+    "optionRationales": [
+      "This response reduces unnecessary trips, protects essential deliveries, and coordinates access to the scarce resource.",
+      "Normal routing wastes fuel when trucks are lightly loaded and does not account for changed priorities.",
+      "Withholding status information causes duplicate requests, poor planning, and avoidable competition for fuel."
+    ],
     "correctIndex": 0,
     "takeaway": "Resource sharing and priority rules help limited transportation capacity support the most important needs first.",
-    "basePenalty": 10
+    "responsePrinciple": "Define essential deliveries, consolidate compatible loads, and coordinate fuel access across partners.",
+    "basePenalty": 10,
+    "logisticsEffects": [
+      {
+        "assetId": "roadlink-14",
+        "activeStatus": "Holding",
+        "activeReason": "The truck lacks enough allocated fuel to complete its normal route.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Consolidated priority loads are moving on a shorter fuel-supported route.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "Fuel was not prioritized, so the truck remains unavailable."
+      }
+    ],
+    "cascadeSteps": [
+      "A regional fuel shortage reduces the number of truck trips that carriers can operate.",
+      "Carriers prioritize some routes and delay lightly loaded or lower-priority trips.",
+      "Warehouses accumulate inventory that cannot move to its destination.",
+      "Hospitals, stores, farms, utilities, and emergency operations receive fewer or later deliveries."
+    ],
+    "resourceCosts": [
+      {
+        "transport": 1,
+        "fuel": 1,
+        "intelligence": 1
+      },
+      {
+        "transport": 1,
+        "fuel": 2
+      },
+      {}
+    ]
+  },
+  {
+    "id": "tariff-cost-change",
+    "title": "Tariff change raises landed cost",
+    "nodeType": "Trade and cost",
+    "x": 115,
+    "y": 355,
+    "color": "#f0bd62",
+    "event": "A new tariff classification has increased the expected cost of an inbound component shipment while it is already moving toward the region.",
+    "why": "A tariff can change the final cost of imported goods and affect purchasing, inventory, and customer prices even when transportation is still operating.",
+    "how": "The added cost moves from the importer to manufacturers or distributors, then may reach customers through higher prices or reduced availability.",
+    "when": "The risk grows when there is little substitute inventory, contracts do not assign the added cost clearly, or planners react before confirming the classification.",
+    "where": "The first effects appear in customs and purchasing records, followed by inventory plans, production schedules, and retail prices.",
+    "keyTerms": [
+      {
+        "term": "Tariff",
+        "definition": "A tax charged by a government on certain goods entering or leaving a country.",
+        "example": "An imported machine part receives an additional charge based on its product classification.",
+        "whyItMatters": "The charge can change whether a shipment remains affordable and how much the finished product costs."
+      },
+      {
+        "term": "Landed cost",
+        "definition": "The total cost of a product after purchase price, transportation, insurance, duties, and fees are included.",
+        "example": "A part that costs $100 may have a higher landed cost after freight and import charges.",
+        "whyItMatters": "Decisions based only on purchase price can hide the real cost of using an imported item."
+      }
+    ],
+    "question": "What is the strongest first response to the unexpected cost change?",
+    "options": [
+      "Verify the classification and total landed cost, then compare approved substitutes and inventory",
+      "Cancel every inbound shipment immediately",
+      "Pass the estimated increase to customers before confirming it"
+    ],
+    "optionRationales": [
+      "Verification prevents an incorrect classification from driving the response and gives planners evidence for comparing inventory, suppliers, and customer impacts.",
+      "Immediate cancellation can create a production shortage and additional fees before the organization understands the actual cost or alternatives.",
+      "Changing prices from an estimate can spread inaccurate information and damage trust before the charge is confirmed."
+    ],
+    "correctIndex": 0,
+    "takeaway": "Cost disruptions should be verified and compared with inventory and substitute options before transportation or pricing decisions are changed.",
+    "responsePrinciple": "Confirm the rule, calculate the full cost, and compare realistic alternatives before acting.",
+    "basePenalty": 8,
+    "logisticsEffects": [
+      {
+        "assetId": "vessel-cascade",
+        "activeStatus": "Delayed",
+        "activeReason": "The shipment is delayed while its tariff classification and release cost are reviewed.",
+        "correctStatus": "In transit",
+        "correctReason": "The classification and cost were verified and the approved shipment was released.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "An unverified response left the shipment without an approved release decision."
+      }
+    ],
+    "cascadeSteps": [
+      "A tariff classification changes the expected cost of an inbound component.",
+      "Purchasing and customs teams pause the release while they confirm the charge.",
+      "Production and inventory plans become uncertain while the component is delayed.",
+      "The organization may face higher prices, reduced availability, or an avoidable shortage."
+    ],
+    "resourceCosts": [
+      {
+        "funds": 1,
+        "intelligence": 2
+      },
+      {
+        "funds": 1
+      },
+      {}
+    ]
+  },
+  {
+    "id": "supplier-political-unrest",
+    "title": "Political unrest interrupts an upstream supplier",
+    "nodeType": "Upstream supplier",
+    "x": 850,
+    "y": 135,
+    "color": "#e58975",
+    "event": "A fictional overseas supplier has stopped outbound operations after political unrest restricted access to its local terminal.",
+    "why": "A regional network can be affected by an event far outside its map when it depends on parts or materials from one source.",
+    "how": "The supplier misses its loading window, the vessel schedule changes, and regional manufacturers receive less input inventory.",
+    "when": "The risk grows when the part has one approved supplier, long qualification requirements, or little safety stock.",
+    "where": "The disruption starts at the supplier but appears later at the port, production line, warehouse, and customer order.",
+    "keyTerms": [
+      {
+        "term": "Upstream supplier",
+        "definition": "A business earlier in the supply chain that provides materials, parts, or services used by another organization.",
+        "example": "A component factory supplies a part that a regional manufacturer needs for assembly.",
+        "whyItMatters": "A failure far away can stop local work when there is no qualified replacement."
+      },
+      {
+        "term": "Single-source dependency",
+        "definition": "Reliance on one approved supplier for a needed item.",
+        "example": "Only one factory is qualified to produce a specialized control component.",
+        "whyItMatters": "The organization has fewer recovery choices when that supplier cannot operate."
+      }
+    ],
+    "question": "How should the team respond to the upstream interruption?",
+    "options": [
+      "Confirm current inventory, prioritize essential demand, and begin approved alternate-supplier review",
+      "Assume the supplier will reopen before regional inventory is affected",
+      "Buy from the first unverified seller offering the part"
+    ],
+    "optionRationales": [
+      "This response establishes how long existing inventory can last, protects essential demand, and begins a controlled alternative without ignoring quality requirements.",
+      "Waiting without measuring inventory loses time and can allow a manageable shortage to become a production stoppage.",
+      "An unverified source may introduce counterfeit, unsafe, or incompatible components and create a second disruption."
+    ],
+    "correctIndex": 0,
+    "takeaway": "Upstream political risk is managed through visibility, demand priorities, qualified alternatives, and realistic inventory planning.",
+    "responsePrinciple": "Measure exposure first, protect essential demand, and use verified alternatives.",
+    "basePenalty": 11,
+    "logisticsEffects": [
+      {
+        "assetId": "vessel-cascade",
+        "activeStatus": "Delayed",
+        "activeReason": "Cargo missed its overseas loading window after the supplier stopped outbound operations.",
+        "correctStatus": "Rerouted",
+        "correctReason": "Available inventory and an approved alternate shipment were assigned to priority demand.",
+        "incorrectStatus": "Holding",
+        "incorrectReason": "No verified replacement cargo or demand priority was established."
+      }
+    ],
+    "cascadeSteps": [
+      "Political unrest restricts access to a fictional upstream supplier and terminal.",
+      "The supplier misses its planned export loading window.",
+      "Regional manufacturers receive fewer parts than expected.",
+      "Production, customer orders, and repair activity are delayed unless inventory is prioritized."
+    ],
+    "resourceCosts": [
+      {
+        "funds": 1,
+        "intelligence": 1,
+        "inventory": 2
+      },
+      {},
+      {
+        "funds": 2
+      }
+    ]
+  },
+  {
+    "id": "warehouse-picking-error",
+    "title": "Warehouse picking error affects priority orders",
+    "nodeType": "Human error",
+    "x": 555,
+    "y": 440,
+    "color": "#9d8df1",
+    "event": "A rushed shift used an outdated location list and loaded several priority orders with the wrong replacement parts.",
+    "why": "Human error can create a real supply disruption even when buildings, roads, and computer systems are available.",
+    "how": "Incorrect items leave the warehouse, the destination rejects them, and limited vehicles must repeat work while the correct orders wait.",
+    "when": "The risk grows during overtime, rapid volume changes, weak change control, or pressure to skip independent checks.",
+    "where": "The error begins at order picking but affects the loading dock, truck route, receiving site, inventory record, and customer schedule.",
+    "keyTerms": [
+      {
+        "term": "Picking error",
+        "definition": "Selecting the wrong item or quantity while preparing an order in a warehouse.",
+        "example": "A worker selects a similar-looking part from the neighboring storage location.",
+        "whyItMatters": "The order may travel normally but still fail when it reaches the customer."
+      },
+      {
+        "term": "Independent verification",
+        "definition": "A separate check by another person or system before a high-priority action is completed.",
+        "example": "A second scan confirms the part number before the truck leaves.",
+        "whyItMatters": "It catches errors before transportation time and scarce capacity are wasted."
+      }
+    ],
+    "question": "What should the warehouse do first?",
+    "options": [
+      "Pause affected releases, verify priority orders, correct records, and restart with a second check",
+      "Keep shipping at the same speed and correct errors only after delivery",
+      "Delete the incorrect transactions so performance reports remain clean"
+    ],
+    "optionRationales": [
+      "A focused pause contains the problem, identifies which orders are affected, and prevents more incorrect shipments while normal work continues elsewhere.",
+      "Continuing unchanged sends more incorrect material into the network and consumes additional vehicles and receiving labor.",
+      "Deleting records hides evidence needed to recover inventory and understand why the error occurred."
+    ],
+    "correctIndex": 0,
+    "takeaway": "A short, controlled pause with verification is usually less costly than allowing incorrect orders to spread through the network.",
+    "responsePrinciple": "Contain the affected work, preserve records, verify priority orders, and restart with a check.",
+    "basePenalty": 9,
+    "logisticsEffects": [
+      {
+        "assetId": "roadlink-14",
+        "activeStatus": "Holding",
+        "activeReason": "The truck is held while priority loads are checked against the correct item list.",
+        "correctStatus": "In transit",
+        "correctReason": "Verified orders were reloaded and released with corrected inventory records.",
+        "incorrectStatus": "Delayed",
+        "incorrectReason": "Repeated returns and corrections continue to consume the truck's route capacity."
+      }
+    ],
+    "cascadeSteps": [
+      "An outdated location list causes workers to select incorrect replacement parts.",
+      "Wrong items are loaded onto a priority delivery.",
+      "The destination rejects the shipment and requests the correct order.",
+      "Vehicles, workers, and inventory are used twice while the actual need remains unmet."
+    ],
+    "resourceCosts": [
+      {
+        "crews": 2,
+        "intelligence": 1
+      },
+      {
+        "crews": 1
+      },
+      {}
+    ]
   }
 ]

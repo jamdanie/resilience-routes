@@ -1,29 +1,123 @@
 name: Scenario proposal
-description: Propose a reviewed disruption inject
+description: Propose a disruption without editing code or JSON
 title: "[Scenario] "
 labels: ["scenario", "content"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for contributing. Describe the operational idea in plain language. A maintainer can convert an accepted proposal into one isolated JSON file, or you can use the content scaffold after review.
+
+  - type: dropdown
+    id: delivery
+    attributes:
+      label: Preferred contribution route
+      options:
+        - Proposal only — maintainer creates the JSON
+        - I will submit one scaffolded JSON file in a pull request
+        - I would like a maintainer to pair with me on the first submission
+    validations:
+      required: true
+
+  - type: dropdown
+    id: region
+    attributes:
+      label: Region or mission set
+      description: Existing packs accept isolated inject files. A different region should be proposed as a new mission pack.
+      options:
+        - Pacific Northwest — current mission
+        - Gulf Coast / Texas — proposed mission set
+        - Other — requires a mission-pack proposal
+    validations:
+      required: true
+
   - type: input
     id: category
     attributes:
       label: Hazard category
+      placeholder: Severe weather, cyber incident, infrastructure failure, labor disruption
     validations:
       required: true
+
   - type: input
     id: target
     attributes:
       label: Target infrastructure node
+      placeholder: Port terminal, rail junction, airport, highway, warehouse, digital logistics hub
     validations:
       required: true
+
   - type: textarea
     id: event
     attributes:
-      label: Event and verified signal
+      label: What happens?
+      description: State the disruption and any fictional or verified operational signal.
+      placeholder: A storm surge closes the primary container terminal. Gate processing has stopped and inbound vessels are holding offshore.
     validations:
       required: true
+
+  - type: textarea
+    id: importance
+    attributes:
+      label: Why, how, when, and where does it matter?
+      description: Explain why the node matters, how effects spread, when risk grows, and where consequences appear.
+    validations:
+      required: true
+
+  - type: textarea
+    id: cascade
+    attributes:
+      label: Four-step consequence chain
+      description: List four ordered steps from the initial incident to downstream effects.
+      placeholder: |
+        1. The terminal closes.
+        2. Vessels and containers fall out of sequence.
+        3. Inland transportation misses planned transfers.
+        4. Essential deliveries arrive late.
+    validations:
+      required: true
+
   - type: textarea
     id: choices
     attributes:
       label: Three decision options and tradeoffs
+      description: Include one recommended response and explain the cost or weakness of every option.
+      placeholder: |
+        1. Option — benefit and tradeoff
+        2. Option — benefit and tradeoff
+        3. Option — benefit and tradeoff
+        Recommended option: 2
     validations:
       required: true
+
+  - type: textarea
+    id: terms
+    attributes:
+      label: Key learning terms
+      description: Give at least two terms, each with a plain-language definition, example, and reason it matters.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logistics
+    attributes:
+      label: Visible transportation effects (optional)
+      description: Describe what a ship, aircraft, train, or truck should visibly do when the incident begins and after the player's choice.
+
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources or fictional-content note
+      description: Link sources for real-world factual claims. If the exercise is fully fictional, write “Fictional exercise content.”
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution_checks
+    attributes:
+      label: Contribution checks
+      options:
+        - label: This proposal is my original work or uses material I am allowed to contribute.
+          required: true
+        - label: I did not include personal data, credentials, or sensitive facility or security details.
+          required: true

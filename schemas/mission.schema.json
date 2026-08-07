@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://resilience-routes.local/schemas/mission.schema.json",
+  "title": "Resilience Routes mission definition",
+  "type": "object",
+  "required": ["id", "name", "region", "mapTitle", "mapSubtitle", "description", "commandIntent", "target", "playerStart", "routes", "assets", "weather", "ambientEvents", "operatingConditions"],
+  "properties": {
+    "id": { "$ref": "#/$defs/id" },
+    "name": { "$ref": "#/$defs/text" },
+    "region": { "$ref": "#/$defs/text" },
+    "mapTitle": { "$ref": "#/$defs/text" },
+    "mapSubtitle": { "$ref": "#/$defs/text" },
+    "description": { "$ref": "#/$defs/text" },
+    "commandIntent": { "$ref": "#/$defs/text" },
+    "target": { "type": "integer", "minimum": 1 },
+    "playerStart": { "$ref": "#/$defs/point" },
+    "routes": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["from", "to", "color"], "properties": { "from": { "$ref": "#/$defs/point" }, "to": { "$ref": "#/$defs/point" }, "color": { "$ref": "#/$defs/color" } } } },
+    "assets": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/asset" } },
+    "weather": { "type": "object", "required": ["cycleSeconds", "phases"], "properties": { "cycleSeconds": { "type": "number", "minimum": 15 }, "phases": { "type": "object", "required": ["approaching", "warning", "clearing"] } } },
+    "ambientEvents": { "type": "array", "minItems": 3 },
+    "operatingConditions": { "type": "array", "minItems": 2 }
+  },
+  "$defs": {
+    "text": { "type": "string", "minLength": 1, "not": { "pattern": "TODO|REPLACE_ME" } },
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+    "point": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+    "asset": {
+      "type": "object",
+      "required": ["id", "name", "mode", "route", "alternateRoute", "cargo", "meaning", "color", "speed", "startProgress", "path", "alternatePath"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "$ref": "#/$defs/text" },
+        "mode": { "enum": ["Vessel", "Aircraft", "Freight train", "Truck"] },
+        "route": { "$ref": "#/$defs/text" },
+        "alternateRoute": { "$ref": "#/$defs/text" },
+        "cargo": { "$ref": "#/$defs/text" },
+        "meaning": { "$ref": "#/$defs/text" },
+        "color": { "$ref": "#/$defs/color" },
+        "speed": { "type": "number", "exclusiveMinimum": 0 },
+        "startProgress": { "type": "number" },
+        "path": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/point" } },
+        "alternatePath": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/point" } }
+      }
+    }
+  }
+}
