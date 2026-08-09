@@ -79,6 +79,16 @@ function validateMission(mission, scenarioCount, location) {
   }
   if (!isPoint(mission?.playerStart)) fail(`${location}.playerStart`, "must be an [x, y] point");
 
+  const bounds = mission?.geography?.bounds;
+  if (mission?.geography?.crs !== "EPSG:4326") fail(`${location}.geography.crs`, "must be EPSG:4326");
+  if (!isNonEmptyString(mission?.geography?.referenceName)) fail(`${location}.geography.referenceName`, "must be a non-empty string");
+  if (![bounds?.west, bounds?.south, bounds?.east, bounds?.north].every(Number.isFinite)) {
+    fail(`${location}.geography.bounds`, "must define finite west, south, east, and north values");
+  } else {
+    if (bounds.west < -180 || bounds.east > 180 || bounds.west >= bounds.east) fail(`${location}.geography.bounds`, "must have west < east within longitude limits");
+    if (bounds.south < -90 || bounds.north > 90 || bounds.south >= bounds.north) fail(`${location}.geography.bounds`, "must have south < north within latitude limits");
+  }
+
   const assetIds = new Set();
   if (!Array.isArray(mission?.assets) || mission.assets.length === 0) {
     fail(`${location}.assets`, "must contain at least one logistics asset");

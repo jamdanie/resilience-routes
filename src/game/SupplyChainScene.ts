@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { difficultySettings } from "./config";
 import { AmbientEventSystem } from "./AmbientEventSystem";
 import { ConsequenceLensLayer } from "./ConsequenceLensLayer";
+import { GISOverlayLayer } from "./GISOverlayLayer";
 import { LiveLogisticsLayer } from "./LiveLogisticsLayer";
 import { MapSurfaceLayer, type MapSurfaceMode } from "./MapSurfaceLayer";
 import { formatResourceCost, StrategicResourceSystem } from "./StrategicResourceSystem";
@@ -72,6 +73,7 @@ export class SupplyChainScene extends Phaser.Scene {
   private nodeDisplayMode: "compact" | "detail" = "compact";
   private mapZoom = 1;
   private consequenceLens!: ConsequenceLensLayer;
+  private gisLayer!: GISOverlayLayer;
   private promptText!: Phaser.GameObjects.Text;
   private challengeOpen = false;
   private resilience = 0;
@@ -151,11 +153,17 @@ export class SupplyChainScene extends Phaser.Scene {
     this.ambientEvents.create();
     this.createNodes();
     this.consequenceLens = new ConsequenceLensLayer(this, this.runPlan, this.nodes);
+    this.gisLayer = new GISOverlayLayer(this, this.runPlan);
+    this.gisLayer.create();
     this.createPlayer();
     this.createControls();
     this.createPrompt();
     this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
       this.weatherLayer.inspectAt(pointer.worldX, pointer.worldY);
+      this.gisLayer.inspectAt(pointer.worldX, pointer.worldY);
+    });
+    this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      this.gisLayer.handlePointerDown(pointer.worldX, pointer.worldY);
     });
     this.game.events.on("cycle-map-mode", () => {
       const mode = this.surfaceLayer.cycleMode();
@@ -178,6 +186,13 @@ export class SupplyChainScene extends Phaser.Scene {
       const enabled = this.consequenceLens.toggle();
       this.game.events.emit("consequence-lens-state", enabled);
     });
+    this.game.events.on("set-gis-tool", (tool: "navigate" | "identify" | "measure") => {
+      this.gisLayer.setTool(tool);
+    });
+    this.game.events.on("set-gis-grid-visible", (visible: boolean) => this.gisLayer.setGridVisible(visible));
+    this.game.events.on("set-weather-layer-visible", (visible: boolean) => this.weatherLayer.setVisible(visible));
+    this.game.events.on("set-logistics-layer-visible", (visible: boolean) => this.logisticsLayer.setVisible(visible));
+    this.game.events.on("clear-gis-analysis", () => this.gisLayer.clear());
     this.game.events.on("investigate-node", (scenarioId: string) => {
       const node = this.nodes.find(({ scenario }) => scenario.id === scenarioId);
       if (node) this.openChallenge(node);
@@ -430,6 +445,7 @@ export class SupplyChainScene extends Phaser.Scene {
       });
 
       container.on("pointerdown", () => {
+        if (!this.gisLayer.isNavigationMode()) return;
         this.setFocusedNode(node);
         this.game.events.emit("node-focus", scenario, !node.completed);
         if (node.active && !node.completed) this.openChallenge(node);

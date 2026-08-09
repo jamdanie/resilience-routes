@@ -42,6 +42,17 @@ export interface MissionRoute {
   color: string;
 }
 
+export interface MissionGeography {
+  crs: "EPSG:4326";
+  referenceName: string;
+  bounds: {
+    west: number;
+    south: number;
+    east: number;
+    north: number;
+  };
+}
+
 export interface MissionAssetDefinition {
   id: string;
   name: string;
@@ -156,6 +167,7 @@ export interface MissionDefinition {
   commandIntent: string;
   target: number;
   playerStart: MapPoint;
+  geography: MissionGeography;
   routes: MissionRoute[];
   assets: MissionAssetDefinition[];
   weather: MissionWeather;
@@ -328,6 +340,31 @@ export interface LogisticsAssetInfo {
   cargo: string;
   meaning: string;
   operationalNote: string;
+  x: number;
+  y: number;
+}
+
+export type GisToolMode = "navigate" | "identify" | "measure";
+
+export interface GeoCursorUpdate {
+  x: number;
+  y: number;
+  longitude: number;
+  latitude: number;
+  gridReference: string;
+}
+
+export interface GeoIdentifyUpdate extends GeoCursorUpdate {
+  nearestNode: string;
+  nodeType: string;
+  distanceMiles: number;
+}
+
+export interface GeoMeasurementUpdate {
+  state: "awaiting-second" | "complete" | "cleared";
+  distanceMiles: number | null;
+  start: GeoCursorUpdate | null;
+  end: GeoCursorUpdate | null;
 }
 
 export interface LogisticsTransition {

@@ -192,6 +192,7 @@ export function renderApplicationShell(): string {
               <div class="map-toolbar">
                 <div><b>Operational map</b><span>Roads, rail, runways, docks, terrain, vehicles, weather, and decision nodes.</span></div>
                 <div class="map-toolbar-actions">
+                  <button id="gis-tools-button" class="secondary-button compact gis-tools-button" type="button" aria-label="Open GIS operations workbench" aria-expanded="false" disabled>GIS tools</button>
                   <button id="consequence-lens-button" class="secondary-button compact consequence-lens-button" type="button" aria-label="Toggle network consequence lens" aria-pressed="true" disabled>Impact lens: On</button>
                   <button id="node-label-button" class="secondary-button compact" type="button" aria-label="Change decision-node label density" disabled>Labels: Compact</button>
                   <button id="map-detail-button" class="secondary-button compact map-mode-button" type="button" aria-label="Change operational map layer" disabled>Map: Infrastructure</button>
@@ -206,6 +207,41 @@ export function renderApplicationShell(): string {
               <div class="game-stage">
                 <div id="game-canvas" class="game-canvas" aria-label="Interactive supply-chain network"></div>
                 <div id="pause-overlay" class="pause-overlay hidden" role="status"><span>Mission paused</span><b>The clock, weather, assets, and injects are holding.</b></div>
+                <div class="gis-map-readout" aria-live="polite">
+                  <span id="gis-coordinate">Geographic cursor awaiting mission</span>
+                  <b id="gis-grid-reference">GRID —</b>
+                  <small id="gis-crs">EPSG:4326 · fictional exercise grid</small>
+                </div>
+                <div class="gis-north-reference" aria-label="Map north"><b>N</b><i aria-hidden="true">↑</i></div>
+                <div class="gis-scale-reference" aria-label="Approximate map scale"><i></i><span id="gis-scale-label">Approx. scale</span></div>
+                <aside id="gis-panel" class="gis-panel hidden" aria-hidden="true" aria-labelledby="gis-panel-title">
+                  <div class="gis-panel-heading">
+                    <div><span>Spatial operations</span><h3 id="gis-panel-title">GIS workbench</h3></div>
+                    <button id="close-gis-panel" class="close-button" type="button" aria-label="Close GIS workbench">×</button>
+                  </div>
+                  <p class="gis-panel-intro">Inspect the exercise grid, measure routes, control operational layers, or export the current picture.</p>
+                  <div class="gis-tool-selector" role="group" aria-label="GIS map tool">
+                    <button type="button" data-gis-tool="navigate" data-active="true">Navigate</button>
+                    <button type="button" data-gis-tool="identify">Identify</button>
+                    <button type="button" data-gis-tool="measure">Measure</button>
+                  </div>
+                  <fieldset class="gis-layer-list">
+                    <legend>Operational layers</legend>
+                    <label><input id="gis-grid-layer" type="checkbox"> Coordinate grid</label>
+                    <label><input id="gis-weather-layer" type="checkbox" checked> Weather system</label>
+                    <label><input id="gis-logistics-layer" type="checkbox" checked> Live logistics</label>
+                  </fieldset>
+                  <section id="gis-result" class="gis-result" aria-live="polite">
+                    <span>Map analysis</span>
+                    <b id="gis-result-title">Choose Identify or Measure</b>
+                    <p id="gis-result-detail">Identify finds the nearest active node. Measure calculates an approximate great-circle distance.</p>
+                  </section>
+                  <div class="gis-panel-actions">
+                    <button id="clear-gis-button" class="secondary-button compact" type="button">Clear analysis</button>
+                    <button id="export-geojson-button" class="primary-button compact" type="button">Export GeoJSON</button>
+                  </div>
+                  <small class="gis-disclaimer">Approximate coordinates for a fictional educational exercise. Not for navigation.</small>
+                </aside>
               </div>
               <p class="canvas-disclaimer">The network, locations, incidents, and scores are fictional and intended only for education.</p>
             </div>
@@ -395,6 +431,7 @@ export function renderApplicationShell(): string {
           <button type="button" data-command="map"><span>Cycle operational map layer</span><kbd>L</kbd></button>
           <button type="button" data-command="labels"><span>Change node label density</span><kbd>N</kbd></button>
           <button type="button" data-command="lens"><span>Toggle network consequence lens</span><kbd>C</kbd></button>
+          <button type="button" data-command="gis"><span>Open GIS operations workbench</span><kbd>I</kbd></button>
           <button type="button" data-command="zoom-in"><span>Zoom tactical map in</span><kbd>+</kbd></button>
           <button type="button" data-command="zoom-out"><span>Zoom tactical map out</span><kbd>−</kbd></button>
           <button type="button" data-command="zoom-reset"><span>Reset tactical map zoom</span><kbd>0</kbd></button>

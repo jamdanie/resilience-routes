@@ -11,6 +11,16 @@
     480,
     325
   ],
+  "geography": {
+    "crs": "EPSG:4326",
+    "referenceName": "Gulf Coast exercise grid",
+    "bounds": {
+      "west": -97.8,
+      "south": 26.0,
+      "east": -88.5,
+      "north": 31.0
+    }
+  },
   "routes": [
     {
       "from": [

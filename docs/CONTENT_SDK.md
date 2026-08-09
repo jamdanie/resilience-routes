@@ -51,6 +51,22 @@ New injects also include a `contribution` block for authors, sources, and licens
 
 The scaffold includes an `intelligence` block. Contributors can define what is confirmed, what remains uncertain, what a verification check discovers, and the consequence forecast shown after the player spends Intel.
 
+## Geographic extent
+
+Every `mission.json` includes one `geography` block:
+
+```json
+{
+  "geography": {
+    "crs": "EPSG:4326",
+    "referenceName": "Pacific Northwest exercise grid",
+    "bounds": { "west": -124.8, "south": 45.4, "east": -116.8, "north": 49.0 }
+  }
+}
+```
+
+The bounds project the fictional 960×600 exercise surface into longitude and latitude. Use a broad regional extent, keep west less than east and south less than north, and do not imply that fictional nodes occupy precise real facilities. New level scaffolds copy a valid block from the source pack; change the name and four bounds for the new region. The validator rejects invalid coordinate order or ranges before merge.
+
 ## Draft and playable status
 
 `draft` packs are validated but excluded from the in-game mission menu. This lets contributors submit work-in-progress structure without accidentally publishing it as a finished level. A maintainer changes the manifest to `playable` after content, accessibility, map, and gameplay review.

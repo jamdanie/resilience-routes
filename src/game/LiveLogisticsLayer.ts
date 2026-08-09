@@ -14,7 +14,7 @@ import type {
   ,WeatherRunPlan
 } from "./types";
 
-interface LogisticsAssetDefinition extends Omit<LogisticsAssetInfo, "status" | "operationalNote" | "routeState"> {
+interface LogisticsAssetDefinition extends Omit<LogisticsAssetInfo, "status" | "operationalNote" | "routeState" | "x" | "y"> {
   alternateRoute: string;
   color: number;
   speed: number;
@@ -253,6 +253,7 @@ export class LiveLogisticsLayer {
   private readonly weatherPlan: WeatherRunPlan | null;
   private readonly assets = new Map<string, LogisticsAssetView>();
   private selectedAssetId: string | null = null;
+  private snapshotAccumulatorMs = 0;
 
   constructor(
     scene: Phaser.Scene,
@@ -306,6 +307,11 @@ export class LiveLogisticsLayer {
       asset.container.setPosition(point.x, point.y);
       asset.icon.setRotation(angle);
     });
+    this.snapshotAccumulatorMs += delta;
+    if (this.snapshotAccumulatorMs >= 1000) {
+      this.snapshotAccumulatorMs %= 1000;
+      this.emitSnapshot();
+    }
   }
 
   applyScenarioDisruption(scenario: string | ScenarioLogisticsEffect[]): LogisticsTransition[] {
@@ -408,6 +414,13 @@ export class LiveLogisticsLayer {
       this.applyEffectiveStatus(asset);
     });
     this.emitSnapshot();
+  }
+
+  setVisible(visible: boolean): void {
+    this.assets.forEach((asset) => {
+      asset.container.setVisible(visible);
+      asset.routeTrace.setVisible(visible);
+    });
   }
 
   private drawLayerLabel(): void {
@@ -672,7 +685,9 @@ export class LiveLogisticsLayer {
       route: asset.routeState === "Alternate route" ? asset.definition.alternateRoute : asset.definition.route,
       cargo: asset.definition.cargo,
       meaning: asset.definition.meaning,
-      operationalNote: asset.operationalNote
+      operationalNote: asset.operationalNote,
+      x: Math.round(asset.container.x),
+      y: Math.round(asset.container.y)
     };
   }
 

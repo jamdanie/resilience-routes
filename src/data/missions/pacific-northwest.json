@@ -8,6 +8,11 @@
   "commandIntent": "Maintain essential movement while adapting to weather, capacity limits, infrastructure failures, and trusted-information problems.",
   "target": 3,
   "playerStart": [475, 320],
+  "geography": {
+    "crs": "EPSG:4326",
+    "referenceName": "Pacific Northwest exercise grid",
+    "bounds": { "west": -124.8, "south": 45.4, "east": -116.8, "north": 49.0 }
+  },
   "routes": [
     { "from": [155, 190], "to": [445, 160], "color": "#45b7e8" },
     { "from": [445, 160], "to": [755, 210], "color": "#e3b455" },

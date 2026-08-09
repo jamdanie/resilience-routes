@@ -11,6 +11,16 @@
     475,
     320
   ],
+  "geography": {
+    "crs": "EPSG:4326",
+    "referenceName": "Pacific Northwest exercise grid",
+    "bounds": {
+      "west": -124.8,
+      "south": 45.4,
+      "east": -116.8,
+      "north": 49.0
+    }
+  },
   "routes": [
     {
       "from": [

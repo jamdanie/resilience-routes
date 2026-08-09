@@ -106,6 +106,7 @@ async function createLevel() {
   mission.region = `TODO: ${name} region`;
   mission.description = `TODO: describe ${name}.`;
   mission.commandIntent = "TODO: state the command intent for this mission set.";
+  mission.geography.referenceName = `TODO: ${name} exercise grid`;
   await save(join(outputRoot, "mission.json"), mission);
   await save(join(outputRoot, "manifest.json"), {
     id,
