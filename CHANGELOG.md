@@ -1,5 +1,15 @@
 # Changelog
 
+## 8.0.0
+
+- Established the feature-complete course and portfolio release boundary
+- Added a GIS operations workbench with WGS84 exercise extents, coordinate readout, identify, measurement, layer controls, and GeoJSON export
+- Added Justin Ngo's Pacific Northwest port cyber-scheduling inject, bringing the decision library to 17 injects
+- Recorded scenario-level authorship, source, license, and integration notes in structured content metadata
+- Updated public leadership and contributor credit to reflect documented, incorporated work
+- Added a maintenance track for defects, dependencies, accessibility, documentation, and reviewed community content
+- Moved connected multiplayer, PWA delivery, and browser authoring into separately approved optional product phases
+
 ## 7.0.0
 
 - Added six limited strategic resources: funds, field crews, transportation capacity, fuel, intelligence, and emergency inventory

@@ -372,15 +372,12 @@ export function renderApplicationShell(): string {
           </div>
 
           <div class="contributors-block">
-            <p class="eyebrow">Project contributors</p>
+            <p class="eyebrow">Project leadership and contributors</p>
             <div class="contributors-grid">
-              <article><h3>James Daniels</h3><p>Prototype architecture, scenario integration, hazards, deployment, and release coordination.</p></article>
-              <article><h3>Kristina-Marie Horton</h3><p>Game design, global trade relationships, resource logic, and win conditions.</p></article>
-              <article><h3>A'zariah Turner</h3><p>Visual direction, maps, icons, and interface consistency.</p></article>
-              <article><h3>Lauren Hession</h3><p>Ports, airports, rail, highways, chokepoints, dependencies, and alternate routes.</p></article>
-              <article><h3>Rachel Farlinger</h3><p>Rules, learning text, scenario wording, and after-action prompts.</p></article>
-              <article><h3>Justin Ngo</h3><p>U.S.-scale scenarios, state and regional injects, and domestic exercise content.</p></article>
+              <article><span>Project Lead</span><h3>James Daniels</h3><p>Product direction, software architecture, game systems, interface and GIS, hazards, scenario integration, documentation, testing, deployment, and releases.</p></article>
+              <article><span>Co-Lead · Game Development, Functionality, and Playtesting</span><h3>Justin Ngo</h3><p>Cross-difficulty QA, functionality review, U.S.-scale scenario development, and authorship of the port cyber-scheduling inject.</p></article>
             </div>
+            <p class="project-acknowledgments"><b>Acknowledgments:</b> Sunny Wescott for the originating concept and program direction, and John P. Farrell for mentorship and operational-resilience context. Acknowledgments do not imply implementation authorship or endorsement.</p>
           </div>
         </section>
       </main>

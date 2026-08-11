@@ -1,50 +1,65 @@
-# Resilience Routes Roadmap
+# Resilience Routes Project Plan
 
-## Current release goal
+## Current stopping point — Version 8.0.0
 
-The clean rebuild is complete when a first-time player can:
+Resilience Routes is feature-complete for its course, demonstration, and portfolio purpose. A first-time player can:
 
-- understand the purpose from the landing page;
-- enter Mission Control without verbal instructions;
-- choose Easy, Medium, or Hard difficulty;
-- launch the Phaser network;
-- investigate a physical or digital infrastructure node;
-- read plain-language definitions before choosing a response;
-- receive a rationale for the selected option;
-- stabilize three nodes;
-- review and print an after-action report;
-- use the interface on desktop, tablet, or phone;
-- deploy the same code through GitHub Pages.
+- understand the mission without verbal instruction;
+- choose a region, difficulty, and reproducible seed;
+- use mouse, touch, or keyboard controls;
+- investigate connected physical and digital infrastructure;
+- interpret animated logistics, weather, operating conditions, and temporary injects;
+- compare limited-resource response choices with plain-language definitions and rationales;
+- use map layers, consequence tracing, coordinates, identification, measurement, and GeoJSON export;
+- stabilize a network and review a printable after-action report;
+- compare browser-local run history; and
+- run the same static build locally or through GitHub Pages.
 
-## Completed expansion milestones
+## Completed product capabilities
 
-- Added Pacific Northwest and Gulf Coast / Texas mission packs.
-- Added deterministic seeded randomization for active incidents, response order, and operating conditions.
-- Added browser-local run history and reproducible mission loading.
-- Added validation for mission definitions, regional asset references, weather, and scenario content.
-- Added automated tests for replay consistency and run variation.
-- Added seeded vehicle position, direction, speed, and initial route selection.
-- Added localized randomized weather tracks and affected-asset selection.
-- Expanded the library to 16 decision injects and 10 temporary injects.
-- Added an optional fictional terrain and infrastructure context layer.
+- Pacific Northwest and Gulf Coast / Texas mission packs
+- 17 complete decision injects and 10 temporary injects
+- Deterministic seeded mission, option, logistics, weather, and inject randomization
+- Strategic resource and intelligence economies with tested fallbacks
+- Live vessels, aircraft, trains, trucks, reroutes, delays, and holding states
+- Operational basemap with infrastructure, terrain, water, and minimal display modes
+- GIS workbench with WGS84 exercise extents, identify, measure, layers, and GeoJSON export
+- Network consequence lens and downstream dependency explanations
+- Mission pause, zoom, focus mode, fly-out references, and searchable command palette
+- Browser-local run history, replay, scoring, and after-action reporting
+- JSON content SDK, schemas, scaffolding, validation, automated mission tests, and contributor guidance
+- GitHub Pages build and deployment workflow
 
-## Next milestones
+## Maintenance boundary
 
-1. Add a dependency-inspection mode that explains route and sector relationships.
-2. Add an in-browser scenario editor with preview and JSON export.
-3. Add optional team roles and shared decision rounds.
-4. Add a facilitator mode with selectable seeds and pause/resume controls.
-5. Add accessibility testing with keyboard-only and screen-reader users.
-6. Add scoring unit tests and a lightweight end-to-end browser test.
-7. Add installable offline/PWA support for classrooms with unreliable connectivity.
+The supported work after 8.0.0 is:
 
-## Playtest questions
+1. Reproducible bug fixes
+2. Dependency and security maintenance
+3. Accessibility findings and compatibility fixes
+4. Reviewed injects or regional mission packs that pass the content workflow
+5. Documentation corrections
 
-- Could the player begin without verbal help?
-- Were unfamiliar words defined before they were used in a decision?
-- Did the player understand how one disruption affected connected systems?
-- Did the response rationales explain why each choice helped or increased risk?
-- Was the movement optional rather than a barrier?
-- Was the mission objective clear?
-- Was the after-action report useful enough for discussion?
-- What felt too slow, too dense, or unnecessary?
+New core systems are outside the current release scope. They should begin only after a written product decision that identifies the audience, owner, maintenance cost, privacy model, and acceptance criteria.
+
+## Optional future product phases
+
+These ideas are intentionally deferred and are not required for the completed release:
+
+- Facilitator-controlled, role-based multiplayer with a separately approved backend
+- Installable offline/PWA delivery
+- A browser-based scenario editor with preview and JSON export
+- Moderated cohort analytics with explicit consent and data-retention rules
+- Formal accessibility testing with keyboard-only and screen-reader users
+- Expanded end-to-end browser automation
+
+## Release acceptance checklist
+
+- `npm run build` passes.
+- Content validation reports two playable packs and 17 decision injects.
+- Easy, Medium, and Hard missions can complete and replay cleanly.
+- A repeated seed reproduces the same run setup.
+- Mouse and keyboard investigation both work.
+- Pause, references, command palette, consequence lens, and GIS workbench work during a mission.
+- The after-action report handles successful, incomplete, and expired missions accurately.
+- Public contributor credit matches documented, incorporated work.

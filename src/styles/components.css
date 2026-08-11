@@ -1599,6 +1599,7 @@ input::placeholder {
 
 .learning-steps article > span,
 .architecture-grid article > span,
+.contributors-grid article > span,
 .scenario-card > span {
   color: var(--blue);
   font-size: 0.69rem;
@@ -1620,6 +1621,14 @@ input::placeholder {
 .contributors-grid article p {
   margin-bottom: 0;
   font-size: 0.82rem;
+}
+
+.project-acknowledgments {
+  max-width: 920px;
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.65;
 }
 
 .scenario-card {
