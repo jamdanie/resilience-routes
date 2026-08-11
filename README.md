@@ -2,6 +2,15 @@
 
 Resilience Routes is a portfolio-ready educational simulator about supply-chain interdependence, critical infrastructure, disruption, and recovery decisions. It includes two regional mission packs, seeded procedural runs, limited strategic resources, changing operating conditions, randomized logistics and localized weather, temporary injects, a layered operational basemap, a GIS operations workbench, and browser-local performance history.
 
+## Project status and leadership
+
+Version 8.0.0 is the feature-complete course and portfolio baseline. Future work is intentionally limited to maintenance, accessibility improvements, dependency and security updates, and reviewed community content unless a new product phase is separately approved.
+
+- **James Daniels — Project Lead:** product direction, software architecture, game systems, interface and GIS, hazards, scenario integration, documentation, testing, deployment, review, and releases.
+- **Justin Ngo — Co-Lead, Game Development, Functionality, and Playtesting:** cross-difficulty QA, functionality review, U.S.-scale scenario development, and authorship of the Pacific Northwest port cyber-scheduling inject.
+
+Sunny Wescott is acknowledged for the originating concept and program direction. John P. Farrell is acknowledged for mentorship and operational-resilience context. See [Contributors and Attribution](docs/CONTRIBUTORS.md) for the evidence-based credit policy.
+
 ## What this rebuild changes
 
 The project keeps the familiar entry points and names:
@@ -129,7 +138,7 @@ Scenario authors can provide a custom intelligence brief in JSON. Existing injec
 
 Each run combines a regional mission pack with a seed. The seed determines which three disruptions are active, the answer order, operating condition, vehicle starting positions and direction, initial alternate route, weather path and timing, locally affected assets, and temporary inject schedule. Leaving the seed blank creates a new run. Reusing a seed with the same region reproduces the same setup for fair comparison, classroom discussion, and regression testing.
 
-The current content library contains 16 complete decision injects and 10 temporary injects. Temporary events can create localized inclement weather, cost pressure, tariff reviews, labor unrest, human errors, and cyber-enabled fraud while the main exercise continues.
+The current content library contains 17 complete decision injects and 10 temporary injects. Temporary events can create localized inclement weather, cost pressure, tariff reviews, labor unrest, human errors, and cyber-enabled fraud while the main exercise continues.
 
 The map remains fictional and does not load commercial map tiles. Players can cycle among Infrastructure, Terrain, and Minimal modes. The Infrastructure mode adds recognizable coastlines, ports and berths, roads, rail corridors, runways, cargo aprons, distribution buildings, rivers, wetlands, and labeled operating zones without an API key or external tracking.
 

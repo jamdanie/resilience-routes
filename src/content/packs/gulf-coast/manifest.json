@@ -3,5 +3,7 @@
   "name": "Gulf Coast Continuity",
   "version": "1.0.0",
   "status": "playable",
-  "description": "Fictional Gulf Coast and Texas regional continuity mission pack."
+  "description": "Fictional Gulf Coast and Texas regional continuity mission pack.",
+  "contributors": ["James Daniels"],
+  "license": "MIT"
 }
