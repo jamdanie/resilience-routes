@@ -1,0 +1,86 @@
+{
+  "id": "wildfire-smoke",
+  "title": "Skybridge Airport",
+  "nodeType": "Airport",
+  "x": 755,
+  "y": 180,
+  "color": "#d97d58",
+  "event": "Wildfire smoke reduces visibility and creates unsafe working conditions near a cargo airport.",
+  "why": "Air cargo is often used for urgent, high-value, medical, repair, or time-sensitive goods. Delays can matter quickly because these shipments were chosen for speed.",
+  "how": "Smoke can delay flights, reduce ramp activity, affect worker health, close roads, and slow the trucks that connect the airport to hospitals and businesses.",
+  "when": "The risk is highest during active wildfire periods, shifting winds, temperature inversions, and regional evacuations.",
+  "where": "The disruption affects the airport and nearby roads first, then spreads to hospitals, manufacturers, repair operations, and customers waiting for urgent items.",
+  "keyTerms": [
+    {
+      "term": "Continuity",
+      "definition": "The ability to keep the most important work operating during and after a disruption.",
+      "example": "Moving urgent medical cargo through another airport while the primary airport is unsafe.",
+      "whyItMatters": "Continuity does not mean keeping every normal activity running. It means protecting essential functions safely."
+    },
+    {
+      "term": "Threshold",
+      "definition": "A measured point that triggers a planned action when conditions become too risky or too severe.",
+      "example": "Airport ramp work pauses when air-quality readings pass a safety threshold.",
+      "whyItMatters": "Thresholds turn vague concern into a consistent decision rule."
+    },
+    {
+      "term": "Alternate node",
+      "definition": "Another facility that can perform some or all of the work normally handled by the primary facility.",
+      "example": "A nearby cargo airport receiving urgent flights during a smoke closure.",
+      "whyItMatters": "The alternate node must have runway, staffing, cargo-handling, and ground-transportation capability."
+    }
+  ],
+  "question": "Which option protects continuity without ignoring worker safety?",
+  "options": [
+    "Keep full operations running regardless of air quality",
+    "Pause all regional deliveries for the rest of the month",
+    "Shift urgent cargo to a safer airport and use air-quality thresholds for local work"
+  ],
+  "optionRationales": [
+    "Ignoring air quality places workers and operations at risk and can make the disruption worse.",
+    "A month-long regional shutdown is broader than the known hazard and would stop essential deliveries unnecessarily.",
+    "This response protects workers, preserves urgent movement, and uses measurable thresholds to decide when local work is safe."
+  ],
+  "correctIndex": 2,
+  "takeaway": "Continuity plans must protect workers while identifying alternate nodes for truly urgent cargo.",
+  "responsePrinciple": "Use safety thresholds, shift essential cargo, and restore normal operations only when conditions are verified.",
+  "basePenalty": 9,
+  "logisticsEffects": [
+    {
+      "assetId": "airlift-27",
+      "activeStatus": "Holding",
+      "activeReason": "Unsafe visibility and ramp conditions prevent local cargo operations.",
+      "correctStatus": "Rerouted",
+      "correctReason": "Urgent cargo was diverted to a safer airport using verified thresholds.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "The aircraft cannot continue while local conditions remain unsafe."
+    },
+    {
+      "assetId": "roadlink-14",
+      "activeStatus": "Delayed",
+      "activeReason": "Smoke and flight changes have disrupted airport truck appointments.",
+      "correctStatus": "Rerouted",
+      "correctReason": "The truck is collecting urgent cargo from the alternate airport.",
+      "incorrectStatus": "Delayed",
+      "incorrectReason": "The truck remains tied to an airport that cannot accept the shipment."
+    }
+  ],
+  "cascadeSteps": [
+    "Smoke reduces visibility and creates unsafe air quality at the cargo airport.",
+    "Flights, ramp work, and nearby truck movement slow or pause.",
+    "Urgent cargo must compete for space at safer alternate airports.",
+    "Hospitals, repair teams, manufacturers, and customers wait longer for time-sensitive goods."
+  ],
+  "resourceCosts": [
+    {},
+    {
+      "funds": 1,
+      "transport": 1
+    },
+    {
+      "funds": 1,
+      "transport": 2,
+      "intelligence": 1
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "id": "highway-landslide",
+  "title": "Cascade Highway Transfer Point",
+  "nodeType": "Highway",
+  "x": 580,
+  "y": 330,
+  "color": "#5fb7a6",
+  "event": "A landslide closes a mountain highway used for regional food and medical deliveries.",
+  "why": "Mountain highways connect coastal and inland communities. When one closes, deliveries may have to travel much farther on routes with less capacity.",
+  "how": "Traffic queues near the closure, trucks consume more fuel on detours, and limited alternate roads receive more vehicles than normal.",
+  "when": "The risk grows during prolonged rain, rapid snowmelt, wildfire damage, or winter storms because slopes and alternate routes may already be stressed.",
+  "where": "The first effects appear near the closed highway and then spread to distribution centers, clinics, stores, farms, and communities along the detour.",
+  "keyTerms": [
+    {
+      "term": "Detour",
+      "definition": "An alternate path used when the normal route is blocked or unsafe.",
+      "example": "A truck uses a longer state highway after the primary mountain pass closes.",
+      "whyItMatters": "A detour only helps when it is safe and has enough capacity for the diverted traffic."
+    },
+    {
+      "term": "Throughput",
+      "definition": "The amount of cargo or traffic that can pass through a route or facility during a period of time.",
+      "example": "A narrow detour may handle fewer trucks per hour than the closed highway.",
+      "whyItMatters": "A usable route can still become a bottleneck when demand exceeds its throughput."
+    },
+    {
+      "term": "Priority load",
+      "definition": "A shipment that should move first because a delay could cause greater harm.",
+      "example": "Temperature-controlled medicine moves before nonessential retail inventory.",
+      "whyItMatters": "Limited detour capacity should protect health, safety, and essential services first."
+    }
+  ],
+  "question": "Which response best protects essential deliveries while the highway is closed?",
+  "options": [
+    "Send every truck to the first available detour without checking capacity",
+    "Verify safe detour capacity, prioritize essential loads, and stagger departure times",
+    "Hold all deliveries until the original highway reopens"
+  ],
+  "optionRationales": [
+    "Uncoordinated diversion can overwhelm a smaller road and create another unsafe blockage.",
+    "This response verifies the alternate route, protects the most important cargo, and reduces traffic surges.",
+    "Holding every shipment avoids the detour but unnecessarily stops essential deliveries that could move safely."
+  ],
+  "correctIndex": 1,
+  "takeaway": "An alternate route must be checked for safety and capacity before priority cargo is moved.",
+  "responsePrinciple": "Verify the detour, protect essential loads, and schedule movement within available capacity.",
+  "basePenalty": 10,
+  "logisticsEffects": [
+    {
+      "assetId": "roadlink-14",
+      "activeStatus": "Delayed",
+      "activeReason": "The truck stopped before the blocked mountain highway.",
+      "correctStatus": "Rerouted",
+      "correctReason": "A safe detour and departure window were confirmed for the priority load.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "No safe route with available capacity was confirmed."
+    }
+  ],
+  "cascadeSteps": [
+    "A landslide blocks the primary mountain highway.",
+    "Trucks stop or move toward longer alternate roads.",
+    "Detour capacity, driver hours, and fuel availability become constrained.",
+    "Clinics, stores, farms, and inland communities receive late deliveries."
+  ],
+  "resourceCosts": [
+    {
+      "transport": 2,
+      "fuel": 2
+    },
+    {
+      "crews": 1,
+      "transport": 2,
+      "fuel": 1,
+      "intelligence": 1
+    },
+    {}
+  ]
+}

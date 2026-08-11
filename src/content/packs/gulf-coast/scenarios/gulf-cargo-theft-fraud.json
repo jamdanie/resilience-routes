@@ -1,0 +1,67 @@
+{
+  "id": "gulf-cargo-theft-fraud",
+  "title": "Criminal reroute targets a priority shipment",
+  "nodeType": "Cyber-enabled crime",
+  "x": 560,
+  "y": 420,
+  "color": "#ff7d88",
+  "event": "A criminal actor used copied carrier information to send a convincing message that changes the delivery location of a priority load.",
+  "why": "Cybercrime can create a physical cargo loss when false digital instructions are accepted by dispatchers, drivers, or warehouses.",
+  "how": "The false message changes the destination, the truck leaves its verified route, and the receiving site never gets the shipment.",
+  "when": "The risk grows when urgent changes are accepted through email alone or employees cannot verify a request using trusted contact information.",
+  "where": "The attack begins in a message but affects dispatch, the driver, cargo custody, inventory, and the site expecting delivery.",
+  "keyTerms": [
+    {
+      "term": "Business email compromise",
+      "definition": "A fraud scheme that impersonates a trusted person or company to cause a payment or operational change.",
+      "example": "A message that looks like it came from a carrier requests a new delivery address.",
+      "whyItMatters": "A believable message can turn a digital deception into financial loss or stolen cargo."
+    },
+    {
+      "term": "Out-of-band verification",
+      "definition": "Checking a request through a different trusted communication method than the one used to send it.",
+      "example": "Dispatch calls the carrier using the number in the approved vendor record instead of replying to the message.",
+      "whyItMatters": "An attacker who controls one message channel may not control the separate trusted channel."
+    }
+  ],
+  "question": "What should dispatch do with the changed destination request?",
+  "options": [
+    "Hold the change and verify it through approved carrier and customer contacts",
+    "Accept the change because the message includes the correct shipment number",
+    "Forward the message to the driver and let the driver decide"
+  ],
+  "optionRationales": [
+    "A brief hold and separate verification prevents a copied shipment number from authorizing a physical reroute.",
+    "Shipment details can be stolen from compromised email, documents, or previous transactions and do not prove the sender is trusted.",
+    "The organization must verify route changes before placing the decision and risk on the driver."
+  ],
+  "correctIndex": 0,
+  "takeaway": "Urgent route changes should be verified through a trusted second channel before cargo custody or destination changes.",
+  "responsePrinciple": "Pause the requested change, verify independently, and preserve the message for investigation.",
+  "basePenalty": 12,
+  "logisticsEffects": [
+    {
+      "assetId": "gulf-road-22",
+      "activeStatus": "Holding",
+      "activeReason": "The truck is held while an unexpected destination change is verified.",
+      "correctStatus": "In transit",
+      "correctReason": "The false request was rejected and the truck continued to the verified destination.",
+      "incorrectStatus": "Rerouted",
+      "incorrectReason": "The truck followed the fraudulent instruction toward an unverified destination."
+    }
+  ],
+  "cascadeSteps": [
+    "A criminal actor sends a convincing destination-change message with real shipment details.",
+    "Dispatch treats the message as trusted and changes the truck route.",
+    "The shipment leaves the verified chain of custody.",
+    "The intended site receives nothing while the organization faces cargo loss and recovery costs."
+  ],
+  "resourceCosts": [
+    {
+      "crews": 1,
+      "intelligence": 2
+    },
+    {},
+    {}
+  ]
+}

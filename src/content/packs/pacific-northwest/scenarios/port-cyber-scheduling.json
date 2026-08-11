@@ -1,0 +1,93 @@
+{
+  "id": "port-cyber-scheduling",
+  "title": "Harbor Gateway Scheduling Center",
+  "nodeType": "Port",
+  "x": 205,
+  "y": 235,
+  "color": "#6c8cff",
+  "event": "A cyberattack disables the appointment and gate-scheduling system at a regional container port.",
+  "why": "The scheduling system tells trucks when to arrive and which containers to move. Without it, the port cannot coordinate arrivals, and cargo begins to back up at the terminal.",
+  "how": "Trucks arrive without valid appointments, gates slow to manual processing, containers sit longer in the yard, and the terminal fills toward capacity as ships continue to arrive.",
+  "when": "The risk grows when scheduling software is unpatched, when a single system has no manual backup, or when the port is already near peak volume and has little slack to absorb delay.",
+  "where": "The first effects appear at the port gates and container yard, then spread to trucking companies, rail connections, warehouses, and the retailers and manufacturers waiting on the cargo.",
+  "keyTerms": [
+    {
+      "term": "Gate appointment",
+      "definition": "A scheduled time slot that tells a truck when to arrive at the port to pick up or drop off a container.",
+      "example": "A carrier books a 9:00 AM slot so its truck is not left waiting at a full gate.",
+      "whyItMatters": "Appointments keep truck arrivals matched to the port's capacity so the gates and yard do not overload."
+    },
+    {
+      "term": "Yard capacity",
+      "definition": "The number of containers a terminal can hold before it runs out of usable space.",
+      "example": "A yard near its limit cannot accept new containers until others are moved out.",
+      "whyItMatters": "When a yard fills up, ships cannot unload and the whole terminal slows down."
+    },
+    {
+      "term": "Manual fallback",
+      "definition": "A backup process that lets work continue by hand when the normal system is unavailable.",
+      "example": "Gate staff check paperwork manually when the digital scheduling system is offline.",
+      "whyItMatters": "A manual fallback keeps essential movement going, but usually at a much slower rate than the automated system."
+    }
+  ],
+  "question": "Which response best keeps priority cargo moving while the scheduling system is offline?",
+  "options": [
+    "Keep accepting all trucks at normal volume and sort it out at the gate",
+    "Switch to manual gate processing, meter truck arrivals, and prioritize essential and time-sensitive containers",
+    "Close the gates completely until the scheduling system is restored"
+  ],
+  "optionRationales": [
+    "Normal volume without scheduling overwhelms manual gates and fills the yard, making the backlog worse.",
+    "This response keeps the port moving at a safe rate and protects the most important cargo while the system is repaired.",
+    "A full closure stops the backlog from growing but also halts essential and perishable cargo that could still move slowly."
+  ],
+  "correctIndex": 1,
+  "takeaway": "When a scheduling system fails, meter arrivals to the manual processing rate and move the most important cargo first.",
+  "responsePrinciple": "Fall back to manual processing, match truck arrivals to real capacity, and protect priority cargo.",
+  "basePenalty": 12,
+  "logisticsEffects": [
+    {
+      "assetId": "vessel-cascade",
+      "activeStatus": "Delayed",
+      "activeReason": "The ship cannot discharge because the container yard is backing up.",
+      "correctStatus": "Rerouted",
+      "correctReason": "Manual processing is metering arrivals, so priority containers clear and the vessel is re-sequenced to discharge.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "The gates are closed, so the vessel waits with no discharge slot."
+    }
+  ],
+  "cascadeSteps": [
+    "A cyberattack disables the port scheduling system.",
+    "Trucks arrive without appointments and gates fall back to slow manual processing.",
+    "Containers accumulate in the yard as it approaches capacity.",
+    "Warehouses, rail connections, and waiting retailers receive their cargo late."
+  ],
+  "resourceCosts": [
+    {
+      "transport": 2
+    },
+    {
+      "crews": 1,
+      "transport": 1,
+      "intelligence": 2
+    },
+    {}
+  ],
+  "intelligence": {
+    "confidence": "moderate",
+    "confirmed": "Port scheduling and gate systems are unavailable, and staff have activated manual processing.",
+    "uncertainty": "The restoration time, attack scope, system integrity, yard capacity, and size of the developing backlog remain uncertain.",
+    "verificationFinding": "Determine whether the attack is contained to the scheduling environment and confirm that manual fallback procedures are functioning.",
+    "forecast": "Without arrival metering, the yard will fill and delays will spread to vessel, rail, trucking, warehouse, and customer operations."
+  },
+  "contribution": {
+    "authors": [
+      "Justin Ngo"
+    ],
+    "sources": [
+      "Fictional exercise content; no live operational data."
+    ],
+    "license": "MIT",
+    "notes": "Original Pacific Northwest inject submitted by Justin Ngo and reviewed and integrated by James Daniels."
+  }
+}

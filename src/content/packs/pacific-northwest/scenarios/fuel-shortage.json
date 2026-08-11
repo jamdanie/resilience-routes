@@ -1,0 +1,77 @@
+{
+  "id": "fuel-shortage",
+  "title": "Cedar Distribution Center",
+  "nodeType": "Warehouse",
+  "x": 270,
+  "y": 430,
+  "color": "#70c37d",
+  "event": "A regional fuel shortage reduces available trucking capacity.",
+  "why": "A warehouse stores and organizes inventory, but the inventory cannot help communities unless transportation is available to move it.",
+  "how": "Fuel shortages increase costs, reduce trip frequency, and force carriers to choose which routes and customers receive limited transportation.",
+  "when": "The risk rises after refinery outages, pipeline problems, severe weather, conflict, cyber incidents, or sudden demand spikes.",
+  "where": "The shortage affects carriers and fuel terminals first, then spreads to warehouses, stores, hospitals, farms, and emergency-response operations.",
+  "keyTerms": [
+    {
+      "term": "Load consolidation",
+      "definition": "Combining compatible shipments so a vehicle carries more useful cargo on each trip.",
+      "example": "Combining several small hospital deliveries into one fuller truck route.",
+      "whyItMatters": "Fewer, fuller trips use limited fuel and driver time more efficiently."
+    },
+    {
+      "term": "Essential delivery",
+      "definition": "A shipment whose delay could seriously affect health, safety, utilities, emergency response, or another critical service.",
+      "example": "Fuel for emergency generators or medicine for a hospital.",
+      "whyItMatters": "Not every delayed product creates the same level of harm."
+    },
+    {
+      "term": "Resource coordination",
+      "definition": "Sharing accurate needs, availability, and priorities among organizations so limited resources are not wasted or duplicated.",
+      "example": "Carriers, hospitals, fuel suppliers, and emergency managers agreeing on a priority fuel schedule.",
+      "whyItMatters": "Coordination prevents several organizations from competing blindly for the same limited supply."
+    }
+  ],
+  "question": "Which action best protects essential deliveries?",
+  "options": [
+    "Prioritize critical loads, combine trips, and coordinate fuel access with partners",
+    "Send every truck on its normal route even when loads are nearly empty",
+    "Stop sharing status information with partners"
+  ],
+  "optionRationales": [
+    "This response reduces unnecessary trips, protects essential deliveries, and coordinates access to the scarce resource.",
+    "Normal routing wastes fuel when trucks are lightly loaded and does not account for changed priorities.",
+    "Withholding status information causes duplicate requests, poor planning, and avoidable competition for fuel."
+  ],
+  "correctIndex": 0,
+  "takeaway": "Resource sharing and priority rules help limited transportation capacity support the most important needs first.",
+  "responsePrinciple": "Define essential deliveries, consolidate compatible loads, and coordinate fuel access across partners.",
+  "basePenalty": 10,
+  "logisticsEffects": [
+    {
+      "assetId": "roadlink-14",
+      "activeStatus": "Holding",
+      "activeReason": "The truck lacks enough allocated fuel to complete its normal route.",
+      "correctStatus": "Rerouted",
+      "correctReason": "Consolidated priority loads are moving on a shorter fuel-supported route.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "Fuel was not prioritized, so the truck remains unavailable."
+    }
+  ],
+  "cascadeSteps": [
+    "A regional fuel shortage reduces the number of truck trips that carriers can operate.",
+    "Carriers prioritize some routes and delay lightly loaded or lower-priority trips.",
+    "Warehouses accumulate inventory that cannot move to its destination.",
+    "Hospitals, stores, farms, utilities, and emergency operations receive fewer or later deliveries."
+  ],
+  "resourceCosts": [
+    {
+      "transport": 1,
+      "fuel": 1,
+      "intelligence": 1
+    },
+    {
+      "transport": 1,
+      "fuel": 2
+    },
+    {}
+  ]
+}

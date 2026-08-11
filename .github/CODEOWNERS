@@ -1,0 +1,5 @@
+# Route content and platform changes to the project maintainer.
+/src/content/packs/ @jamdanie
+/schemas/ @jamdanie
+/scripts/ @jamdanie
+/.github/ @jamdanie

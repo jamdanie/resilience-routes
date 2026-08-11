@@ -1,0 +1,86 @@
+{
+  "id": "gulf-surge-rail",
+  "title": "Bayline Rail Interchange",
+  "nodeType": "Rail",
+  "x": 760,
+  "y": 175,
+  "color": "#e06c75",
+  "event": "Storm surge and drainage failure flood the rail interchange connecting coastal terminals to inland routes.",
+  "why": "An interchange sorts and transfers rail cars between routes. Flooding at one interchange can block cargo from several terminals even when inland tracks remain usable.",
+  "how": "Trains stop outside the flooded area, yards fill, crews lose access, and heavy freight shifts toward roads with less carrying capacity.",
+  "when": "The risk rises near high tide, during prolonged rainfall, when pumps lose power, or when alternate yards are already receiving diverted trains.",
+  "where": "The flooding begins near the coast and spreads through port, refinery, warehouse, agricultural, and construction supply chains.",
+  "keyTerms": [
+    {
+      "term": "Rail interchange",
+      "definition": "A location where rail cars or trains transfer between routes or railroad networks.",
+      "example": "Cars arriving from a port are reorganized into trains bound for inland destinations.",
+      "whyItMatters": "One interchange can connect several cargo sources to a much larger inland network."
+    },
+    {
+      "term": "Embargo",
+      "definition": "A temporary restriction on accepting specified rail traffic when a route or destination cannot handle it safely.",
+      "example": "A railroad stops accepting new cars for a flooded coastal destination.",
+      "whyItMatters": "A targeted embargo prevents more equipment from entering a growing queue."
+    },
+    {
+      "term": "Intermodal transfer",
+      "definition": "Moving cargo between transportation modes such as rail and truck without changing the cargo itself.",
+      "example": "A container is lifted from a rail car onto a truck chassis.",
+      "whyItMatters": "Transfers can preserve movement, but only when equipment, drivers, roads, and terminal capacity are available."
+    }
+  ],
+  "question": "Which response best limits the rail backlog without creating a road-capacity failure?",
+  "options": [
+    "Apply a targeted embargo, verify an inland bypass, and transfer only priority cargo to trucks",
+    "Move every rail shipment to trucks immediately",
+    "Keep accepting trains into the flooded interchange"
+  ],
+  "optionRationales": [
+    "This response limits the incoming queue, uses a verified rail alternative, and protects road capacity for the most important loads.",
+    "The road network, drivers, chassis, and terminals may not have enough capacity for every displaced rail shipment.",
+    "Accepting more trains adds congestion and equipment to a location that cannot process them safely."
+  ],
+  "correctIndex": 0,
+  "takeaway": "Diversion works when incoming volume is controlled and each alternate mode is checked for capacity.",
+  "responsePrinciple": "Stop adding to the queue, verify bypass capacity, and transfer only consequence-based priority loads.",
+  "basePenalty": 11,
+  "logisticsEffects": [
+    {
+      "assetId": "gulf-freight-12",
+      "activeStatus": "Holding",
+      "activeReason": "The train stopped before entering the flooded interchange.",
+      "correctStatus": "Rerouted",
+      "correctReason": "A verified inland rail bypass accepted the priority cars.",
+      "incorrectStatus": "Delayed",
+      "incorrectReason": "The train remains in a growing queue without a confirmed bypass."
+    },
+    {
+      "assetId": "gulf-road-22",
+      "activeStatus": "Delayed",
+      "activeReason": "Rail diversions are increasing demand for trucks and road space.",
+      "correctStatus": "Rerouted",
+      "correctReason": "Only selected priority loads were transferred to a checked road corridor.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "Uncontrolled transfers exceeded available road and truck capacity."
+    }
+  ],
+  "cascadeSteps": [
+    "Storm surge floods the coastal rail interchange.",
+    "Trains stop while yards, crews, and equipment lose access.",
+    "Cargo shifts toward inland bypasses and roads with limited capacity.",
+    "Energy, agriculture, construction, and retail deliveries arrive late."
+  ],
+  "resourceCosts": [
+    {
+      "crews": 1,
+      "transport": 2,
+      "intelligence": 1
+    },
+    {
+      "transport": 2,
+      "fuel": 2
+    },
+    {}
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "id": "port-closure",
+  "title": "Port Horizon",
+  "nodeType": "Port",
+  "x": 155,
+  "y": 160,
+  "color": "#45b7e8",
+  "event": "A labor disruption closes the main container terminal for several days.",
+  "why": "A port is a transfer point where cargo moves between ships and land transportation. When the main terminal closes, goods cannot move normally from vessels to rail lines, trucks, warehouses, factories, or stores.",
+  "how": "Ships begin waiting offshore, containers remain in the wrong place, equipment becomes unavailable, and delivery appointments are missed. These delays then move outward through the network.",
+  "when": "The risk becomes more serious during peak shipping seasons, labor disputes, severe weather, cyber incidents, or equipment failures because there is less unused capacity available.",
+  "where": "The first effects appear at the port. They can then spread to inland rail terminals, distribution centers, factories, retailers, and customers waiting for imported goods.",
+  "keyTerms": [
+    {
+      "term": "Terminal",
+      "definition": "A specific part of a port where ships are loaded or unloaded and containers are transferred to another form of transportation.",
+      "example": "A container ship unloads at a marine terminal before the containers are placed on trucks or trains.",
+      "whyItMatters": "A port may remain open while one important terminal is closed, so planners need to know exactly which capability was lost."
+    },
+    {
+      "term": "Redundancy",
+      "definition": "A backup route, facility, system, or supplier that can be used when the normal one is unavailable.",
+      "example": "Using a second port when the primary port cannot handle cargo.",
+      "whyItMatters": "A backup only helps when transportation space, equipment, and agreements are arranged before the disruption becomes severe."
+    },
+    {
+      "term": "Cascading risk",
+      "definition": "A problem that begins in one place and causes additional problems in connected parts of the system.",
+      "example": "A port closure delays rail shipments, which then causes a factory to run out of parts.",
+      "whyItMatters": "The largest harm may occur far away from the place where the original disruption started."
+    }
+  ],
+  "question": "Which response best reduces the immediate cascading risk?",
+  "options": [
+    "Wait for the port to reopen and keep all shipments unchanged",
+    "Use a secondary port and reserve rail or truck capacity before rerouting",
+    "Cancel every inbound order regardless of priority"
+  ],
+  "optionRationales": [
+    "Waiting keeps every shipment tied to the failed terminal. The backlog grows, and no backup capacity is secured.",
+    "This response uses redundancy and also reserves the transportation capacity needed after cargo reaches the alternate port.",
+    "Canceling everything removes both low-priority and essential cargo. It does not distinguish between what can wait and what must continue moving."
+  ],
+  "correctIndex": 1,
+  "takeaway": "Redundancy works only when alternate routes and transportation capacity are arranged before the main node fails.",
+  "responsePrinciple": "Confirm the alternate node, reserve onward transportation, and move the highest-priority cargo first.",
+  "basePenalty": 10,
+  "logisticsEffects": [
+    {
+      "assetId": "vessel-cascade",
+      "activeStatus": "Holding",
+      "activeReason": "The closed terminal prevents the vessel from unloading safely.",
+      "correctStatus": "Rerouted",
+      "correctReason": "Space was confirmed at a secondary terminal before the vessel changed course.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "No usable terminal capacity was secured, so the vessel remains offshore."
+    },
+    {
+      "assetId": "roadlink-14",
+      "activeStatus": "Delayed",
+      "activeReason": "Missed port appointments have interrupted the truck's planned pickup sequence.",
+      "correctStatus": "Rerouted",
+      "correctReason": "Reserved road capacity now connects the secondary terminal to inland distribution.",
+      "incorrectStatus": "Delayed",
+      "incorrectReason": "The truck is waiting for cargo that remains tied to the closed terminal."
+    }
+  ],
+  "cascadeSteps": [
+    "The main container terminal closes and ships cannot unload normally.",
+    "Containers, cranes, chassis, rail slots, and truck appointments fall out of sequence.",
+    "Warehouses and factories receive late or incomplete deliveries.",
+    "Stores, repair operations, and essential services face shortages or higher costs."
+  ],
+  "resourceCosts": [
+    {},
+    {
+      "funds": 1,
+      "transport": 2,
+      "fuel": 1
+    },
+    {
+      "funds": 1
+    }
+  ]
+}

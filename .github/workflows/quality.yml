@@ -1,0 +1,38 @@
+name: Validate pull request
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate auto-discovered content
+        run: npm run validate:content
+
+      - name: Add content inventory to job summary
+        if: always()
+        run: node scripts/content-report.mjs --markdown >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Test and build application
+        run: npm run build

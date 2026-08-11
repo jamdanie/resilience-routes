@@ -1,0 +1,76 @@
+name: Mission-pack proposal
+description: Propose a new playable region or complete level
+title: "[Mission Pack] "
+labels: ["mission-pack", "content"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A mission pack is a self-contained regional level with its own map, routes, assets, weather, operating conditions, and decision injects. Do not include sensitive facility details.
+
+  - type: input
+    id: name
+    attributes:
+      label: Mission name and proposed ID
+      placeholder: Great Lakes Continuity Exercise — great-lakes
+    validations:
+      required: true
+
+  - type: textarea
+    id: learning
+    attributes:
+      label: Audience and learning objectives
+      description: Who is this for, and what should they understand after playing?
+    validations:
+      required: true
+
+  - type: textarea
+    id: network
+    attributes:
+      label: Fictional regional network
+      description: Describe the ports, rail, aviation, roads, warehouses, digital systems, terrain, and dependencies represented.
+    validations:
+      required: true
+
+  - type: textarea
+    id: hazards
+    attributes:
+      label: Hazard and inject library
+      description: List at least five distinct disruptions and the infrastructure each affects.
+    validations:
+      required: true
+
+  - type: textarea
+    id: assets
+    attributes:
+      label: Moving logistics assets
+      description: Describe the vessel, aircraft, freight train, and truck routes or explain a justified alternative.
+    validations:
+      required: true
+
+  - type: textarea
+    id: conditions
+    attributes:
+      label: Weather, temporary events, and operating conditions
+    validations:
+      required: true
+
+  - type: textarea
+    id: sources
+    attributes:
+      label: Sources and asset licenses
+      description: Link public sources and licenses, or clearly state which content is fictional and original.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Safety and contribution checks
+      options:
+        - label: The proposal contains no personal data, credentials, or sensitive facility or security details.
+          required: true
+        - label: I can contribute this writing, data, and any proposed media under the project license.
+          required: true
+        - label: I understand a new pack will remain draft until validation, accessibility, and gameplay review are complete.
+          required: true

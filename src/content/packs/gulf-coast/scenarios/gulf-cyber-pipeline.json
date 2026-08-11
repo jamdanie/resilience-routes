@@ -1,0 +1,84 @@
+{
+  "id": "gulf-cyber-pipeline",
+  "title": "Coastal Scheduling Exchange",
+  "nodeType": "Digital logistics",
+  "x": 730,
+  "y": 425,
+  "color": "#a68aef",
+  "event": "A cyber incident makes pipeline nominations, terminal appointments, and fuel-delivery schedules unavailable or untrusted.",
+  "why": "Bulk energy movement depends on coordinated schedules. Physical equipment may still work, but operators cannot safely move products when quantities, destinations, and timing cannot be trusted.",
+  "how": "Terminal releases slow, trucks miss appointments, duplicate requests appear, and partners begin making decisions from different versions of the schedule.",
+  "when": "The risk increases when manual fallback lists are outdated, accounts are shared, vendors use connected systems, or restoration is rushed without verifying data.",
+  "where": "The initial outage affects the scheduling exchange and then reaches pipelines, fuel terminals, carriers, airports, utilities, and emergency operations.",
+  "keyTerms": [
+    {
+      "term": "Nomination",
+      "definition": "A scheduled request stating how much product should move through a pipeline and where it should go.",
+      "example": "A terminal nominates a quantity of fuel for delivery during a defined period.",
+      "whyItMatters": "Incorrect nominations can send the wrong quantity or product to the wrong destination."
+    },
+    {
+      "term": "Data integrity",
+      "definition": "Confidence that information is accurate, complete, and has not been changed improperly.",
+      "example": "Operators compare restored schedules with signed records before releasing fuel.",
+      "whyItMatters": "Available data is not useful when operators cannot trust it."
+    },
+    {
+      "term": "Out-of-band verification",
+      "definition": "Confirming information through a separate trusted method instead of the affected system.",
+      "example": "A known partner confirms a priority delivery through a verified phone number.",
+      "whyItMatters": "A separate channel helps detect false instructions and supports limited safe operations."
+    }
+  ],
+  "question": "Which response best preserves essential fuel movement while limiting cyber risk?",
+  "options": [
+    "Use tested manual schedules, isolate affected systems, and verify priority movements through trusted contacts",
+    "Accept every automated schedule as accurate once the system reconnects",
+    "Share one administrator account across all partners"
+  ],
+  "optionRationales": [
+    "This response contains the incident while using a tested and independently verified process for essential movement.",
+    "Reconnection does not prove that restored schedules are accurate or that the cause has been removed.",
+    "A shared administrator account removes accountability and gives excessive access during an incident."
+  ],
+  "correctIndex": 0,
+  "takeaway": "Continuity during a cyber incident depends on trusted fallback records, containment, and independent verification.",
+  "responsePrinciple": "Contain the affected system, verify essential instructions through a separate channel, and restore in controlled stages.",
+  "basePenalty": 13,
+  "logisticsEffects": [
+    {
+      "assetId": "gulf-road-22",
+      "activeStatus": "Holding",
+      "activeReason": "The truck does not have a trusted loading appointment or destination record.",
+      "correctStatus": "In transit",
+      "correctReason": "A verified manual schedule released the priority delivery.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "The truck remains staged because the schedule cannot be trusted."
+    },
+    {
+      "assetId": "gulf-vessel-9",
+      "activeStatus": "Delayed",
+      "activeReason": "Terminal planning is moving slowly while product schedules are verified.",
+      "correctStatus": "In transit",
+      "correctReason": "Verified terminal and cargo records restored controlled movement.",
+      "incorrectStatus": "Delayed",
+      "incorrectReason": "Untrusted scheduling data continues to limit terminal operations."
+    }
+  ],
+  "cascadeSteps": [
+    "A cyber incident makes energy schedules unavailable or untrusted.",
+    "Pipeline nominations, terminal appointments, and truck releases slow.",
+    "Partners receive conflicting information and duplicate priority requests.",
+    "Fuel availability becomes uncertain for airports, utilities, hospitals, and emergency fleets."
+  ],
+  "resourceCosts": [
+    {
+      "crews": 1,
+      "intelligence": 2
+    },
+    {
+      "crews": 1
+    },
+    {}
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "id": "gulf-channel-closure",
+  "title": "Bayline Ship Channel",
+  "nodeType": "Port waterway",
+  "x": 155,
+  "y": 180,
+  "color": "#4fc3d7",
+  "event": "A grounded vessel temporarily blocks the only deep-water channel serving the main container and energy terminals.",
+  "why": "A ship channel is the navigable water route connecting offshore traffic to inland terminals. Even when the terminals are undamaged, ships cannot reach them when the channel is blocked.",
+  "how": "Inbound vessels hold offshore, outbound vessels remain at berth, terminal storage fills, and rail and truck transfers lose their planned sequence.",
+  "when": "The risk grows when anchorage space is limited, storage tanks or container yards are near capacity, or essential cargo has no nearby alternate port.",
+  "where": "The first effects appear at the channel and terminals, then spread to refineries, warehouses, inland rail yards, manufacturers, and fuel customers.",
+  "keyTerms": [
+    {
+      "term": "Ship channel",
+      "definition": "A maintained water route deep and wide enough for large vessels to reach a port.",
+      "example": "A container vessel follows a marked channel from open water to a terminal berth.",
+      "whyItMatters": "Several terminals can depend on one channel, making it a shared point of failure."
+    },
+    {
+      "term": "Anchorage",
+      "definition": "A designated area where a vessel can wait safely before entering port.",
+      "example": "A vessel waits offshore at anchorage until a pilot and berth are available.",
+      "whyItMatters": "Anchorage space prevents waiting vessels from creating a navigation or safety problem."
+    },
+    {
+      "term": "Berth window",
+      "definition": "The scheduled period when a terminal is ready to receive and work a vessel.",
+      "example": "A ship is assigned a twelve-hour berth window for unloading.",
+      "whyItMatters": "A channel delay can cause several vessels to miss their windows and create a longer backlog."
+    }
+  ],
+  "question": "Which first response best limits congestion and protects priority cargo?",
+  "options": [
+    "Continue sending every vessel toward the blocked channel",
+    "Coordinate safe anchorage, confirm alternate terminal capacity, and prioritize essential cargo",
+    "Cancel all regional cargo movement until the vessel is removed"
+  ],
+  "optionRationales": [
+    "Sending more vessels toward the closure increases offshore congestion without creating channel capacity.",
+    "This response controls vessel queues, verifies an alternate before rerouting, and protects the cargo that creates the greatest harm if delayed.",
+    "Stopping every movement also blocks cargo that could use safe alternatives or remain moving inland."
+  ],
+  "correctIndex": 1,
+  "takeaway": "A blocked shared channel requires queue control, verified alternatives, and priority rules before rerouting.",
+  "responsePrinciple": "Control the queue, verify destination capacity, and move priority cargo through safe alternatives.",
+  "basePenalty": 11,
+  "logisticsEffects": [
+    {
+      "assetId": "gulf-vessel-9",
+      "activeStatus": "Holding",
+      "activeReason": "The vessel cannot safely enter the blocked ship channel.",
+      "correctStatus": "Rerouted",
+      "correctReason": "Alternate terminal space and a safe approach were confirmed before the vessel changed course.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "No safe channel or verified terminal capacity is available."
+    },
+    {
+      "assetId": "gulf-freight-12",
+      "activeStatus": "Delayed",
+      "activeReason": "The train is waiting for cargo that cannot reach the terminal transfer point.",
+      "correctStatus": "Rerouted",
+      "correctReason": "Priority cargo is moving through a confirmed alternate terminal and rail interchange.",
+      "incorrectStatus": "Delayed",
+      "incorrectReason": "The rail plan remains tied to the blocked channel and missed berth windows."
+    }
+  ],
+  "cascadeSteps": [
+    "A grounded vessel blocks the deep-water ship channel.",
+    "Inbound and outbound vessels lose access to several terminals.",
+    "Terminal storage, rail appointments, and truck transfers fall out of sequence.",
+    "Energy, manufacturing, retail, and emergency deliveries are delayed inland."
+  ],
+  "resourceCosts": [
+    {
+      "transport": 1,
+      "fuel": 1
+    },
+    {
+      "funds": 1,
+      "transport": 2,
+      "intelligence": 1
+    },
+    {}
+  ]
+}

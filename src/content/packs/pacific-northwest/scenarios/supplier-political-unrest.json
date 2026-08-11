@@ -1,0 +1,70 @@
+{
+  "id": "supplier-political-unrest",
+  "title": "Political unrest interrupts an upstream supplier",
+  "nodeType": "Upstream supplier",
+  "x": 850,
+  "y": 135,
+  "color": "#e58975",
+  "event": "A fictional overseas supplier has stopped outbound operations after political unrest restricted access to its local terminal.",
+  "why": "A regional network can be affected by an event far outside its map when it depends on parts or materials from one source.",
+  "how": "The supplier misses its loading window, the vessel schedule changes, and regional manufacturers receive less input inventory.",
+  "when": "The risk grows when the part has one approved supplier, long qualification requirements, or little safety stock.",
+  "where": "The disruption starts at the supplier but appears later at the port, production line, warehouse, and customer order.",
+  "keyTerms": [
+    {
+      "term": "Upstream supplier",
+      "definition": "A business earlier in the supply chain that provides materials, parts, or services used by another organization.",
+      "example": "A component factory supplies a part that a regional manufacturer needs for assembly.",
+      "whyItMatters": "A failure far away can stop local work when there is no qualified replacement."
+    },
+    {
+      "term": "Single-source dependency",
+      "definition": "Reliance on one approved supplier for a needed item.",
+      "example": "Only one factory is qualified to produce a specialized control component.",
+      "whyItMatters": "The organization has fewer recovery choices when that supplier cannot operate."
+    }
+  ],
+  "question": "How should the team respond to the upstream interruption?",
+  "options": [
+    "Confirm current inventory, prioritize essential demand, and begin approved alternate-supplier review",
+    "Assume the supplier will reopen before regional inventory is affected",
+    "Buy from the first unverified seller offering the part"
+  ],
+  "optionRationales": [
+    "This response establishes how long existing inventory can last, protects essential demand, and begins a controlled alternative without ignoring quality requirements.",
+    "Waiting without measuring inventory loses time and can allow a manageable shortage to become a production stoppage.",
+    "An unverified source may introduce counterfeit, unsafe, or incompatible components and create a second disruption."
+  ],
+  "correctIndex": 0,
+  "takeaway": "Upstream political risk is managed through visibility, demand priorities, qualified alternatives, and realistic inventory planning.",
+  "responsePrinciple": "Measure exposure first, protect essential demand, and use verified alternatives.",
+  "basePenalty": 11,
+  "logisticsEffects": [
+    {
+      "assetId": "vessel-cascade",
+      "activeStatus": "Delayed",
+      "activeReason": "Cargo missed its overseas loading window after the supplier stopped outbound operations.",
+      "correctStatus": "Rerouted",
+      "correctReason": "Available inventory and an approved alternate shipment were assigned to priority demand.",
+      "incorrectStatus": "Holding",
+      "incorrectReason": "No verified replacement cargo or demand priority was established."
+    }
+  ],
+  "cascadeSteps": [
+    "Political unrest restricts access to a fictional upstream supplier and terminal.",
+    "The supplier misses its planned export loading window.",
+    "Regional manufacturers receive fewer parts than expected.",
+    "Production, customer orders, and repair activity are delayed unless inventory is prioritized."
+  ],
+  "resourceCosts": [
+    {
+      "funds": 1,
+      "intelligence": 1,
+      "inventory": 2
+    },
+    {},
+    {
+      "funds": 2
+    }
+  ]
+}
