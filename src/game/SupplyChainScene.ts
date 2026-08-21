@@ -14,8 +14,9 @@ import type {
   HudUpdate,
   LogisticsTransition,
   MissionRunPlan,
-  Scenario
-  ,ScheduledAmbientEvent
+  Scenario,
+  ScheduledAmbientEvent,
+  StrategicResourceSupport
 } from "./types";
 
 interface NodeView {
@@ -46,6 +47,7 @@ interface ChallengeRequest {
     disruptionReduction: number;
   };
   verifyIntelligence: () => ReturnType<StrategicResourceSystem["snapshot"]> | null;
+  requestContinuitySupport: () => StrategicResourceSupport | null;
   scoring: {
     currentResilience: number;
     basePenalty: number;
@@ -642,6 +644,19 @@ export class SupplyChainScene extends Phaser.Scene {
         });
         return update;
       },
+      requestContinuitySupport: () => {
+        const support = this.strategicResources.requestContinuitySupport([
+          ...node.scenario.resourceCosts,
+          { intelligence: intelligence.cost }
+        ]);
+        if (!support) return null;
+        this.game.events.emit("resources-update", support.resources);
+        this.game.events.emit("mission-log", {
+          level: "info",
+          text: `${node.scenario.title}: mutual aid restored ${formatResourceCost(support.received)} to the mission pool.`
+        });
+        return support;
+      },
       scoring: {
         currentResilience: this.resilience,
         basePenalty: node.scenario.basePenalty,
@@ -758,6 +773,7 @@ export class SupplyChainScene extends Phaser.Scene {
     }
 
     this.game.events.emit("decision-result", {
+      scenarioId: scenario.id,
       correct,
       resilienceChange,
       resilience: this.resilience,

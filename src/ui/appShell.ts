@@ -148,7 +148,7 @@ export function renderApplicationShell(): string {
           <section class="resource-command-bar" aria-label="Available mission resources" aria-live="polite">
             <div class="resource-command-heading">
               <span>Strategic resources</span>
-              <small>Every commitment reduces what remains for later disruptions.</small>
+              <small>Every commitment reduces what remains. Mutual aid is available if a later response exceeds the mission pool.</small>
             </div>
             <div id="resource-pool" class="resource-pool">
               <article data-resource="funds"><span>Funds</span><strong id="resource-funds">—</strong></article>
@@ -166,6 +166,16 @@ export function renderApplicationShell(): string {
           <div id="run-identity" class="run-identity" aria-live="polite">
             <span>Mission not launched</span><b>Seed will appear here</b>
           </div>
+
+          <section class="mission-targets" aria-labelledby="mission-targets-title">
+            <div class="mission-targets-heading">
+              <div><span id="mission-targets-title">Mission target queue</span><small>Every selected decision node remains reachable here, even when the map is crowded.</small></div>
+              <strong id="mission-target-summary">0 / 3 addressed</strong>
+            </div>
+            <div id="mission-target-list" class="mission-target-list">
+              <button class="mission-target-button" type="button" disabled><span>Standby</span><b>Launch a mission</b><small>Selected nodes will appear here.</small></button>
+            </div>
+          </section>
 
           <section class="mission-command-strip" aria-label="Mission controls and local weather telemetry">
             <div class="command-strip-identity">
@@ -481,6 +491,10 @@ export function renderApplicationShell(): string {
           <p class="eyebrow">Command decision</p>
           <h3 id="modal-question"></h3>
           <div id="modal-resource-context" class="modal-resource-context"></div>
+          <section id="continuity-support" class="continuity-support hidden" aria-live="polite">
+            <div><span>Continuity reserve</span><p id="continuity-support-detail">Outside support can restore response capacity without identifying the recommended choice.</p></div>
+            <button id="request-continuity-support" class="secondary-button compact" type="button">Request mutual aid</button>
+          </section>
           <div id="modal-options" class="option-list"></div>
           <div id="decision-feedback" class="decision-feedback hidden" role="status"></div>
         </section>

@@ -1097,6 +1097,102 @@ input::placeholder {
   color: var(--red);
 }
 
+.mission-targets {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 12px;
+  padding: 12px;
+  border: 1px solid rgba(112, 195, 149, 0.34);
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(9, 31, 39, 0.96), rgba(8, 24, 38, 0.96));
+}
+
+.mission-targets-heading,
+.mission-targets-heading > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mission-targets-heading > div {
+  justify-content: flex-start;
+}
+
+.mission-targets-heading span {
+  color: var(--green);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mission-targets-heading small {
+  color: var(--muted);
+  font-size: 0.64rem;
+}
+
+.mission-targets-heading strong {
+  flex: 0 0 auto;
+  color: #dff8ec;
+  font-size: 0.72rem;
+}
+
+.mission-target-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mission-target-button {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px 11px;
+  border: 1px solid #36577b;
+  border-radius: 9px;
+  color: var(--text);
+  background: #0b1b2b;
+  text-align: left;
+}
+
+.mission-target-button:not(:disabled):hover,
+.mission-target-button:not(:disabled):focus-visible {
+  border-color: var(--blue);
+  background: #102a42;
+}
+
+.mission-target-button span,
+.mission-target-button small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.61rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mission-target-button b {
+  overflow: hidden;
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mission-target-button[data-state="stabilized"] {
+  border-color: rgba(112, 195, 125, 0.55);
+  background: rgba(18, 51, 45, 0.72);
+}
+
+.mission-target-button[data-state="degraded"] {
+  border-color: rgba(240, 189, 98, 0.55);
+  background: rgba(56, 44, 27, 0.72);
+}
+
+.mission-target-button:disabled {
+  cursor: default;
+  opacity: 0.74;
+}
+
 .notice {
   margin-bottom: 12px;
   padding: 12px 15px;

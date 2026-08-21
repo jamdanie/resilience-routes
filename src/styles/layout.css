@@ -144,11 +144,25 @@
 
 body.map-focus-active {
   overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body.map-focus-active::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 69;
+  background: #030b13;
+}
+
+body.map-focus-active .topbar {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .platform-shell.map-focus-mode .map-column {
   position: fixed;
-  inset: 78px 18px 18px;
+  inset: 12px;
   z-index: 70;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
@@ -157,6 +171,7 @@ body.map-focus-active {
   border-radius: 18px;
   background: rgba(4, 14, 24, 0.98);
   box-shadow: 0 30px 100px rgba(0, 0, 0, 0.62);
+  isolation: isolate;
 }
 
 .platform-shell.map-focus-mode .map-column .game-stage,

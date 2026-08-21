@@ -3,6 +3,7 @@ import type {
   StrategicResourceCost,
   StrategicResourceKey,
   StrategicResourcePool,
+  StrategicResourceSupport,
   StrategicResourceUpdate
 } from "./types";
 
@@ -73,6 +74,34 @@ export class StrategicResourceSystem {
       if (shortage > 0) missing[key] = shortage;
       return missing;
     }, {});
+  }
+
+  requestContinuitySupport(costs: StrategicResourceCost[]): StrategicResourceSupport | null {
+    const target = STRATEGIC_RESOURCE_KEYS.reduce<StrategicResourceCost>((maximum, key) => {
+      const required = costs.reduce((highest, cost) => Math.max(highest, cost[key] ?? 0), 0);
+      if (required > 0) maximum[key] = required;
+      return maximum;
+    }, {});
+    const requested = this.missing(target);
+    const received = STRATEGIC_RESOURCE_KEYS.reduce<StrategicResourceCost>((grant, key) => {
+      const amount = Math.min(
+        requested[key] ?? 0,
+        Math.max(0, this.initial[key] - this.remaining[key])
+      );
+      if (amount > 0) grant[key] = amount;
+      return grant;
+    }, {});
+
+    if (STRATEGIC_RESOURCE_KEYS.every((key) => (received[key] ?? 0) === 0)) return null;
+
+    STRATEGIC_RESOURCE_KEYS.forEach((key) => {
+      this.remaining[key] += received[key] ?? 0;
+    });
+
+    return {
+      received,
+      resources: this.snapshot()
+    };
   }
 
   spend(cost: StrategicResourceCost): StrategicResourceUpdate | null {

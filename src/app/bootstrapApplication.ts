@@ -47,6 +47,7 @@ import { createMissionBriefingController } from "../ui/missionBriefing";
 import { createReportModalController } from "../ui/reportModal";
 
 interface DecisionResult {
+  scenarioId: string;
   correct: boolean;
   resilienceChange: number;
   resilience: number;
@@ -89,6 +90,8 @@ export function bootstrapApplication(): void {
   const missionSeedInput = requiredElement<HTMLInputElement>("#mission-seed");
   const newSeedButton = requiredElement<HTMLButtonElement>("#new-seed");
   const runIdentity = requiredElement<HTMLElement>("#run-identity");
+  const missionTargetList = requiredElement<HTMLElement>("#mission-target-list");
+  const missionTargetSummary = requiredElement<HTMLElement>("#mission-target-summary");
   const runHistory = requiredElement<HTMLElement>("#run-history");
   const clearHistoryButton = requiredElement<HTMLButtonElement>("#clear-history");
   const gameCanvas = requiredElement<HTMLDivElement>("#game-canvas");
@@ -163,6 +166,7 @@ export function bootstrapApplication(): void {
   let currentLogisticsSnapshot: LogisticsSnapshot | null = null;
   let missionPaused = false;
   let mapFocusActive = false;
+  let mapFocusScrollY = 0;
   let gisTool: GisToolMode = "navigate";
 
   const setGisPanel = (open: boolean): void => {
@@ -205,13 +209,20 @@ export function bootstrapApplication(): void {
 
   const setMapFocus = (active: boolean): void => {
     if (!game && active) return;
+    const leavingFocus = !active && mapFocusActive;
+    if (active && !mapFocusActive) mapFocusScrollY = window.scrollY;
     mapFocusActive = active;
     platformShell.classList.toggle("map-focus-mode", active);
     document.body.classList.toggle("map-focus-active", active);
     mapFocusButton.setAttribute("aria-pressed", String(active));
     mapFocusButton.setAttribute("aria-label", active ? "Exit tactical map focus mode" : "Enter tactical map focus mode");
     mapFocusButton.textContent = active ? "Exit focus" : "Focus map";
-    window.requestAnimationFrame(() => game?.scale.refresh());
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        game?.scale.refresh();
+        if (leavingFocus) window.scrollTo({ top: mapFocusScrollY, left: 0, behavior: "auto" });
+      });
+    });
   };
 
   const updateMissionPulse = (elapsedSeconds: number): void => {
@@ -268,6 +279,49 @@ export function bootstrapApplication(): void {
         card.title = `${STRATEGIC_RESOURCE_LABELS[key]}: ${remaining} of ${initial} remaining`;
       }
     });
+  };
+
+  const resetMissionTargets = (target: number): void => {
+    missionTargetSummary.textContent = `0 / ${target} addressed`;
+    missionTargetList.innerHTML = `
+      <button class="mission-target-button" type="button" disabled>
+        <span>Standby</span><b>Launch a mission</b><small>${target} selected nodes will appear here.</small>
+      </button>
+    `;
+  };
+
+  const renderMissionTargets = (runPlan: MissionRunPlan): void => {
+    const scenarios = runPlan.activeScenarioIds
+      .map((scenarioId) => runPlan.scenarios.find((scenario) => scenario.id === scenarioId))
+      .filter((scenario): scenario is Scenario => Boolean(scenario));
+    missionTargetSummary.textContent = `0 / ${runPlan.mission.target} addressed`;
+    missionTargetList.innerHTML = scenarios
+      .map((scenario) => `
+        <button class="mission-target-button" type="button" data-scenario-id="${scenario.id}" data-state="unresolved" disabled>
+          <span>${scenario.nodeType}</span><b>${scenario.title}</b><small>Initializing map link…</small>
+        </button>
+      `)
+      .join("");
+  };
+
+  const setMissionTargetsReady = (): void => {
+    missionTargetList.querySelectorAll<HTMLButtonElement>('[data-state="unresolved"]').forEach((button) => {
+      button.disabled = false;
+      const status = button.querySelector("small");
+      if (status) status.textContent = "Open decision brief";
+    });
+  };
+
+  const markMissionTargetAddressed = (result: DecisionResult): void => {
+    const button = missionTargetList.querySelector<HTMLButtonElement>(`[data-scenario-id="${result.scenarioId}"]`);
+    if (button) {
+      button.dataset.state = result.correct ? "stabilized" : "degraded";
+      button.disabled = true;
+      const status = button.querySelector("small");
+      if (status) status.textContent = result.correct ? "Stabilized" : "Addressed · degraded";
+    }
+    const addressed = missionTargetList.querySelectorAll('[data-state="stabilized"], [data-state="degraded"]').length;
+    missionTargetSummary.textContent = `${addressed} / ${currentRunPlan?.mission.target ?? selectedMission().target} addressed`;
   };
 
   const selectedMission = () => getMissionPack(missionSelect.value);
@@ -367,6 +421,7 @@ export function bootstrapApplication(): void {
     missionPaused = false;
     setMapFocus(false);
     runIdentity.innerHTML = `<span>${mission.name}</span><b>New random seed will be generated at launch</b>`;
+    resetMissionTargets(mission.target);
     currentRunPlan = null;
     logCounter = 0;
     resetResourceUi();
@@ -522,7 +577,18 @@ export function bootstrapApplication(): void {
   zoomOutButton.addEventListener("click", () => game?.events.emit("map-zoom-step", -0.1));
   zoomResetButton.addEventListener("click", () => game?.events.emit("map-zoom-reset"));
   zoomInButton.addEventListener("click", () => game?.events.emit("map-zoom-step", 0.1));
-  mapFocusButton.addEventListener("click", () => setMapFocus(!mapFocusActive));
+  mapFocusButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setMapFocus(!mapFocusActive);
+  });
+  missionTargetList.addEventListener("click", (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-scenario-id]");
+    if (!button || button.disabled) return;
+    const scenarioId = button.dataset.scenarioId;
+    if (!scenarioId) return;
+    game?.events.emit("investigate-node", scenarioId);
+  });
   investigateFocusButton.addEventListener("click", () => {
     const scenarioId = investigateFocusButton.dataset.scenarioId;
     if (scenarioId) game?.events.emit("investigate-node", scenarioId);
@@ -562,6 +628,7 @@ export function bootstrapApplication(): void {
     const difficulty = difficultySelect.value as Difficulty;
     currentRunPlan = createMissionRunPlan(selectedMission(), missionSeedInput.value);
     missionSeedInput.value = currentRunPlan.seed;
+    renderMissionTargets(currentRunPlan);
     startGameButton.disabled = true;
     difficultySelect.disabled = true;
     missionSelect.disabled = true;
@@ -728,6 +795,7 @@ export function bootstrapApplication(): void {
       presence.setMission(runPlan.mission.id);
     });
     game.events.on("decision-result", (result: DecisionResult) => {
+      markMissionTargetAddressed(result);
       const direction = result.resilienceChange >= 0 ? "+" : "";
       gameStatus.textContent = `${result.correct ? "Effective response." : "Response increased risk."} Resilience ${direction}${result.resilienceChange}; current score ${result.resilience}. ${result.takeaway}`;
     });
@@ -736,9 +804,11 @@ export function bootstrapApplication(): void {
     });
     game.events.on("mission-log", (entry: MissionLogEntry) => appendLog(entry));
     game.events.on("game-ready", () => {
-      gameStatus.textContent = "Scenario active. Every visible node can be clicked, or you can move nearby and press E.";
+      setMissionTargetsReady();
+      gameStatus.textContent = "Scenario active. Use the target queue, click any visible node, or move nearby and press E.";
     });
     game.events.on("game-complete", (report: GameReport) => {
+      missionTargetList.querySelectorAll<HTMLButtonElement>("button").forEach((button) => { button.disabled = true; });
       pauseGameButton.disabled = true;
       pauseOverlay.classList.add("hidden");
       commandState.textContent = "Mission complete · after-action review ready";

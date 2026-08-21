@@ -17,6 +17,11 @@ export interface StrategicResourceUpdate {
   spent: StrategicResourcePool;
 }
 
+export interface StrategicResourceSupport {
+  received: StrategicResourceCost;
+  resources: StrategicResourceUpdate;
+}
+
 export interface GlossaryTerm {
   term: string;
   definition: string;

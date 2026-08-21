@@ -135,7 +135,7 @@ export function renderMissionBriefing(): string {
 
             <div class="briefing-resource-note">
               <div><p class="eyebrow">New strategic layer</p><h4>Resources spent now cannot be used later.</h4></div>
-              <p>Response options can require funds, field crews, transportation capacity, fuel, intelligence, or emergency inventory. A response becomes unavailable when the mission no longer has enough of the required resource.</p>
+              <p>Response options can require funds, field crews, transportation capacity, fuel, intelligence, or emergency inventory. If a later plan exceeds the remaining pool, request mutual aid from the decision brief to restore capacity without revealing the recommended response.</p>
             </div>
 
             <div class="briefing-readiness-card">
@@ -168,6 +168,7 @@ export function createMissionBriefingController(
   const backButton = requiredElement<HTMLButtonElement>("#briefing-back");
   const nextButton = requiredElement<HTMLButtonElement>("#briefing-next");
   const completeButton = requiredElement<HTMLButtonElement>("#complete-briefing");
+  const modal = requiredElement<HTMLElement>(".mission-briefing-modal");
   const stepLabel = requiredElement<HTMLElement>("#briefing-step-label");
   const pages = Array.from(document.querySelectorAll<HTMLElement>("[data-briefing-page]"));
   const progressButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-briefing-step-button]"));
@@ -181,6 +182,11 @@ export function createMissionBriefingController(
 
   const stepNames = ["Situation", "How scoring works", "Operating conditions"];
 
+  const resetScroll = (): void => {
+    modal.scrollTop = 0;
+    modal.scrollLeft = 0;
+  };
+
   const updateStep = (nextStep: number): void => {
     currentStep = Math.max(0, Math.min(stepCount - 1, nextStep));
     pages.forEach((page, index) => page.classList.toggle("active", index === currentStep));
@@ -192,7 +198,7 @@ export function createMissionBriefingController(
     backButton.disabled = currentStep === 0;
     nextButton.classList.toggle("hidden", currentStep === stepCount - 1);
     stepLabel.textContent = `${stepNames[currentStep]} · Step ${currentStep + 1} of ${stepCount}`;
-    requiredElement<HTMLElement>(".mission-briefing-modal").scrollTo({ top: 0, behavior: "smooth" });
+    resetScroll();
   };
 
   const syncDifficultyCards = (): void => {
@@ -216,11 +222,15 @@ export function createMissionBriefingController(
       missionObjective.textContent = `Address ${mission.target} randomly selected disruptions.`;
     }
     setDifficulty(difficulty);
-    updateStep(0);
     backdrop.classList.remove("hidden");
     backdrop.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-open");
-    window.requestAnimationFrame(() => closeButton.focus());
+    updateStep(0);
+    resetScroll();
+    window.requestAnimationFrame(() => {
+      resetScroll();
+      closeButton.focus();
+    });
   };
 
   const close = (): void => {

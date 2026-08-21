@@ -7,6 +7,7 @@ import type {
   Scenario,
   StrategicResourceCost,
   StrategicResourcePool,
+  StrategicResourceSupport,
   StrategicResourceUpdate
 } from "../game/types";
 import { requiredElement } from "./dom";
@@ -38,6 +39,7 @@ export interface ChallengeRequest {
   resources: StrategicResourceUpdate;
   intelligence: IntelligenceChallengeContext;
   verifyIntelligence: () => StrategicResourceUpdate | null;
+  requestContinuitySupport: () => StrategicResourceSupport | null;
   resolve: (selectedIndex: number, intelligenceVerified: boolean) => void;
 }
 
@@ -138,6 +140,9 @@ export function createChallengeModalController(): ChallengeModalController {
   const terms = requiredElement<HTMLElement>("#modal-terms");
   const question = requiredElement("#modal-question");
   const resourceContext = requiredElement<HTMLElement>("#modal-resource-context");
+  const continuitySupport = requiredElement<HTMLElement>("#continuity-support");
+  const continuitySupportDetail = requiredElement<HTMLElement>("#continuity-support-detail");
+  const requestContinuitySupportButton = requiredElement<HTMLButtonElement>("#request-continuity-support");
   const options = requiredElement<HTMLElement>("#modal-options");
   const feedback = requiredElement<HTMLElement>("#decision-feedback");
 
@@ -151,6 +156,8 @@ export function createChallengeModalController(): ChallengeModalController {
     let currentResources = request.resources;
     let currentScoring = { ...scoring };
     let intelligenceVerified = false;
+    let decisionLocked = false;
+    const supportReceived: StrategicResourceCost = {};
 
     nodeType.textContent = scenario.nodeType;
     title.textContent = scenario.title;
@@ -194,15 +201,55 @@ export function createChallengeModalController(): ChallengeModalController {
     intelligenceUncertainty.textContent = intelligence.uncertainty;
     intelligenceForecast.textContent = "Forecast locked. Verify the signal to expose the most likely downstream consequence.";
     intelligenceForecastCard.classList.add("forecast-locked");
-    verifyIntelligenceButton.disabled = currentResources.remaining.intelligence < intelligence.cost;
-    verifyIntelligenceButton.textContent = verifyIntelligenceButton.disabled
-      ? "Verification unavailable · No Intel remaining"
-      : `Verify signal · ${intelligence.cost} Intel`;
 
     const renderResourceContext = (): void => {
       resourceContext.innerHTML = STRATEGIC_RESOURCE_KEYS
         .map((key) => `<article><span>${STRATEGIC_RESOURCE_LABELS[key]}</span><strong>${currentResources.remaining[key]} / ${currentResources.initial[key]}</strong></article>`)
         .join("");
+    };
+
+    const renderVerification = (): void => {
+      if (intelligenceVerified) {
+        verifyIntelligenceButton.disabled = true;
+        verifyIntelligenceButton.textContent = `Signal verified · ${intelligence.cost} Intel committed`;
+        return;
+      }
+      const available = currentResources.remaining.intelligence >= intelligence.cost;
+      verifyIntelligenceButton.disabled = decisionLocked || !available;
+      verifyIntelligenceButton.textContent = available
+        ? `Verify signal · ${intelligence.cost} Intel`
+        : "Verification unavailable · Request mutual aid";
+    };
+
+    const renderContinuitySupport = (): void => {
+      const responseUnavailable = scenario.resourceCosts.some(
+        (cost) => !canAfford(currentResources.remaining, cost)
+      );
+      const verificationUnavailable = !intelligenceVerified
+        && currentResources.remaining.intelligence < intelligence.cost;
+      const supportWasReceived = STRATEGIC_RESOURCE_KEYS.some((key) => (supportReceived[key] ?? 0) > 0);
+      const supportNeeded = responseUnavailable || verificationUnavailable;
+
+      continuitySupport.classList.toggle("hidden", !supportNeeded && !supportWasReceived);
+      continuitySupport.dataset.state = supportNeeded ? "available" : "received";
+      requestContinuitySupportButton.classList.toggle("hidden", !supportNeeded);
+      requestContinuitySupportButton.disabled = decisionLocked || !supportNeeded;
+
+      if (supportNeeded) {
+        continuitySupportDetail.textContent = supportWasReceived
+          ? "A response or verification plan again exceeds the remaining pool. Additional mutual aid can restore every listed plan without identifying the recommended choice."
+          : "A response or verification plan exceeds the remaining pool. Mutual aid will restore every listed plan without identifying the recommended choice.";
+      } else if (supportWasReceived) {
+        continuitySupportDetail.textContent = `Mutual aid received: ${formatResourceCost(supportReceived)}. Recheck the response plans below.`;
+      }
+    };
+
+    const focusAvailableDecisionAction = (): void => {
+      if (!requestContinuitySupportButton.classList.contains("hidden") && !requestContinuitySupportButton.disabled) {
+        requestContinuitySupportButton.focus();
+        return;
+      }
+      options.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus();
     };
 
     const renderOptions = (): void => {
@@ -236,7 +283,9 @@ export function createChallengeModalController(): ChallengeModalController {
             if (itemIndex === scenario.correctIndex) item.classList.add("correct");
             if (itemIndex === selectedIndex && !correct) item.classList.add("incorrect");
           });
-          verifyIntelligenceButton.disabled = true;
+          decisionLocked = true;
+          renderVerification();
+          renderContinuitySupport();
 
           feedback.className = `decision-feedback ${correct ? "success" : "warning"}`;
           feedback.innerHTML = `
@@ -282,20 +331,41 @@ export function createChallengeModalController(): ChallengeModalController {
       intelligenceUncertainty.textContent = intelligence.verificationFinding;
       intelligenceForecast.textContent = intelligence.forecast;
       intelligenceForecastCard.classList.remove("forecast-locked");
-      verifyIntelligenceButton.disabled = true;
-      verifyIntelligenceButton.textContent = `Signal verified · ${intelligence.cost} Intel committed`;
       renderResourceContext();
+      renderVerification();
       renderOptions();
-      options.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus();
+      renderContinuitySupport();
+      focusAvailableDecisionAction();
+    };
+
+    requestContinuitySupportButton.onclick = () => {
+      if (decisionLocked) return;
+      const support = request.requestContinuitySupport();
+      if (!support) {
+        requestContinuitySupportButton.disabled = true;
+        continuitySupportDetail.textContent = "No additional mutual-aid capacity is available for this decision.";
+        return;
+      }
+      currentResources = support.resources;
+      STRATEGIC_RESOURCE_KEYS.forEach((key) => {
+        supportReceived[key] = (supportReceived[key] ?? 0) + (support.received[key] ?? 0);
+      });
+      renderResourceContext();
+      renderVerification();
+      renderOptions();
+      renderContinuitySupport();
+      focusAvailableDecisionAction();
     };
 
     renderResourceContext();
+    renderVerification();
     renderOptions();
+    renderContinuitySupport();
 
     backdrop.classList.remove("hidden");
     document.body.classList.add("modal-open");
     modal.scrollTop = 0;
-    options.querySelector<HTMLButtonElement>("button")?.focus();
+    focusAvailableDecisionAction();
   };
 
   return { show };
